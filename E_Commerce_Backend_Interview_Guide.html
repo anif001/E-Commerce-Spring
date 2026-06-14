@@ -231,6 +231,7 @@
         <button class="tab-btn" data-tab="phase3">🗄️ Phase 3<br><small>Entities &amp; JPA</small></button>
         <button class="tab-btn" data-tab="phase4">📡 Phase 4<br><small>Repositories</small></button>
         <button class="tab-btn" data-tab="phase5">⚡ Phase 5<br><small>Services</small></button>
+        <button class="tab-btn" data-tab="phase6">🌐 Phase 6<br><small>Controllers</small></button>
     </nav>
 
     <!-- ============================================================ -->
@@ -4472,6 +4473,442 @@ private BigDecimal finalAmount;       // totalAmount - discountAmount
 
                 <p>Try implementing this in OrderService.placeOrder() — where exactly does the calculation fit?</p>
             </div>
+        </section>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 6 -->
+    <!-- ============================================================ -->
+    <div class="tab-content" id="phase6">
+        <div class="toc">
+            <h3>📑 Phase 6 — Contents</h3>
+            <ol>
+                <li><a href="#p6-overview">Overview: REST API Design</a></li>
+                <li><a href="#p6-annotations">Controller Annotations Deep Dive</a></li>
+                <li><a href="#p6-authcontroller">AuthController — Register, Login, Refresh</a></li>
+                <li><a href="#p6-productcontroller">ProductController — CRUD &amp; Search</a></li>
+                <li><a href="#p6-categorycontroller">CategoryController — Hierarchy</a></li>
+                <li><a href="#p6-cartcontroller">CartController — Shopping Cart</a></li>
+                <li><a href="#p6-ordercontroller">OrderController — Orders &amp; Status</a></li>
+                <li><a href="#p6-paymentcontroller">PaymentController — Razorpay</a></li>
+                <li><a href="#p6-swagger">Swagger / OpenAPI Configuration</a></li>
+                <li><a href="#p6-health">HealthController — Readiness Probe</a></li>
+                <li><a href="#p6-security">Method Security &amp; @PreAuthorize</a></li>
+                <li><a href="#p6-15qa">15 Interview Q&amp;A</a></li>
+                <li><a href="#p6-challenge">Mini Challenge</a></li>
+            </ol>
+        </div>
+
+        <section id="p6-overview">
+            <h2><span class="num">1</span> Overview: REST API Design</h2>
+            <p>Phase 6 exposes the service layer through RESTful endpoints. The controllers are thin — they handle HTTP concerns (request parsing, response formatting, status codes) and delegate all business logic to services.</p>
+
+            <h3>RESTful URL Conventions</h3>
+            <ul>
+                <li><strong>Collections:</strong> <code>/api/products</code>, <code>/api/categories</code>, <code>/api/orders</code></li>
+                <li><strong>Singular:</strong> <code>/api/cart</code> — each user has exactly one cart</li>
+                <li><strong>Nested sub-resources:</strong> <code>/api/cart/items/{productId}</code>, <code>/api/categories/{id}/subcategories</code></li>
+                <li><strong>Actions as verbs:</strong> <code>/api/orders/{id}/cancel</code>, <code>/api/payments/verify</code></li>
+            </ul>
+
+            <h3>HTTP Methods &amp; Status Codes</h3>
+            <ul>
+                <li><code>GET</code> → <code>200 OK</code> — retrieve resource(s)</li>
+                <li><code>POST</code> → <code>201 Created</code> — create resource</li>
+                <li><code>PUT</code> → <code>200 OK</code> — full update</li>
+                <li><code>PATCH</code> → <code>200 OK</code> — partial update</li>
+                <li><code>DELETE</code> → <code>204 No Content</code> — delete resource</li>
+            </ul>
+        </section>
+
+        <section id="p6-annotations">
+            <h2><span class="num">2</span> Controller Annotations Deep Dive</h2>
+
+            <h3>@RestController</h3>
+            <p>Combines <code>@Controller</code> + <code>@ResponseBody</code>. Every method return value is automatically serialized to JSON (via Jackson) and written to the HTTP response body. No need for <code>@ResponseBody</code> on each method.</p>
+
+            <h3>@RequestMapping</h3>
+            <p>Class-level annotation that defines the base URL path. All endpoint methods in the class are prefixed with this path.</p>
+
+            <h3>Shortcut Annotations</h3>
+            <p>Spring provides syntactic sugar over <code>@RequestMapping(method = ...)</code>:</p>
+            <ul>
+                <li><code>@GetMapping</code> — GET requests</li>
+                <li><code>@PostMapping</code> — POST requests</li>
+                <li><code>@PutMapping</code> — PUT requests</li>
+                <li><code>@PatchMapping</code> — PATCH requests</li>
+                <li><code>@DeleteMapping</code> — DELETE requests</li>
+            </ul>
+
+            <h3>@PathVariable</h3>
+            <p>Extracts values from URL path placeholders. E.g., <code>/api/products/{id}</code> → <code>@PathVariable Long id</code>.</p>
+
+            <h3>@RequestParam</h3>
+            <p>Extracts query parameters. Supports <code>required</code>, <code>defaultValue</code>. E.g., <code>@RequestParam(required = false) String q</code> for search.</p>
+
+            <h3>@RequestBody</h3>
+            <p>Deserializes the HTTP request body (JSON) into a Java object, usually a DTO. Works with <code>@Valid</code> for bean validation.</p>
+
+            <h3>@Valid</h3>
+            <p>Triggers Jakarta Bean Validation on the annotated parameter. If validation fails, Spring throws <code>MethodArgumentNotValidException</code>, which our <code>GlobalExceptionHandler</code> catches and returns <code>400 Bad Request</code>.</p>
+
+            <h3>@AuthenticationPrincipal</h3>
+            <p>Injects the currently authenticated <code>UserDetails</code> (or custom principal) directly into the controller method parameter. We use a custom <code>UserPrincipal</code> that extends <code>User</code> and exposes <code>getUserId()</code> and <code>getUserEmail()</code>.</p>
+
+            <h3>ResponseEntity&lt;T&gt;</h3>
+            <p>Gives full control over the HTTP response: status code, headers, and body. We use it to return appropriate status codes (<code>201 Created</code>, <code>204 No Content</code>) and structured JSON bodies.</p>
+
+            <h3>@Validated vs @Valid</h3>
+            <ul>
+                <li><code>@Valid</code> — standard Jakarta Bean Validation, triggers cascaded validation on nested objects</li>
+                <li><code>@Validated</code> — Spring's variant, supports validation groups (e.g., <code>@Validated(Create.class)</code>)</li>
+            </ul>
+        </section>
+
+        <section id="p6-authcontroller">
+            <h2><span class="num">3</span> AuthController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/AuthController.java</code></p>
+            <p>Handles public authentication endpoints (no token required).</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>POST</td><td><code>/api/auth/register</code></td><td>None</td><td>Register a new user</td></tr>
+                <tr><td>POST</td><td><code>/api/auth/login</code></td><td>None</td><td>Authenticate and receive JWT</td></tr>
+                <tr><td>POST</td><td><code>/api/auth/refresh</code></td><td>None</td><td>Exchange refresh token for new access token</td></tr>
+            </table>
+
+            <h3>How Login Works (Step-by-Step)</h3>
+            <ol>
+                <li>Client sends <code>POST /api/auth/login</code> with <code>{ "email": "...", "password": "..." }</code></li>
+                <li><code>LoginRequest</code> is validated (<code>@NotBlank</code> on email, <code>@NotBlank</code> on password)</li>
+                <li>Spring's <code>AuthenticationManager.authenticate()</code> is called, which delegates to <code>CustomUserDetailsService.loadUserByUsername()</code> and then <code>PasswordEncoder.matches()</code></li>
+                <li>If authentication fails, Spring throws <code>BadCredentialsException</code> → handled by <code>GlobalExceptionHandler</code></li>
+                <li>On success, <code>JwtTokenProvider.generateAccessToken()</code> creates a JWT with userId + email + role claims</li>
+                <li>A separate <code>generateRefreshToken()</code> creates a longer-lived refresh token</li>
+                <li>Response: <code>JwtResponse</code> with <code>accessToken</code>, <code>refreshToken</code>, <code>expiresIn</code></li>
+            </ol>
+        </section>
+
+        <section id="p6-productcontroller">
+            <h2><span class="num">4</span> ProductController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/ProductController.java</code></p>
+            <p>Product CRUD with search, pagination, and role-based access.</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/api/products?q=search</code></td><td>None</td><td>Search products by name/description</td></tr>
+                <tr><td>GET</td><td><code>/api/products/{id}</code></td><td>None</td><td>Get single product</td></tr>
+                <tr><td>GET</td><td><code>/api/products/category/{id}</code></td><td>None</td><td>Get products by category</td></tr>
+                <tr><td>POST</td><td><code>/api/products</code></td><td>SELLER</td><td>Create product</td></tr>
+                <tr><td>PUT</td><td><code>/api/products/{id}</code></td><td>SELLER / ADMIN</td><td>Update product</td></tr>
+                <tr><td>DELETE</td><td><code>/api/products/{id}</code></td><td>SELLER / ADMIN</td><td>Delete product</td></tr>
+            </table>
+
+            <h3>Pagination with Pageable</h3>
+            <p>We use Spring Data's <code>Pageable</code> interface. The <code>@PageableDefault</code> annotation sets defaults for <code>size</code>, <code>sort</code>, and <code>direction</code>. Clients can override via query parameters:</p>
+            <ul>
+                <li><code>?page=0&size=10&sort=price,asc</code></li>
+                <li><code>?size=50&sort=createdAt,desc</code></li>
+            </ul>
+            <p>The response is a <code>Page&lt;ProductResponse&gt;</code> which includes <code>content</code>, <code>totalElements</code>, <code>totalPages</code>, <code>number</code>, <code>size</code>, etc.</p>
+        </section>
+
+        <section id="p6-categorycontroller">
+            <h2><span class="num">5</span> CategoryController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/CategoryController.java</code></p>
+            <p>Category hierarchy management with parent-child relationships.</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/api/categories</code></td><td>None</td><td>Get all top-level categories</td></tr>
+                <tr><td>GET</td><td><code>/api/categories/{id}</code></td><td>None</td><td>Get category by ID</td></tr>
+                <tr><td>GET</td><td><code>/api/categories/{id}/subcategories</code></td><td>None</td><td>Get subcategories</td></tr>
+                <tr><td>POST</td><td><code>/api/categories</code></td><td>ADMIN</td><td>Create category</td></tr>
+                <tr><td>PUT</td><td><code>/api/categories/{id}</code></td><td>ADMIN</td><td>Update category</td></tr>
+                <tr><td>DELETE</td><td><code>/api/categories/{id}</code></td><td>ADMIN</td><td>Delete category</td></tr>
+            </table>
+
+            <p>Note that GET endpoints are public (no authentication required per SecurityConfig). POST/PUT/DELETE are restricted to ADMIN via <code>@PreAuthorize</code>.</p>
+        </section>
+
+        <section id="p6-cartcontroller">
+            <h2><span class="num">6</span> CartController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/CartController.java</code></p>
+            <p>Shopping cart management — each user has exactly one cart (created on first add).</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/api/cart</code></td><td>Any authenticated</td><td>Get current user's cart</td></tr>
+                <tr><td>POST</td><td><code>/api/cart/items</code></td><td>Any authenticated</td><td>Add item to cart</td></tr>
+                <tr><td>PUT</td><td><code>/api/cart/items/{productId}?quantity=N</code></td><td>Any authenticated</td><td>Update item quantity</td></tr>
+                <tr><td>DELETE</td><td><code>/api/cart/items/{productId}</code></td><td>Any authenticated</td><td>Remove item from cart</td></tr>
+                <tr><td>DELETE</td><td><code>/api/cart</code></td><td>Any authenticated</td><td>Clear entire cart</td></tr>
+            </table>
+
+            <h3>How the Cart Works</h3>
+            <ol>
+                <li>When a user adds the first item, <code>CartService.getOrCreateCart()</code> checks if a cart exists. If not, it creates a new one linked to the user.</li>
+                <li>If the same product is added again, quantity is incremented (not duplicated).</li>
+                <li>Setting quantity to 0 or negative removes the item from the cart.</li>
+                <li>When an order is placed, the cart is cleared (items transferred to order).</li>
+            </ol>
+        </section>
+
+        <section id="p6-ordercontroller">
+            <h2><span class="num">7</span> OrderController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/OrderController.java</code></p>
+            <p>Order placement, retrieval, cancellation, and admin management.</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>POST</td><td><code>/api/orders</code></td><td>Any authenticated</td><td>Place order from cart</td></tr>
+                <tr><td>GET</td><td><code>/api/orders</code></td><td>Any authenticated</td><td>Get current user's orders</td></tr>
+                <tr><td>GET</td><td><code>/api/orders/{id}</code></td><td>Any authenticated</td><td>Get order by ID (own orders only)</td></tr>
+                <tr><td>POST</td><td><code>/api/orders/{id}/cancel</code></td><td>Any authenticated</td><td>Cancel order (own orders only)</td></tr>
+                <tr><td>GET</td><td><code>/api/orders/admin</code></td><td>ADMIN</td><td>Get all orders</td></tr>
+                <tr><td>PATCH</td><td><code>/api/orders/{id}/status</code></td><td>ADMIN</td><td>Update order status</td></tr>
+            </table>
+
+            <h3>Optimistic Locking &amp; Inventory</h3>
+            <p>When an order is placed, inventory is deducted inside a <code>@Transactional</code> method. We use <code>PESSIMISTIC_WRITE</code> lock on the product to prevent two users from buying the last item simultaneously. If the order is cancelled, inventory is restored.</p>
+        </section>
+
+        <section id="p6-paymentcontroller">
+            <h2><span class="num">8</span> PaymentController</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/PaymentController.java</code></p>
+            <p>Razorpay payment integration — creates orders and verifies signatures.</p>
+
+            <h3>Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+                <tr><td>POST</td><td><code>/api/payments/create-order/{orderId}</code></td><td>Any authenticated</td><td>Create Razorpay order</td></tr>
+                <tr><td>POST</td><td><code>/api/payments/verify</code></td><td>Any authenticated</td><td>Verify payment signature</td></tr>
+            </table>
+
+            <h3>Payment Flow</h3>
+            <ol>
+                <li>Frontend calls <code>POST /api/orders</code> to place the order (status: PENDING)</li>
+                <li>Frontend calls <code>POST /api/payments/create-order/{orderId}</code> to get a Razorpay order ID</li>
+                <li>Razorpay checkout opens in the browser with the order ID</li>
+                <li>On success, Razorpay returns <code>razorpay_payment_id</code> and <code>signature</code></li>
+                <li>Frontend sends these to <code>POST /api/payments/verify</code></li>
+                <li>Backend recomputes the HMAC-SHA256 signature and compares it — if valid, payment status is updated to PAID</li>
+            </ol>
+        </section>
+
+        <section id="p6-swagger">
+            <h2><span class="num">9</span> Swagger / OpenAPI Configuration</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/config/SwaggerConfig.java</code></p>
+
+            <h3>What is Swagger/OpenAPI?</h3>
+            <ul>
+                <li><strong>OpenAPI</strong> — a specification for describing REST APIs (endpoints, request/response schemas, auth)</li>
+                <li><strong>Swagger</strong> — the tooling (UI, codegen) built around the OpenAPI spec</li>
+                <li><strong>springdoc-openapi</strong> — auto-generates OpenAPI 3.0 spec from Spring Boot controllers at runtime</li>
+            </ul>
+
+            <h3>Key Swagger Annotations</h3>
+            <ul>
+                <li><code>@Tag(name="...", description="...")</code> — groups endpoints in Swagger UI</li>
+                <li><code>@Operation(summary="...", description="...")</code> — describes an endpoint</li>
+                <li><code>@ApiResponse</code> — documents response codes and schemas</li>
+                <li><code>@Schema</code> — describes DTO fields in the schema</li>
+            </ul>
+
+            <h3>SwaggerConfig Breakdown</h3>
+            <pre>@Configuration
+public class SwaggerConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+            .info(new Info()
+                .title("E-Commerce Backend API")
+                .version("1.0")
+                .description("Production-Ready E-Commerce Backend...")
+                .contact(new Contact().name("Developer").email("dev@ecommerce.com"))
+                .license(new License().name("Apache 2.0")))
+            .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
+            .components(new Components()
+                .addSecuritySchemes("BearerAuth", new SecurityScheme()
+                    .type(SecurityScheme.Type.HTTP)
+                    .scheme("bearer")
+                    .bearerFormat("JWT")));
+    }
+}</pre>
+            <p>This configures the info section and adds a global "Authorize" button in Swagger UI that sends JWT tokens as <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+
+            <h3>Accessing Swagger UI</h3>
+            <p>After starting the app, visit:</p>
+            <ul>
+                <li><code>http://localhost:8080/swagger-ui/index.html</code> — Swagger UI</li>
+                <li><code>http://localhost:8080/v3/api-docs</code> — Raw OpenAPI JSON spec</li>
+            </ul>
+        </section>
+
+        <section id="p6-health">
+            <h2><span class="num">10</span> HealthController — Readiness Probe</h2>
+            <p><strong>File:</strong> <code>src/main/java/com/ecommerce/controller/HealthController.java</code></p>
+            <p>A simple health check endpoint used by container orchestration (Docker/K8s) to verify the app is alive.</p>
+
+            <pre>@RestController
+public class HealthController {
+    @GetMapping("/api/health")
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; health() {
+        return ResponseEntity.ok(Map.of(
+            "status", "UP",
+            "timestamp", LocalDateTime.now().toString(),
+            "version", "1.0.0"
+        ));
+    }
+}</pre>
+            <p>This endpoint is publicly accessible (permitted in SecurityConfig). It returns a JSON object with status and timestamp — no DB connection check, just a simple liveness probe.</p>
+        </section>
+
+        <section id="p6-security">
+            <h2><span class="num">11</span> Method Security &amp; @PreAuthorize</h2>
+
+            <h3>Enabling Method Security</h3>
+            <pre>@Configuration
+@EnableMethodSecurity  // Replaces @EnableGlobalMethodSecurity in Spring Boot 3+
+public class SecurityConfig { ... }</pre>
+
+            <h3>@PreAuthorize SpEL Expressions</h3>
+            <ul>
+                <li><code>@PreAuthorize("hasRole('SELLER')")</code> — only SELLER role can access</li>
+                <li><code>@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")</code> — multiple roles</li>
+                <li><code>@PreAuthorize("isAuthenticated()")</code> — any authenticated user</li>
+                <li><code>@PreAuthorize("hasRole('ADMIN')")</code> — admin-only endpoints</li>
+            </ul>
+
+            <h3>Where We Use @PreAuthorize</h3>
+            <table>
+                <tr><th>Controller</th><th>Endpoint</th><th>Annotation</th></tr>
+                <tr><td>ProductController</td><td>POST /api/products</td><td><code>@PreAuthorize("hasRole('SELLER')")</code></td></tr>
+                <tr><td>ProductController</td><td>PUT, DELETE /api/products/{id}</td><td><code>@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")</code></td></tr>
+                <tr><td>CategoryController</td><td>POST, PUT, DELETE /api/categories</td><td><code>@PreAuthorize("hasRole('ADMIN')")</code></td></tr>
+                <tr><td>OrderController</td><td>GET /api/orders/admin</td><td><code>@PreAuthorize("hasRole('ADMIN')")</code></td></tr>
+                <tr><td>OrderController</td><td>PATCH /api/orders/{id}/status</td><td><code>@PreAuthorize("hasRole('ADMIN')")</code></td></tr>
+            </table>
+
+            <h3>@PreAuthorize vs SecurityConfig Filter Chains</h3>
+            <ul>
+                <li><strong>SecurityConfig</strong> handles <code>permitAll()</code> for public paths (<code>/api/auth/**</code>, <code>/api/health</code>, Swagger, GET products/categories)</li>
+                <li><strong>@PreAuthorize</strong> handles fine-grained role checks on specific endpoints</li>
+                <li>All other endpoints require authentication by default (configured in SecurityConfig)</li>
+            </ul>
+        </section>
+
+        <section id="p6-15qa">
+            <h2><span class="num">12</span> 15 Interview Q&amp;A</h2>
+
+            <div class="qa">
+                <div class="q">Q1: What's the difference between @Controller and @RestController?</div>
+                <div class="a">@RestController = @Controller + @ResponseBody. @Controller is used for MVC views (returns template names), @RestController is for REST APIs — it serializes return values directly to JSON/XML via HttpMessageConverter.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q2: How does Spring deserialize JSON into Java objects in @RequestBody?</div>
+                <div class="a">Spring uses HttpMessageConverter implementations. For JSON, it uses MappingJackson2HttpMessageConverter (Jackson's ObjectMapper). It reads the request body, parses JSON, and maps fields to the target DTO using getters/setters or constructors.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q3: What is the difference between @RequestParam and @PathVariable?</div>
+                <div class="a">@PathVariable extracts values from URL path placeholders (e.g., /products/{id}), while @RequestParam extracts query parameters (e.g., ?category=books). Path variables are for mandatory resource identifiers; request params are for optional filters.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q4: How do you handle validation errors in a REST controller?</div>
+                <div class="a">Use @Valid on @RequestBody parameters. Spring automatically throws MethodArgumentNotValidException on validation failure. A @ControllerAdvice (GlobalExceptionHandler) catches it and returns a structured 400 Bad Request response with field-level error messages.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q5: What is the purpose of @AuthenticationPrincipal?</div>
+                <div class="a">It injects the currently authenticated principal (UserDetails) from SecurityContext into a controller method parameter. We use a custom UserPrincipal that extends User and exposes getUserId() and getUserEmail(), giving controllers access to the authenticated user's ID without manually extracting from SecurityContextHolder.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q6: What is ResponseEntity and when would you use it vs a plain return type?</div>
+                <div class="a">ResponseEntity gives full control over the HTTP response — status code, headers, and body. Use it when you need non-standard statuses (201 Created, 204 No Content) or custom headers. For simple 200 OK responses, a plain return type is fine.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q7: How does @PreAuthorize work internally?</div>
+                <div class="a">Spring AOP proxies the controller bean. Before method invocation, the MethodSecurityInterceptor checks the SpEL expression against the current SecurityContext. If the user lacks the required authority, it throws AccessDeniedException, which our GlobalExceptionHandler converts to 403 Forbidden.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q8: What's the difference between hasRole() and hasAuthority()?</div>
+                <div class="a">hasRole('ADMIN') checks for ROLE_ADMIN (Spring prepends "ROLE_" prefix automatically). hasAuthority('ROLE_ADMIN') checks the exact string. hasRole('ADMIN') is equivalent to hasAuthority('ROLE_ADMIN'). Always use hasRole() for role-based checks.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q9: How does Swagger UI know about your API without manual documentation?</div>
+                <div class="a">springdoc-openapi scans all @RestController beans at runtime, reads the request mappings, method parameters, annotations (@GetMapping, @PathVariable, @RequestBody, etc.), and generates an OpenAPI 3.0 JSON spec. Swagger UI then renders this spec as an interactive documentation page.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q10: What is the difference between @GetMapping and @RequestMapping(method = RequestMethod.GET)?</div>
+                <div class="a">They are functionally identical. @GetMapping is a composed annotation that includes @RequestMapping(method = RequestMethod.GET) as a meta-annotation. The shortcut annotations are more concise, readable, and reduce boilerplate. Spring recommends using the shortcut annotations.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q11: How do you return a 201 Created response with a location header?</div>
+                <div class="a">Use ResponseEntity.created(URI.create("/api/products/" + id)).body(response). The .created() method sets the status to 201 and the Location header to the provided URI. Alternatively, use ResponseEntity.status(HttpStatus.CREATED).body(response) if you don't need the Location header.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q12: What is Pageable and how does Spring Data Web Support work?</div>
+                <div class="a">Pageable is an interface that encapsulates pagination (page number, size) and sorting. Spring Data Web Support (enabled by default) automatically resolves Pageable from query parameters (?page=0&size=20&sort=name,asc). @PageableDefault sets defaults. The return type Page<T> includes content plus metadata (total elements, total pages, etc.).</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q13: Why do we separate controllers, services, and repositories into layers?</div>
+                <div class="a">Separation of concerns: controllers handle HTTP concerns, services handle business logic and transactions, repositories handle data access. This makes the code testable (mock layers independently), maintainable (change one layer without affecting others), and follows the Single Responsibility Principle.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q14: How would you handle file upload in a REST controller?</div>
+                <div class="a">Use @RequestParam("file") MultipartFile file. Spring's MultipartResolver handles multipart/form-data parsing. The file can be saved to disk, cloud storage (S3), or converted to bytes. Add @Max(5MB) for size validation. The controller should return a URL or file ID for subsequent access.</div>
+            </div>
+
+            <div class="qa">
+                <div class="q">Q15: What is the @CrossOrigin annotation and when is it needed?</div>
+                <div class="a">@CrossOrigin enables CORS (Cross-Origin Resource Sharing) on a controller or endpoint. It's needed when a frontend (e.g., React at localhost:3000) makes requests to a different origin (backend at localhost:8080). Without it, browsers block cross-origin requests. Can be configured globally in SecurityConfig or per-controller.</div>
+            </div>
+        </section>
+
+        <section id="p6-challenge">
+            <h2><span class="num">13</span> 🏆 Mini Challenge</h2>
+            <p><strong>Scenario:</strong> The client wants a new endpoint that allows users to "reorder" a previous order — adds all items from a past order back into the current cart.</p>
+
+            <h3>Requirements</h3>
+            <ul>
+                <li>New endpoint: <code>POST /api/orders/{id}/reorder</code></li>
+                <li>Must be accessible only to the order owner (not admin)</li>
+                <li>Fetch the order by ID, iterate over its items, and add each product+quantity to the user's current cart</li>
+                <li>If a product's stock is insufficient, skip it silently (don't fail the whole reorder)</li>
+                <li>Return the updated cart (not the order)</li>
+            </ul>
+
+            <h3>Starter Skeleton</h3>
+            <pre>// In OrderController.java
+@PostMapping("/{id}/reorder")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity&lt;CartResponse&gt; reorder(
+        @PathVariable Long id,
+        @AuthenticationPrincipal UserPrincipal principal) {
+    // TODO: implement
+}
+
+// In OrderService.java
+// Add a method that returns order items for reordering</pre>
+
+            <p><strong>Think about:</strong> Do you need a new service method or can you reuse existing CartService methods? How do you handle the case where a product has been deleted since the original order? What if the product price changed — should you use the current price or the historical price?</p>
         </section>
     </div>
 

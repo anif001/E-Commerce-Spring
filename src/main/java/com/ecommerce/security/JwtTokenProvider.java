@@ -79,6 +79,15 @@ public class JwtTokenProvider {
         }
     }
 
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("email", String.class);
+    }
+
     public long getAccessTokenExpiration() {
         return accessTokenExpiration;
     }
