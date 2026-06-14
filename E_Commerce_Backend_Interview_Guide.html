@@ -230,6 +230,7 @@
         <button class="tab-btn" data-tab="phase2">⚙️ Phase 2<br><small>Maven &amp; Setup</small></button>
         <button class="tab-btn" data-tab="phase3">🗄️ Phase 3<br><small>Entities &amp; JPA</small></button>
         <button class="tab-btn" data-tab="phase4">📡 Phase 4<br><small>Repositories</small></button>
+        <button class="tab-btn" data-tab="phase5">⚡ Phase 5<br><small>Services</small></button>
     </nav>
 
     <!-- ============================================================ -->
@@ -3544,6 +3545,932 @@ FROM orders
 WHERE created_at::date = CURRENT_DATE;
                 </pre>
                 <p>Try writing both the native query AND creating a projection interface for the result!</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 5 -->
+    <!-- ============================================================ -->
+    <div class="tab-content" id="phase5">
+        <div class="toc">
+            <h3>📑 Phase 5 — Contents</h3>
+            <ol>
+                <li><a href="#p5s1">What is the Service Layer?</a></li>
+                <li><a href="#p5s2">@Service Annotation &amp; Dependency Injection</a></li>
+                <li><a href="#p5s3">AuthService — Registration Flow</a></li>
+                <li><a href="#p5s4">AuthService — Login &amp; JWT Generation</a></li>
+                <li><a href="#p5s5">AuthService — Refresh Token</a></li>
+                <li><a href="#p5s6">ProductService — CRUD with Authorization</a></li>
+                <li><a href="#p5s7">CategoryService — Hierarchy Management</a></li>
+                <li><a href="#p5s8">CartService — Add, Update, Remove Items</a></li>
+                <li><a href="#p5s9">OrderService — Place Order with Inventory Deduction</a></li>
+                <li><a href="#p5s10">OrderService — Cancel Order with Inventory Restore</a></li>
+                <li><a href="#p5s11">PaymentService — Razorpay Integration</a></li>
+                <li><a href="#p5s12">EmailService — Async Notifications</a></li>
+                <li><a href="#p5s13">DTO Pattern — Why Separate Request/Response Objects?</a></li>
+                <li><a href="#p5s14">@Transactional on Services — Read vs Write Operations</a></li>
+                <li><a href="#p5s15">Exception Handling in Services</a></li>
+                <li><a href="#p5s16">Security Layer — JwtTokenProvider, Filter, Config</a></li>
+                <li><a href="#p5s17">Interview Questions — Service Layer &amp; Business Logic</a></li>
+                <li><a href="#p5s18">🎯 Mini Challenge — Implement Discount Logic</a></li>
+            </ol>
+        </div>
+
+        <!-- 1 -->
+        <section id="p5s1">
+            <h2><span class="num">1</span> What is the Service Layer?</h2>
+            <p>The <strong>Service Layer</strong> is the heart of the application — it contains all <strong>business logic</strong>. It sits between controllers (HTTP layer) and repositories (data access layer).</p>
+
+            <div class="architecture">
+Controller Layer (HTTP)
+    ↓  receives DTOs, calls services
+Service Layer (Business Logic)  ←  @Service
+    ↓  validates, orchestrates, transforms
+Repository Layer (Data Access)   ←  @Repository
+    ↓  queries database
+Database (PostgreSQL)
+            </div>
+
+            <h3>What the Service Layer Does:</h3>
+            <table>
+                <thead><tr><th>Responsibility</th><th>Example</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Business Rules</strong></td><td>"Cannot cancel order after shipping", "Stock cannot go negative"</td></tr>
+                    <tr><td><strong>Orchestration</strong></td><td>Place Order: check stock → deduct inventory → create order → clear cart → send email</td></tr>
+                    <tr><td><strong>Validation</strong></td><td>"Email already exists", "Product belongs to seller"</td></tr>
+                    <tr><td><strong>DTO Conversion</strong></td><td>Entity ←→ Response DTO (never expose entities to controllers)</td></tr>
+                    <tr><td><strong>Transaction Management</strong></td><td>@Transactional — multiple DB operations succeed or fail together</td></tr>
+                    <tr><td><strong>Authorization</strong></td><td>"Only the seller can update this product"</td></tr>
+                </tbody>
+            </table>
+
+            <div class="highlight">
+                <strong>🔑 Why a separate Service Layer?</strong> Controllers should only handle HTTP concerns (status codes, headers). If business logic leaks into controllers, you can't reuse it (e.g., same order logic for web + mobile + API). Services are framework-agnostic and testable in isolation.
+            </div>
+        </section>
+
+        <!-- 2 -->
+        <section id="p5s2">
+            <h2><span class="num">2</span> @Service Annotation &amp; Dependency Injection</h2>
+
+            <h3>@Service</h3>
+            <p><strong>What it does:</strong> Marks a class as a Spring-managed bean in the service layer. It's a specialization of <code>@Component</code>.</p>
+            <p><strong>Why use it:</strong> Spring automatically detects <code>@Service</code> classes via component scanning and registers them as beans. Without it, you'd need to manually create instances.</p>
+
+            <h3>Dependency Injection via Constructor:</h3>
+            <pre>
+@Service
+@RequiredArgsConstructor    // Lombok generates constructor for ALL final fields
+public class AuthService {
+
+    private final UserRepository userRepository;       // Injected via constructor
+    private final PasswordEncoder passwordEncoder;     // Injected via constructor
+    private final JwtTokenProvider jwtTokenProvider;    // Injected via constructor
+    private final AuthenticationManager authenticationManager; // Injected via constructor
+
+    // @RequiredArgsConstructor generates:
+    // public AuthService(UserRepository u, PasswordEncoder p, JwtTokenProvider j, AuthenticationManager a) {
+    //     this.userRepository = u;
+    //     this.passwordEncoder = p;
+    //     this.jwtTokenProvider = j;
+    //     this.authenticationManager = a;
+    // }
+}
+            </pre>
+
+            <h3>Field Injection vs Constructor Injection (Interview Favorite):</h3>
+            <pre>
+// ❌ Field Injection (works but discouraged):
+@Service
+public class AuthService {
+    @Autowired
+    private UserRepository userRepository;
+    // Problems: can't make final, hard to test (no constructor to pass mocks)
+}
+
+// ✅ Constructor Injection (recommended):
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+    private final UserRepository userRepository;  // final = immutable
+    // Constructor injection enables: unit testing with mocks, immutability, clear dependencies
+}
+            </pre>
+
+            <div class="qa-box">
+                <div class="q">🔍 Q: Why is constructor injection preferred over @Autowired field injection?</div>
+                <div class="a">1) <strong>Immutability</strong> — fields can be final. 2) <strong>Testability</strong> — you can pass mocks in the constructor without Spring. 3) <strong>Explicit dependencies</strong> — if you add a new dependency, the constructor grows, making it obvious the class is doing too much (violation of Single Responsibility Principle). 4) <strong>Null safety</strong> — Spring ensures all constructor params are injected; no NullPointerException from unset fields.</div>
+            </div>
+        </section>
+
+        <!-- 3 -->
+        <section id="p5s3">
+            <h2><span class="num">3</span> AuthService — Registration Flow</h2>
+            <pre>
+@Transactional
+public AuthResponse register(RegisterRequest request) {
+
+    // 1. Business validation — check duplicate email
+    if (userRepository.existsByEmail(request.getEmail())) {
+        throw new BadRequestException("Email already registered");
+    }
+
+    // 2. Role assignment — prevent self-assign ADMIN
+    Role role = Role.CUSTOMER;  // Default role
+    if (request.getRole() != null) {
+        try {
+            role = Role.valueOf(request.getRole().toUpperCase());
+            if (role == Role.ADMIN) {
+                throw new BadRequestException("Admin registration not allowed");
+                // Only existing admins can create other admins
+            }
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid role: " + request.getRole());
+        }
+    }
+
+    // 3. Entity creation with Builder pattern
+    User user = User.builder()
+            .name(request.getName())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))  // BCrypt hash!
+            .role(role)
+            .build();
+
+    // 4. Persist to database
+    user = userRepository.save(user);
+
+    // 5. Generate JWT tokens immediately (user is logged in after register)
+    String accessToken = jwtTokenProvider.generateAccessToken(
+            user.getId(), user.getEmail(), user.getRole().name());
+    String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+    // 6. Build response
+    return buildAuthResponse(user, accessToken, refreshToken);
+}
+            </pre>
+
+            <h3>Security considerations:</h3>
+            <ul>
+                <li><strong>Password is NEVER stored as plain text</strong> — <code>passwordEncoder.encode()</code> uses BCrypt (slow, salted hash)</li>
+                <li><strong>Role is validated</strong> — user can't register as ADMIN</li>
+                <li><strong>Email uniqueness</strong> — checked at application level (DB has UNIQUE constraint as backup)</li>
+                <li><strong>@Transactional</strong> — if anything fails, user creation is rolled back</li>
+            </ul>
+        </section>
+
+        <!-- 4 -->
+        <section id="p5s4">
+            <h2><span class="num">4</span> AuthService — Login &amp; JWT Generation</h2>
+            <pre>
+public AuthResponse login(LoginRequest request) {
+
+    // 1. Delegate authentication to Spring Security's AuthenticationManager
+    //    This triggers CustomUserDetailsService.loadUserByUsername()
+    //    which fetches user from DB and verifies password
+    try {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(), request.getPassword()));
+    } catch (Exception e) {
+        throw new UnauthorizedException("Invalid email or password");
+        // We don't say WHICH one is wrong — security by obscurity
+    }
+
+    // 2. Fetch the authenticated user
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+    // 3. Generate JWT tokens
+    String accessToken = jwtTokenProvider.generateAccessToken(
+            user.getId(), user.getEmail(), user.getRole().name());
+    String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+    // 4. Build and return response
+    return buildAuthResponse(user, accessToken, refreshToken);
+}
+            </pre>
+
+            <h3>JWT Token Structure (from JwtTokenProvider):</h3>
+            <pre>
+Access Token (15 min expiry):
+  Header:  { "alg": "HS256" }
+  Payload: { "sub": "123", "email": "user@ecom.com",
+             "role": "CUSTOMER", "iat": 1700000000, "exp": 1700000900 }
+  Signature: HMAC-SHA256(base64(header) + "." + base64(payload), secret)
+
+Refresh Token (7 days expiry):
+  Payload: { "sub": "123", "type": "refresh", "iat": 1700000000, "exp": 1700604800 }
+            </pre>
+
+            <div class="highlight">
+                <strong>💡 Interview Tip:</strong> "The AuthenticationManager delegates to DaoAuthenticationProvider, which calls UserDetailsService.loadUserByUsername(). The UserDetails returned has authorities (ROLE_CUSTOMER) that Spring Security uses for authorization checks like @PreAuthorize."
+            </div>
+        </section>
+
+        <!-- 5 -->
+        <section id="p5s5">
+            <h2><span class="num">5</span> AuthService — Refresh Token</h2>
+            <pre>
+public AuthResponse refreshToken(String refreshToken) {
+
+    // 1. Validate the refresh token (check signature + expiry)
+    if (!jwtTokenProvider.validateToken(refreshToken)) {
+        throw new UnauthorizedException("Invalid or expired refresh token");
+    }
+
+    // 2. Extract user ID from the token (no DB call needed yet)
+    Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+    // 3. Verify user still exists (they might have been deleted)
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+    // 4. Generate new tokens (old refresh token is discarded by client)
+    String newAccessToken = jwtTokenProvider.generateAccessToken(
+            user.getId(), user.getEmail(), user.getRole().name());
+    String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+    return buildAuthResponse(user, newAccessToken, newRefreshToken);
+}
+            </pre>
+
+            <h3>Token Rotation Security:</h3>
+            <ul>
+                <li>Short-lived access tokens (15 min) — if stolen, limited damage window</li>
+                <li>Refresh token is a long-lived credential (7 days)</li>
+                <li>In production: store refresh tokens in Redis with user mapping → invalidate on logout</li>
+                <li>Token rotation: each refresh invalidates the old refresh token (prevents replay)</li>
+            </ul>
+        </section>
+
+        <!-- 6 -->
+        <section id="p5s6">
+            <h2><span class="num">6</span> ProductService — CRUD with Authorization</h2>
+            <pre>
+@Transactional
+public ProductResponse createProduct(ProductRequest request, Long sellerId) {
+    // 1. Verify category exists (referential integrity)
+    Category category = categoryRepository.findById(request.getCategoryId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Category not found: " + request.getCategoryId()));
+
+    // 2. Verify seller exists
+    User seller = userRepository.findById(sellerId)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Seller not found: " + sellerId));
+
+    // 3. Build and save entity
+    Product product = Product.builder()...build();
+    product = productRepository.save(product);
+
+    // 4. Convert to DTO (never return entity directly!)
+    return toProductResponse(product);
+}
+
+@Transactional
+public ProductResponse updateProduct(Long id, ProductRequest request, Long userId) {
+    Product product = productRepository.findById(id)...;
+
+    // AUTHORIZATION CHECK: Only the seller can update
+    if (!product.getSeller().getId().equals(userId)) {
+        throw new BadRequestException("Not authorized to update this product");
+    }
+
+    // ... update fields, save, return DTO
+}
+            </pre>
+
+            <h3>Why two checks — category existence AND user existence?</h3>
+            <p>The <strong>database foreign key</strong> would catch missing category/user at insert time (throws DataIntegrityViolationException). But we check <strong>before</strong> creating the entity to give a clear error message: "Category not found" instead of a generic constraint violation. This is called <strong>fail-fast validation</strong>.</p>
+        </section>
+
+        <!-- 7 -->
+        <section id="p5s7">
+            <h2><span class="num">7</span> CategoryService — Hierarchy Management</h2>
+            <pre>
+@Transactional
+public Category createCategory(String name, String description, Long parentId) {
+    // Check duplicate name (business rule)
+    if (categoryRepository.existsByName(name)) {
+        throw new BadRequestException("Category already exists: " + name);
+    }
+
+    Category category = Category.builder().name(name).description(description).build();
+
+    // Optional parent — makes this a sub-category
+    if (parentId != null) {
+        Category parent = categoryRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Parent category not found: " + parentId));
+        category.setParent(parent);  // Sets the self-referencing FK
+    }
+
+    return categoryRepository.save(category);
+}
+
+// Get hierarchical view:
+// Top-level: Electronics, Fashion
+//   Electronics → Mobile Phones, Laptops
+//     Mobile Phones → Smartphones, Feature Phones
+
+public List&lt;Category&gt; getAllTopLevelCategories() {
+    return categoryRepository.findByParentIsNull();
+    // WHERE parent_id IS NULL
+}
+
+public List&lt;Category&gt; getSubCategories(Long parentId) {
+    return categoryRepository.findByParentId(parentId);
+    // WHERE parent_id = ?
+}
+            </pre>
+        </section>
+
+        <!-- 8 -->
+        <section id="p5s8">
+            <h2><span class="num">8</span> CartService — Add, Update, Remove Items</h2>
+            <pre>
+@Transactional
+public CartResponse addItemToCart(Long userId, CartItemRequest request) {
+    // 1. Get existing cart or create new one
+    Cart cart = getOrCreateCart(userId);
+
+    // 2. Verify product exists and has stock
+    Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    if (product.getStock() < request.getQuantity()) {
+        throw new BadRequestException("Insufficient stock. Available: " + product.getStock());
+    }
+
+    // 3. Check if product ALREADY in cart → increment quantity
+    //    Otherwise → add new item
+    cart.getItems().stream()
+            .filter(item -> item.getProduct().getId().equals(request.getProductId()))
+            .findFirst()
+            .ifPresentOrElse(
+                    existing -> existing.setQuantity(
+                            existing.getQuantity() + request.getQuantity()),
+                    () -> {
+                        CartItem newItem = CartItem.builder()
+                                .cart(cart)
+                                .product(product)
+                                .quantity(request.getQuantity())
+                                .build();
+                        cart.getItems().add(newItem);
+                    });
+
+    // 4. Cascade.ALL + orphanRemoval = true handles saving items automatically
+    cart = cartRepository.save(cart);
+    return toCartResponse(cart);
+}
+            </select>
+
+            <h3>Why ifPresentOrElse instead of if-else?</h3>
+            <p><code>ifPresentOrElse</code> is a functional programming pattern. It handles both cases in a single stream operation: if product exists in cart → increment quantity; if not → add new item. This is cleaner than checking with a separate <code>findFirst()</code> and then looping again.</p>
+        </section>
+
+        <!-- 9 -->
+        <section id="p5s9">
+            <h2><span class="num">9</span> OrderService — Place Order with Inventory Deduction</h2>
+            <p>This is the <strong>most critical business operation</strong> — it spans multiple entities and must be atomic.</p>
+
+            <pre>
+@Transactional  // ← ALL or NOTHING
+public OrderResponse placeOrder(Long userId, String shippingAddress) {
+
+    // 1. Get user's cart (must have items)
+    Cart cart = cartService.getOrCreateCart(userId);
+    if (cart.getItems().isEmpty()) {
+        throw new BadRequestException("Cart is empty");
+    }
+
+    // 2. For each cart item: validate stock + deduct inventory
+    List&lt;OrderItem&gt; orderItems = cart.getItems().stream()
+            .map(cartItem -> {
+                Product product = cartItem.getProduct();
+
+                // Stock validation
+                if (product.getStock() < cartItem.getQuantity()) {
+                    throw new BadRequestException(
+                            "Insufficient stock for: " + product.getName());
+                }
+
+                // Inventory deduction
+                product.setStock(product.getStock() - cartItem.getQuantity());
+                productRepository.save(product);
+
+                // Snapshot pricing (copy price at time of order)
+                BigDecimal unitPrice = product.getPrice();
+                BigDecimal subtotal = unitPrice.multiply(
+                        BigDecimal.valueOf(cartItem.getQuantity()));
+
+                return OrderItem.builder()
+                        .product(product)
+                        .quantity(cartItem.getQuantity())
+                        .unitPrice(unitPrice)    // ← SNAPSHOT
+                        .subtotal(subtotal)      // ← PRE-COMPUTED
+                        .build();
+            })
+            .collect(Collectors.toList());
+
+    // 3. Calculate total
+    BigDecimal totalAmount = orderItems.stream()
+            .map(OrderItem::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    // 4. Create order
+    Order order = Order.builder()
+            .user(cart.getUser())
+            .orderStatus(PENDING)
+            .paymentStatus(UNPAID)
+            .totalAmount(totalAmount)
+            .shippingAddress(shippingAddress)
+            .build();
+
+    orderItems.forEach(item -> item.setOrder(order));  // Set bidirectional
+    order.setOrderItems(orderItems);
+
+    // 5. Save order (cascade saves orderItems)
+    order = orderRepository.save(order);
+
+    // 6. Clear the cart
+    cart.getItems().clear();
+    cartRepository.save(cart);
+
+    return toOrderResponse(order);
+}
+            </pre>
+
+            <div class="highlight">
+                <strong>🔑 @Transactional is CRITICAL here:</strong> If inventory deduction succeeds but order creation fails, the stock is already deducted — product is "sold" but no order exists. @Transactional rolls back ALL operations if ANY step fails. In production with microservices, you'd need the Saga pattern; with a monolith, @Transactional is sufficient.
+            </div>
+        </section>
+
+        <!-- 10 -->
+        <section id="p5s10">
+            <h2><span class="num">10</span> OrderService — Cancel Order with Inventory Restore</h2>
+            <pre>
+@Transactional
+public OrderResponse cancelOrder(Long orderId, Long userId) {
+    Order order = orderRepository.findById(orderId)...;
+
+    // Authorization check
+    if (!order.getUser().getId().equals(userId)) {
+        throw new BadRequestException("Not authorized to cancel this order");
+    }
+
+    // Business rule: can't cancel shipped/delivered orders
+    if (order.getOrderStatus() == SHIPPED ||
+        order.getOrderStatus() == DELIVERED) {
+        throw new BadRequestException("Cannot cancel order in " +
+                order.getOrderStatus() + " status");
+    }
+
+    // COMPENSATING ACTION: Restore inventory
+    order.getOrderItems().forEach(item -> {
+        Product product = item.getProduct();
+        product.setStock(product.getStock() + item.getQuantity());
+        productRepository.save(product);
+    });
+
+    order.setOrderStatus(CANCELLED);
+    order = orderRepository.save(order);
+
+    return toOrderResponse(order);
+}
+            </pre>
+
+            <h3>The Compensating Transaction Pattern:</h3>
+            <p>When we cancel an order, we must <strong>undo</strong> the inventory deduction that happened during placeOrder(). This is a manual compensating transaction — the same concept used in Saga Pattern for microservices. Every operation that changes state should have a corresponding "undo" operation.</p>
+        </section>
+
+        <!-- 11 -->
+        <section id="p5s11">
+            <h2><span class="num">11</span> PaymentService — Razorpay Integration</h2>
+            <pre>
+@Service
+public class PaymentService {
+
+    private RazorpayClient razorpayClient;
+
+    @PostConstruct  // Runs after constructor — initializes the Razorpay client
+    public void init() throws RazorpayException {
+        this.razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+    }
+
+    @Transactional
+    public String createRazorpayOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)...;
+
+        // Create Razorpay order (amount in paise: ₹100 = 10000 paise)
+        JSONObject orderRequest = new JSONObject();
+        orderRequest.put("amount", order.getTotalAmount()
+                .multiply(BigDecimal.valueOf(100)).intValue());  // ₹ → paise
+        orderRequest.put("currency", "INR");
+        orderRequest.put("receipt", "order_" + orderId);
+        orderRequest.put("payment_capture", 1);  // Auto-capture payment
+
+        RazorpayOrder razorpayOrder = razorpayClient.orders.create(orderRequest);
+
+        // Store Razorpay order ID in our order
+        order.setRazorpayOrderId(razorpayOrder.get("id"));
+        orderRepository.save(order);
+
+        return razorpayOrder.get("id");  // Return to frontend
+    }
+
+    public void verifyPayment(String razorpayOrderId,
+                              String razorpayPaymentId,
+                              String signature) {
+        // Razorpay sends: signature = HMAC-SHA256(orderId + "|" + paymentId, secret)
+        String expectedSignature = HmacSHA256(
+                razorpayOrderId + "|" + razorpayPaymentId,
+                razorpayKeySecret);
+
+        if (!expectedSignature.equals(signature)) {
+            throw new RuntimeException("Invalid payment signature — possible tampering!");
+        }
+
+        // Update order status
+        Order order = findByRazorpayOrderId(razorpayOrderId);
+        order.setRazorpayPaymentId(razorpayPaymentId);
+        order.setPaymentStatus(PAID);
+        orderRepository.save(order);
+    }
+}
+            </pre>
+
+            <h3>Payment Flow:</h3>
+            <pre>
+1. Backend creates Razorpay Order → returns razorpay_order_id
+2. Frontend opens Razorpay checkout with this ID
+3. User completes payment on Razorpay's page
+4. Razorpay redirects to backend with: payment_id + signature
+5. Backend verifies signature (HMAC-SHA256)
+6. If valid → update order as PAID
+7. If invalid → reject (possible fraud)
+            </pre>
+        </section>
+
+        <!-- 12 -->
+        <section id="p5s12">
+            <h2><span class="num">12</span> EmailService — Async Notifications</h2>
+            <pre>
+@Service
+@Slf4j
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+
+    @Async  // ← Runs in a separate thread! Does NOT block the main flow
+    public void sendOrderConfirmation(String to, String orderId, String status) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Order Confirmation - Order #" + orderId);
+            message.setText("Your order #" + orderId + " has been " + status + ".");
+
+            mailSender.send(message);
+            log.info("Order confirmation email sent to: {}", to);
+        } catch (Exception e) {
+            // NEVER let email failure break the order placement!
+            log.error("Failed to send email to: {}", to, e);
+        }
+    }
+}
+            </pre>
+
+            <h3>Why @Async + try-catch?</h3>
+            <ul>
+                <li><strong>@Async:</strong> The email is sent in a background thread. The user gets their order confirmation immediately without waiting for the email to send (email can take 1-5 seconds).</li>
+                <li><strong>try-catch:</strong> If the email server is down, we log the error but the ORDER IS STILL CONFIRMED. Email failure should never prevent an order from going through.</li>
+                <li><strong>In production:</strong> Use a message queue (RabbitMQ/Kafka) instead of @Async. The queue guarantees delivery even if the email service restarts.</li>
+            </ul>
+        </section>
+
+        <!-- 13 -->
+        <section id="p5s13">
+            <h2><span class="num">13</span> DTO Pattern — Why Separate Request/Response Objects?</h2>
+            <p><strong>DTO = Data Transfer Object.</strong> A separate object for API communication, distinct from JPA entities.</p>
+
+            <h3>Never expose entities directly:</h3>
+            <pre>
+// ❌ WRONG — returning entity directly:
+@GetMapping("/products/{id}")
+public Product getProduct(@PathVariable Long id) {
+    return productRepository.findById(id).get();
+    // Problems: exposes ALL fields (including internal ones),
+    // triggers lazy loading in serialization, circular references
+}
+
+// ✅ RIGHT — return DTO:
+@GetMapping("/products/{id}")
+public ProductResponse getProduct(@PathVariable Long id) {
+    return productService.getProductById(id);
+    // Only exposes the fields the API consumer needs
+}
+            </pre>
+
+            <h3>Why DTOs?</h3>
+            <table>
+                <thead><tr><th>Reason</th><th>Explanation</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Security</strong></td><td>Don't expose internal fields (password, version, internal IDs)</td></tr>
+                    <tr><td><strong>Decoupling</strong></td><td>API contract is independent of DB schema — rename DB column, API still works</td></tr>
+                    <tr><td><strong>Lazy Loading</strong></td><td>Jackson serialization tries to access ALL fields → triggers LazyInitializationException</td></tr>
+                    <tr><td><strong>Circular References</strong></td><td>Order → User → Order → User → infinite JSON! @JsonManagedReference/BackReference or DTOs</td></tr>
+                    <tr><td><strong>Performance</strong></td><td>Only serialize what the client needs — less data over the wire</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 14 -->
+        <section id="p5s14">
+            <h2><span class="num">14</span> @Transactional on Services — Read vs Write</h2>
+
+            <h3>Read-Only Transactions:</h3>
+            <pre>
+@Transactional(readOnly = true)  // Hint to Hibernate: no dirty checking needed
+public ProductResponse getProductById(Long id) {
+    Product product = productRepository.findById(id)...;
+    return toProductResponse(product);
+    // Hibernate skips dirty checking → slightly faster
+    // Also: flush mode set to MANUAL (no auto-flush)
+}
+            </pre>
+
+            <h3>Write Transactions:</h3>
+            <pre>
+@Transactional  // Default: readOnly = false
+public OrderResponse placeOrder(Long userId, String shippingAddress) {
+    // Multiple writes: inventory deduction, order creation, cart clear
+    // ALL succeed or ALL roll back
+}
+            </pre>
+
+            <table>
+                <thead><tr><th>Aspect</th><th>@Transactional(readOnly = true)</th><th>@Transactional</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Dirty Checking</strong></td><td>❌ Disabled (performance optimization)</td><td>✅ Enabled (tracks entity changes)</td></tr>
+                    <tr><td><strong>Flush Mode</strong></td><td>MANUAL (only when needed)</td><td>AUTO (before queries)</td></tr>
+                    <tr><td><strong>DB Lock</strong></td><td>Can use REPEATABLE_READ isolation</td><td>Default READ_COMMITTED</td></tr>
+                    <tr><td><strong>When to use</strong></td><td>GET endpoints, query methods</td><td>POST/PUT/DELETE, any data modification</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 15 -->
+        <section id="p5s15">
+            <h2><span class="num">15</span> Exception Handling in Services</h2>
+            <p>Services throw <strong>business exceptions</strong>. The GlobalExceptionHandler catches them and returns proper HTTP responses.</p>
+
+            <pre>
+// Custom exceptions (extend RuntimeException):
+ResourceNotFoundException  → 404 NOT_FOUND
+BadRequestException        → 400 BAD_REQUEST
+UnauthorizedException      → 401 UNAUTHORIZED
+
+// GlobalExceptionHandler pattern:
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidation(
+            MethodArgumentNotValidException ex) {
+        // Returns field-level errors:
+        // { "name": "Name is required", "email": "Invalid email format" }
+        Map&lt;String, String&gt; errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(field, message);
+        });
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGeneral(Exception ex) {
+        // Fallback — never expose stack traces to client!
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred");
+    }
+}
+            </pre>
+
+            <div class="highlight">
+                <strong>⚠️ NEVER expose stack traces to clients!</strong> In the general Exception handler, we return "An unexpected error occurred" — not the exception message or stack trace. Stack traces contain internal details (package names, DB structure) that hackers can exploit. Log the full error server-side, but return a generic message to the client.
+            </div>
+        </section>
+
+        <!-- 16 -->
+        <section id="p5s16">
+            <h2><span class="num">16</span> Security Layer — JwtTokenProvider, Filter, Config</h2>
+
+            <h3>JwtTokenProvider:</h3>
+            <pre>
+@Component
+public class JwtTokenProvider {
+    // Generates JWT tokens (access + refresh)
+    // Validates tokens (signature + expiry)
+    // Extracts claims (userId, role, email)
+    // Uses io.jsonwebtoken (JJWT) library
+}
+
+public String generateAccessToken(Long userId, String email, String role) {
+    return Jwts.builder()
+            .subject(userId.toString())
+            .claim("email", email)
+            .claim("role", role)
+            .issuedAt(now)
+            .expiration(expiry)
+            .signWith(secretKey)      // HMAC-SHA256
+            .compact();
+}
+            </pre>
+
+            <h3>JwtAuthenticationFilter:</h3>
+            <pre>
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    // Runs on EVERY request (once per request)
+    // Extracts "Bearer eyJhbGciOi..." from Authorization header
+    // Validates JWT → sets SecurityContextHolder
+
+    protected void doFilterInternal(HttpServletRequest request, ...) {
+        String token = extractToken(request);  // Get from "Bearer " prefix
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+            String email = jwtTokenProvider.getUserIdFromToken(token).toString();
+            UserDetails userDetails = loadUser(email);
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            // Now @PreAuthorize("hasRole('CUSTOMER')") works!
+        }
+        filterChain.doFilter(request, response);
+    }
+}
+            </pre>
+
+            <h3>SecurityConfig:</h3>
+            <pre>
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity   // Enables @PreAuthorize, @PostAuthorize
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        http
+            .csrf(csrf -> csrf.disable())              // REST APIs don't need CSRF
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(STATELESS))  // JWT = no sessions
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .anyRequest().authenticated()           // Everything else needs auth
+            )
+            .addFilterBefore(jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+}
+            </pre>
+        </section>
+
+        <!-- 17 -->
+        <section id="p5s17">
+            <h2><span class="num">17</span> Interview Questions — Service Layer &amp; Business Logic</h2>
+
+            <h3>🔰 Beginner</h3>
+            <div class="qa-box">
+                <div class="q">Q1: What is the Service Layer and why is it important?</div>
+                <div class="a">The Service Layer contains all business logic. It sits between controllers (HTTP) and repositories (data). It handles validation, orchestration, DTO conversion, transactions, and authorization. Without it, business logic leaks into controllers (not reusable, hard to test) or into repositories (ORM concerns mixed with business rules).</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q2: What is the difference between @Service, @Component, and @Repository?</div>
+                <div class="a">All three register classes as Spring beans. <strong>@Service</strong> indicates business logic layer. <strong>@Repository</strong> indicates data access layer (Spring adds exception translation for JDBC exceptions). <strong>@Component</strong> is a generic bean for any other layer. They're functionally identical for bean scanning but semantically important for layering.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q3: Why is constructor injection preferred over @Autowired field injection?</div>
+                <div class="a">1) Immutability (final fields). 2) Testability (can pass mocks without Spring). 3) Explicit dependencies (constructor grows if class has too many responsibilities). 4) Null safety (Spring ensures all dependencies are set). Field injection hides dependencies and makes testing harder.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q4: What is the purpose of DTOs? Why not return entities directly?</div>
+                <div class="a">DTOs decouple the API contract from the DB schema. They prevent: exposing sensitive fields (password), lazy loading exceptions during serialization, circular references (Order→User→Order), and sending unnecessary data over the wire. They also allow you to change the DB schema without breaking API clients.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q5: What does @Transactional do? When should you use it?</div>
+                <div class="a">@Transactional ensures that multiple database operations execute in a single database transaction — all succeed or all roll back. Use it on service methods that perform multiple writes (e.g., placeOrder: deduct inventory + create order + clear cart). Use @Transactional(readOnly = true) on read-only methods to optimize performance.</div>
+            </div>
+
+            <h3>📊 Intermediate</h3>
+            <div class="qa-box">
+                <div class="q">Q6: Explain the "Place Order" flow — what happens from request to response?</div>
+                <div class="a">1) Controller receives POST /api/orders with shipping address. 2) JWT filter validates token → sets authentication. 3) @PreAuthorize checks role = CUSTOMER. 4) OrderService.placeOrder(): fetch cart → validate stock → deduct inventory → create order with order items (snapshot pricing) → clear cart. 5) @Transactional ensures atomicity. 6) Return OrderResponse DTO.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q7: How does the refresh token flow work?</div>
+                <div class="a">1) Client sends refresh token to POST /api/auth/refresh. 2) AuthService validates the refresh token (signature + expiry). 3) Extracts userId from token. 4) Verifies user still exists. 5) Generates NEW access token + NEW refresh token. 6) Client discards old tokens. This provides continuous authentication without asking the user to log in every 15 minutes.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q8: How does JwtAuthenticationFilter work? Walk through the entire filter chain.</div>
+                <div class="a">OncePerRequestFilter runs on every request. 1) Extracts "Bearer token" from Authorization header. 2) Validates JWT signature + expiry using JwtTokenProvider. 3) Parses userId/role/email from claims. 4) Loads UserDetails from CustomUserDetailsService. 5) Creates UsernamePasswordAuthenticationToken. 6) Sets SecurityContextHolder — now @PreAuthorize works in controllers.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q9: How would you handle the scenario where email server is down during order placement?</div>
+                <div class="a">Email should be sent <strong>asynchronously</strong> using @Async. The order placement completes and returns immediately. The email is sent in a background thread. If the email fails, we log the error but the order is already confirmed. In production, use a message queue (RabbitMQ) — the queue persists the message and retries delivery, so the email eventually succeeds.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q10: What is the difference between authentication and authorization?</div>
+                <div class="a"><strong>Authentication</strong> = Who are you? (Login with email + password → JWT token). <strong>Authorization</strong> = What can you do? (Role check: @PreAuthorize("hasRole('ADMIN')")). Authentication happens once per request (JWT filter). Authorization happens per-endpoint (@PreAuthorize). You must be authenticated before authorization can be checked.</div>
+            </div>
+
+            <h3>🚀 Advanced</h3>
+            <div class="qa-box">
+                <div class="q">Q11: How do you prevent race conditions when two users try to buy the same last item simultaneously?</div>
+                <div class="a">Use <strong>pessimistic locking</strong>. In OrderService.placeOrder(), when deducting inventory: <code>@Lock(PESSIMISTIC_WRITE)</code> on the product repository query. This generates <code>SELECT ... FOR UPDATE</code>, which locks the product row until the transaction commits. User B's query waits. Without this, both users would see stock=1 and both would deduct, resulting in stock=-1.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q12: Design a service method that handles bulk order status update (e.g., ship 100 orders at once).</div>
+                <div class="a">
+                    <pre>
+@Transactional
+public int bulkUpdateStatus(List&lt;Long&gt; orderIds, OrderStatus newStatus) {
+    List&lt;Order&gt; orders = orderRepository.findAllById(orderIds);
+    int updated = 0;
+    for (Order order : orders) {
+        if (canTransition(order.getOrderStatus(), newStatus)) {
+            order.setOrderStatus(newStatus);
+            updated++;
+        }
+    }
+    return updated;  // Number of orders actually updated
+}
+// Alternative: @Modifying @Query for performance
+@Modifying
+@Query("UPDATE Order o SET o.orderStatus = :status WHERE o.id IN :ids")
+int bulkUpdateStatus(@Param("ids") List&lt;Long&gt; ids, @Param("status") OrderStatus status);
+                    </pre>
+                    For 100+ orders, use the @Modifying approach (single SQL statement). For smaller batches where you need status transition validation, the entity approach is safer.
+                </div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q13: How would you implement role-based access control where SELLER can only manage their own products, but ADMIN can manage all?</div>
+                <div class="a">Two layers: 1) <strong>Method-level</strong> with @PreAuthorize: <code>@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")</code> on ProductController. 2) <strong>Service-level</strong> with entity owner check: <code>if (!product.getSeller().getId().equals(userId) && !isAdmin) { throw new UnauthorizedException(); }</code>. The first layer ensures only sellers/admins can access the endpoint. The second ensures sellers can only touch their own products.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q14: Explain the compensating transaction pattern as used in OrderService.cancelOrder().</div>
+                <div class="a">When a user cancels an order, we must undo the inventory deduction that happened during placeOrder(). The compensating action: <code>product.setStock(product.getStock() + item.getQuantity())</code>. In a monolith, this is straightforward (same transaction). In microservices (Saga pattern), you'd publish an "InventoryRelease" event to the Inventory Service. Every write operation should have a corresponding compensating operation.</div>
+            </div>
+            <div class="qa-box">
+                <div class="q">Q15: What happens if @Transactional on a service method calls another @Transactional method within the same class?</div>
+                <div class="a">This is a <strong>proxy limitation</strong> — Spring's @Transactional works via AOP proxies. When methodA() (with @Transactional) calls methodB() (with @Transactional) within the same class, methodB's @Transactional is IGNORED because the call goes through <code>this</code> (the actual object), not the proxy. This is called <strong>self-invocation</strong>. Solutions: 1) Move methodB to a separate service class, 2) Inject self-reference via ApplicationContext, 3) Use AspectJ weaving (avoid unless necessary).</div>
+            </div>
+        </section>
+
+        <!-- 18 -->
+        <section id="p5s18">
+            <h2><span class="num">18</span> 🎯 Mini Challenge — Implement Discount Logic</h2>
+            <div class="challenge">
+                <h3>Your Task — Add a Discount System to OrderService</h3>
+                <p>The business wants a discount system: "Orders over ₹500 get 10% off." Implement this in the service layer.</p>
+
+                <h4>Requirements:</h4>
+                <ul>
+                    <li>If order total > ₹500, apply 10% discount</li>
+                    <li>The discount must be stored in the order (for audit/history)</li>
+                    <li>Discount should be calculated BEFORE inventory deduction</li>
+                    <li>Discount should be visible in the OrderResponse</li>
+                    <li>What if the discount changes tomorrow? How do historical orders show the correct discount?</li>
+                </ul>
+
+                <h4>Think About:</h4>
+                <ul>
+                    <li>Where does the discount percentage come from? (Hardcoded? Property? DB?)</li>
+                    <li>How do you store the discount in the Order entity?</li>
+                    <li>Should the OrderItem show the discounted price or original price?</li>
+                    <li>How do you test this logic?</li>
+                    <li>What if two discounts apply? (Diwali sale + order amount discount)</li>
+                </ul>
+
+                <pre>
+// Hint: Add to Order entity:
+private BigDecimal discountAmount;    // ₹50 for a ₹500 order with 10% off
+private BigDecimal discountPercent;   // 10.00
+private BigDecimal finalAmount;       // totalAmount - discountAmount
+
+// In OrderResponse:
+// totalAmount, discountAmount, discountPercent, finalAmount
+                </pre>
+
+                <p>Try implementing this in OrderService.placeOrder() — where exactly does the calculation fit?</p>
             </div>
         </section>
     </div>

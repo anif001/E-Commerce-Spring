@@ -34,7 +34,7 @@ server:
   port: 8080
 
 jwt:
-  secret: my-super-secret-key-that-is-at-least-256-bits-long-for-hs256-algorithm
+  secret: my-super-secret-key-that-is-at-least-32-chars-long-for-hs256
   access-token-expiration: 900000
   refresh-token-expiration: 604800000
 
