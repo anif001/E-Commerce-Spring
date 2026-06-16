@@ -3,7 +3,6 @@ package com.ecommerce.service;
 import com.ecommerce.enums.PaymentStatus;
 import com.ecommerce.model.Order;
 import com.ecommerce.repository.OrderRepository;
-import com.razorpay.Order as RazorpayOrder;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import jakarta.annotation.PostConstruct;
@@ -46,7 +45,7 @@ public class PaymentService {
             orderRequest.put("receipt", "order_" + orderId);
             orderRequest.put("payment_capture", 1);
 
-            RazorpayOrder razorpayOrder = razorpayClient.orders.create(orderRequest);
+            com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
 
             order.setRazorpayOrderId(razorpayOrder.get("id"));
             orderRepository.save(order);
@@ -81,7 +80,7 @@ public class PaymentService {
         orderRepository.save(order);
     }
 
-    private String HmacSHA256(String data, String secret) {
+    String HmacSHA256(String data, String secret) {
         try {
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
             javax.crypto.spec.SecretKeySpec secretKeySpec =

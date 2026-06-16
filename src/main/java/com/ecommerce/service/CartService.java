@@ -32,6 +32,7 @@ public class CartService {
     @Transactional
     public CartResponse addItemToCart(Long userId, CartItemRequest request) {
         Cart cart = getOrCreateCart(userId);
+        final Cart finalCart = cart;
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -41,7 +42,7 @@ public class CartService {
             throw new BadRequestException("Insufficient stock. Available: " + product.getStock());
         }
 
-        cart.getItems().stream()
+        finalCart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(request.getProductId()))
                 .findFirst()
                 .ifPresentOrElse(
@@ -49,15 +50,15 @@ public class CartService {
                                 existing.getQuantity() + request.getQuantity()),
                         () -> {
                             CartItem newItem = CartItem.builder()
-                                    .cart(cart)
+                                    .cart(finalCart)
                                     .product(product)
                                     .quantity(request.getQuantity())
                                     .build();
-                            cart.getItems().add(newItem);
+                            finalCart.getItems().add(newItem);
                         });
 
-        cart = cartRepository.save(cart);
-        return toCartResponse(cart);
+        cartRepository.save(finalCart);
+        return toCartResponse(finalCart);
     }
 
     @Transactional

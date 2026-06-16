@@ -1,0 +1,3085 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 7: Testing — E-Commerce Backend Interview Guide</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 40px 20px;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+.header {
+    text-align: center;
+    padding: 40px 0 30px;
+    border-bottom: 2px solid #6C63FF;
+    margin-bottom: 40px;
+}
+.header h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #6C63FF, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header .subtitle { color: #888; font-size: 1rem; margin-top: 10px; }
+.header .badge {
+    display: inline-block;
+    background: #6C63FF;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 12px;
+}
+section {
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-left: 4px solid #6C63FF;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+section h2 {
+    font-size: 1.5rem;
+    color: #6C63FF;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+section h2 .num {
+    background: #6C63FF;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+section h3 { color: #ff6b6b; margin: 20px 0 10px; font-size: 1.1rem; }
+section h4 { color: #4ecdc4; margin: 15px 0 8px; }
+p { margin-bottom: 12px; }
+ul, ol { margin: 10px 0 15px 25px; }
+li { margin-bottom: 6px; }
+code {
+    background: #2d2d44;
+    color: #f8c555;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+}
+pre {
+    background: #0d0d1a;
+    color: #a8e6cf;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 15px 0;
+    border: 1px solid #2d2d44;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.9rem;
+}
+th, td {
+    border: 1px solid #2d2d44;
+    padding: 10px 14px;
+    text-align: left;
+}
+th { background: #6C63FF; color: #fff; font-weight: 600; }
+td { background: #12122a; }
+.highlight {
+    background: #2d2d44;
+    border-left: 4px solid #f8c555;
+    padding: 15px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 15px 0;
+}
+.highlight strong { color: #f8c555; }
+.qa-box {
+    background: #0f0f1a;
+    border: 1px solid #6C63FF;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+}
+.qa-box .q { color: #ff6b6b; font-weight: bold; }
+.qa-box .a { color: #4ecdc4; margin-top: 5px; }
+.architecture {
+    background: #0d0d1a;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 15px 0;
+    color: #a8e6cf;
+}
+.tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-right: 5px;
+}
+.tag.purple { background: #6C63FF; color:#fff; }
+.tag.green { background: #4ecdc4; color:#000; }
+.tag.red { background: #ff6b6b; color:#fff; }
+.footer {
+    text-align: center;
+    padding: 30px 0;
+    color: #555;
+    font-size: 0.85rem;
+}
+.toc {
+    background: #12122a;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    border: 1px solid #2d2d44;
+}
+.toc h3 { color: #6C63FF; margin-bottom: 12px; }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 5px; }
+.toc a { color: #a8e6cf; text-decoration: none; }
+.toc a:hover { color: #6C63FF; text-decoration: underline; }
+.challenge {
+    background: linear-gradient(135deg, #1a1a2e, #2d1f3d);
+    border: 2px solid #f8c555;
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+}
+.challenge h3 { color: #f8c555; }
+@media (max-width: 768px) {
+    body { padding: 20px 10px; }
+    section { padding: 20px; }
+    .header h1 { font-size: 1.5rem; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 6px 8px; }
+}
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>&#x1f9ea; E-Commerce Backend — Phase 7: Testing</h1>
+        <div class="subtitle">Comprehensive Testing Strategy for Spring Boot 3+ | JUnit 5 | Mockito | TestContainers</div>
+        <span class="badge">&#x1f4d8; Interview Edition — Full Explanation + Code + Q&amp;A</span>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc">
+        <h3>&#x1f4d1; Table of Contents</h3>
+        <ol>
+            <li><a href="#s1">Why Testing Matters in E-Commerce</a></li>
+            <li><a href="#s2">Unit Testing with JUnit 5</a></li>
+            <li><a href="#s3">Mockito — Mocking Dependencies</a></li>
+            <li><a href="#s4">Testing Service Layer</a></li>
+            <li><a href="#s5">Testing Controller Layer with MockMvc</a></li>
+            <li><a href="#s6">Repository Testing with @DataJpaTest</a></li>
+            <li><a href="#s7">Integration Testing with TestContainers</a></li>
+            <li><a href="#s8">Test Configuration Best Practices</a></li>
+            <li><a href="#s9">Coverage &amp; Reporting</a></li>
+            <li><a href="#s10">Mockito Best Practices &amp; Pitfalls</a></li>
+            <li><a href="#s11">Interview Questions — Beginner Level</a></li>
+            <li><a href="#s12">Interview Questions — Intermediate Level</a></li>
+            <li><a href="#s13">Interview Questions — Advanced Level</a></li>
+            <li><a href="#s14">&#x1f3af; Mini Challenge — PaymentService Test Scenarios</a></li>
+        </ol>
+    </div>
+    <!-- 1. WHY TESTING MATTERS -->
+    <section id="s1">
+        <h2><span class="num">1</span> Why Testing Matters in E-Commerce</h2>
+
+        <p>In an e-commerce system, bugs don't just crash the application — they <strong>cost real money</strong>. A single production bug in the order flow can result in lost revenue, corrupted data, and permanently damaged customer trust.</p>
+
+        <h3>The Cost of Bugs in Production</h3>
+        <table>
+            <thead>
+                <tr><th>Bug Type</th><th>Impact</th><th>Real-World Example</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Order Processing</strong></td><td>Orders not created, duplicate charges, wrong amounts</td><td>Customer charged twice but order never placed — lost sale + refund cost + support cost</td></tr>
+                <tr><td><strong>Inventory</strong></td><td>Overselling, underselling, negative stock</td><td>100 customers buy same item, only 50 in stock — 50 cancellations, angry customers, bad reviews</td></tr>
+                <tr><td><strong>Authentication</strong></td><td>Users cannot login, sessions hijacked</td><td>Flash sale starts, users get 401 errors — $1M revenue lost in 10 minutes</td></tr>
+                <tr><td><strong>Payment</strong></td><td>Money deducted but order not created, double charges</td><td>$500K in incorrect charges — fines, chargebacks, reputation damage</td></tr>
+                <tr><td><strong>Data Corruption</strong></td><td>Inconsistent database state, orphaned records</td><td>Order items without orders, payments without order references</td></tr>
+            </tbody>
+        </table>
+
+        <h3>The Testing Pyramid</h3>
+        <div class="architecture">
+        Testing Pyramid (Bottom to Top):
+
+                &#x29d1;
+               &#x29d2;  &#x29d2;
+              &#x29d2; E2E&#x29d2;              &larr; Few (smoke tests, critical flows)
+             &#x29d2;------&#x29d2;
+            &#x29d2;        &#x29d2;
+           &#x29d2;Integration&#x29d2;          &larr; Some (API + DB combined)
+          &#x29d2;--------------&#x29d2;
+         &#x29d2;                &#x29d2;
+        &#x29d2;   Unit Tests     &#x29d2;     &larr; Many (isolated, fast, reliable)
+       &#x29d2;--------------------&#x29d2;
+
+        - BASE: Unit tests (JUnit + Mockito) — thousands, milliseconds each
+        - MIDDLE: Integration tests (@SpringBootTest + TestContainers) — hundreds, seconds each
+        - TOP: End-to-end tests (Cypress / Selenium / REST Assured) — dozens, minutes each
+        </div>
+
+        <h3>Testing Strategy for Our Project</h3>
+        <table>
+            <thead>
+                <tr><th>Layer</th><th>Test Type</th><th>Framework</th><th>Scope</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Service</td><td>Unit (isolated with mocks)</td><td>JUnit 5 + Mockito</td><td>Business logic, edge cases, exception paths</td></tr>
+                <tr><td>Controller</td><td>Slice (web layer only)</td><td>@WebMvcTest + MockMvc</td><td>HTTP mapping, validation, security, JSON serialization</td></tr>
+                <tr><td>Repository</td><td>Slice (data layer only)</td><td>@DataJpaTest + H2</td><td>Custom queries, derived methods, pagination</td></tr>
+                <tr><td>Integration</td><td>Full context</td><td>@SpringBootTest + TestContainers</td><td>Real DB, full request flow, transaction behavior</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Real Example: What Happens If Order Placement Has a Bug?</h3>
+        <pre>
+Scenario: Bug in inventory deduction logic
+
+Code Bug:
+    int newStock = product.getStock() - quantity;  // No check for negative
+    product.setStock(newStock);
+
+Production Impact:
+    1. User adds 10 iPhones to cart (only 5 in stock)
+    2. Stock becomes 5 - 10 = -5 (negative stock!)
+    3. Next user orders — stock becomes -15
+    4. Inventory is completely corrupted
+    5. Manual fix needed: SQL UPDATE for ALL products
+    6. Business cost: 3 hours downtime x $50K/hour = $150K loss
+
+What a Unit Test Would Have Caught:
+    @Test
+    void placeOrder_shouldThrowException_whenInsufficientStock() {
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        product.setStock(5);
+        assertThrows(BadRequestException.class,
+            () -> orderService.placeOrder(userId, requestWithQuantity10));
+    }
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Interview Tip:</strong> "Testing is not about covering code — it's about protecting revenue, data, and reputation. In e-commerce, an untested order flow is a ticking time bomb."
+        </div>
+    </section>
+
+    <!-- 2. UNIT TESTING WITH JUNIT 5 -->
+    <section id="s2">
+        <h2><span class="num">2</span> Unit Testing with JUnit 5</h2>
+
+        <p><strong>JUnit 5</strong> is the standard testing framework for Java applications. It is composed of three sub-projects:</p>
+
+        <h3>JUnit 5 Architecture</h3>
+        <table>
+            <thead>
+                <tr><th>Component</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>JUnit Platform</strong></td><td>The foundation — launches test frameworks on the JVM. Integrates with Maven Surefire, Gradle, IDEs, and CI tools.</td></tr>
+                <tr><td><strong>JUnit Jupiter</strong></td><td>The new programming model — contains all annotations (@Test, @BeforeEach, @Nested) and the assertion/assumption APIs.</td></tr>
+                <tr><td><strong>JUnit Vintage</strong></td><td>Backward compatibility layer — allows running JUnit 4 tests on the JUnit 5 platform.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Key Annotations</h3>
+        <table>
+            <thead>
+                <tr><th>Annotation</th><th>Purpose</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>@Test</code></td><td>Marks a method as a test case</td><td><code>@Test void shouldReturnProduct() { ... }</code></td></tr>
+                <tr><td><code>@BeforeEach</code></td><td>Runs before each test method — used for setup</td><td><code>@BeforeEach void setUp() { mockProduct = new Product(); }</code></td></tr>
+                <tr><td><code>@AfterEach</code></td><td>Runs after each test method — used for cleanup</td><td><code>@AfterEach void tearDown() { productRepo.deleteAll(); }</code></td></tr>
+                <tr><td><code>@BeforeAll</code></td><td>Runs once before all tests — must be static</td><td><code>@BeforeAll static void init() { ... }</code></td></tr>
+                <tr><td><code>@AfterAll</code></td><td>Runs once after all tests — must be static</td><td><code>@AfterAll static void cleanup() { ... }</code></td></tr>
+                <tr><td><code>@DisplayName</code></td><td>Custom name for the test (shown in reports)</td><td><code>@DisplayName("Should throw exception when stock insufficient")</code></td></tr>
+                <tr><td><code>@Nested</code></td><td>Groups related tests together logically</td><td><code>@Nested class PlaceOrderTests { ... }</code></td></tr>
+                <tr><td><code>@Disabled</code></td><td>Temporarily skip a test</td><td><code>@Disabled("Until we fix the bug")</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Assertions API</h3>
+        <p>JUnit 5 provides a rich set of assertion methods in <code>org.junit.jupiter.api.Assertions</code>:</p>
+        <pre>
+import static org.junit.jupiter.api.Assertions.*;
+
+// Basic assertions
+assertEquals(5, product.getStock(), "Stock should be 5");
+assertNotEquals(0, product.getPrice());
+assertTrue(product.isActive());
+assertFalse(product.isDeleted());
+assertNull(optionalResult.orElse(null));
+assertNotNull(savedProduct.getId());
+
+// Exception testing
+assertThrows(ResourceNotFoundException.class,
+    () -> productService.getProduct(999L));
+assertThrows(BadRequestException.class,
+    () -> cartService.addItem(userId, null, 1),
+    "Adding null product should throw");
+
+// Grouped assertions — ALL assertions run, even if some fail
+assertAll("product properties",
+    () -> assertEquals("iPhone 15", product.getName()),
+    () -> assertNotNull(product.getCategory()),
+    () -> assertTrue(product.getPrice().compareTo(BigDecimal.ZERO) > 0)
+);
+
+// Timeouts
+assertTimeout(Duration.ofMillis(100),
+    () -> productService.searchProducts("phone", PageRequest.of(0, 10)));
+        </pre>
+
+        <h3>Parameterized Tests</h3>
+        <p>Run the same test logic with multiple input values:</p>
+        <pre>
+@ParameterizedTest
+@ValueSource(strings = { "", "   ", "\t", "\n" })
+@DisplayName("Should reject blank search queries")
+void search_withBlankQuery_shouldReturnBadRequest(String blankQuery) {
+    assertThrows(BadRequestException.class,
+        () -> productService.search(blankQuery, PageRequest.of(0, 10)));
+}
+
+@ParameterizedTest
+@CsvSource({
+    "5, 3, 2",
+    "10, 10, 0",
+    "1, 1, 0",
+    "100, 50, 50"
+})
+@DisplayName("Should correctly calculate remaining stock after deduction")
+void deductStock_shouldCalculateCorrectly(int initialStock, int quantity, int expectedRemaining) {
+    product.setStock(initialStock);
+    assertEquals(expectedRemaining, product.getStock());
+}
+
+@ParameterizedTest
+@MethodSource("invalidOrderQuantities")
+@DisplayName("Should reject invalid order quantities")
+void placeOrder_withInvalidQuantity_shouldThrow(int quantity) {
+    assertThrows(BadRequestException.class,
+        () -> orderService.placeOrder(userId, productId, quantity));
+}
+
+static Stream&lt;Arguments&gt; invalidOrderQuantities() {
+    return Stream.of(
+        Arguments.of(0),
+        Arguments.of(-1),
+        Arguments.of(-100),
+        Arguments.of(1001)
+    );
+}
+        </pre>
+
+        <h3>Test Lifecycle and Order</h3>
+        <p>Tests should be <strong>independent</strong> — never rely on execution order. However, JUnit 5 provides <code>@TestMethodOrder</code> for ordered execution when absolutely needed:</p>
+        <pre>
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class OrderedProductServiceTest {
+
+    private static Product savedProduct;
+
+    @Test
+    @Order(1)
+    void createProduct_shouldSucceed() {
+        savedProduct = productService.createProduct(request);
+        assertNotNull(savedProduct.getId());
+    }
+
+    @Test
+    @Order(2)
+    void getProduct_shouldReturnCreatedProduct() {
+        Product found = productService.getProduct(savedProduct.getId());
+        assertEquals(savedProduct.getId(), found.getId());
+    }
+}
+        </pre>
+        <div class="highlight">
+            <strong>&#x26a0;&#xfe0f; Caution:</strong> Ordered tests are a code smell. Tests should be independent. Use ordered tests only for integration scenarios where order is meaningful.
+        </div>
+    </section>
+    <!-- 3. MOCKITO — MOCKING DEPENDENCIES -->
+    <section id="s3">
+        <h2><span class="num">3</span> Mockito — Mocking Dependencies</h2>
+
+        <h3>Why Mock?</h3>
+        <ul>
+            <li><strong>Isolate the unit under test</strong> — test only the service logic, not the repository, not the database</li>
+            <li><strong>Control behavior</strong> — simulate success, failure, timeout, and edge cases that are hard to reproduce with real dependencies</li>
+            <li><strong>Verify interactions</strong> — confirm that the service called the right methods with the right arguments</li>
+            <li><strong>Speed</strong> — unit tests with mocks run in milliseconds, not seconds</li>
+        </ul>
+
+        <h3>Core Annotations</h3>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class ProductServiceTest {
+
+    @Mock
+    private ProductRepository productRepository;
+
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    @InjectMocks
+    private ProductService productService;
+
+    @Test
+    void getProductById_shouldReturnProduct() {
+        Product mockProduct = new Product();
+        mockProduct.setId(1L);
+        mockProduct.setName("iPhone 15");
+        when(productRepository.findById(1L)).thenReturn(Optional.of(mockProduct));
+
+        Product result = productService.getProduct(1L);
+
+        assertEquals("iPhone 15", result.getName());
+        verify(productRepository).findById(1L);
+    }
+}
+        </pre>
+
+        <h3>when().thenReturn() vs doThrow().when()</h3>
+        <table>
+            <thead>
+                <tr><th>Pattern</th><th>When to Use</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>when(x).thenReturn(y)</code></td><td>Mock returns a value — standard case</td><td><code>when(repo.findById(1L)).thenReturn(Optional.of(product))</code></td></tr>
+                <tr><td><code>when(x).thenThrow(y)</code></td><td>Mock throws exception on method call</td><td><code>when(repo.save(any())).thenThrow(DataIntegrityViolationException.class)</code></td></tr>
+                <tr><td><code>when(x).thenAnswer(y)</code></td><td>Dynamic response based on arguments</td><td><code>when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0))</code></td></tr>
+                <tr><td><code>doThrow(y).when(x).method()</code></td><td>Mock void method to throw exception</td><td><code>doThrow(new RuntimeException()).when(repo).delete(any())</code></td></tr>
+                <tr><td><code>doNothing().when(x).method()</code></td><td>Explicitly do nothing for void method</td><td><code>doNothing().when(emailService).sendEmail(any())</code></td></tr>
+                <tr><td><code>doReturn(x).when(y).method()</code></td><td>Alternative to when().thenReturn() (avoids side effects)</td><td><code>doReturn(product).when(repo).save(any())</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>ArgumentMatchers</h3>
+        <pre>
+import static org.mockito.ArgumentMatchers.*;
+
+// Match any value
+when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+when(productRepository.save(any(Product.class))).thenReturn(product);
+
+// Match specific values
+when(productRepository.findById(eq(1L))).thenReturn(Optional.of(product));
+when(categoryRepository.findByName(eq("Electronics"))).thenReturn(Optional.of(category));
+
+// Complex matchers
+when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
+    .thenReturn(new PageImpl<>(List.of(product)));
+
+// String matchers
+when(userRepository.findByEmail(contains("@gmail.com"))).thenReturn(Optional.of(user));
+when(userRepository.findByEmail(startsWith("admin"))).thenReturn(Optional.of(admin));
+        </pre>
+
+        <h3>verify() — Verifying Interactions</h3>
+        <pre>
+// Verify method was called exactly once (default)
+verify(productRepository).findById(1L);
+
+// Verify number of invocations
+verify(productRepository, times(1)).findById(1L);
+verify(productRepository, never()).delete(any());
+verify(productRepository, atLeast(1)).findAll(any(Pageable.class));
+verify(productRepository, atMost(3)).save(any(Product.class));
+
+// Verify with timeout (useful for async)
+verify(emailService, timeout(1000)).sendOrderConfirmation(any());
+
+// Verify no other interactions happened
+verifyNoMoreInteractions(productRepository);
+
+// Verify order of interactions
+InOrder inOrder = inOrder(productRepository, categoryRepository);
+inOrder.verify(productRepository).findById(1L);
+inOrder.verify(categoryRepository).findByName("Electronics");
+        </pre>
+
+        <h3>@Spy — Partial Mocking</h3>
+        <p>A <strong>spy</strong> wraps a real object. By default, it calls real methods, but you can stub specific methods:</p>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class PaymentServiceTest {
+
+    @Spy
+    @InjectMocks
+    private PaymentService paymentService;
+
+    @Mock
+    private RazorpayClient razorpayClient;
+
+    @Test
+    void createOrder_shouldCallRazorpayAndReturnOrder() {
+        doReturn(razorpayOrderResponse)
+            .when(paymentService)
+            .callRazorpayApi(anyString(), anyLong());
+
+        OrderResponse response = paymentService.createOrder(1L, 50000L);
+
+        assertNotNull(response);
+        verify(paymentService).callRazorpayApi(anyString(), anyLong());
+    }
+}
+        </pre>
+
+        <h3>BDDMockito — Given/WillReturn Pattern</h3>
+        <p>BDD (Behavior-Driven Development) style uses <code>given()</code> instead of <code>when()</code> for more readable tests:</p>
+        <pre>
+import static org.mockito.BDDMockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ProductServiceBDDTest {
+
+    @Mock private ProductRepository productRepository;
+    @InjectMocks private ProductService productService;
+
+    @Test
+    void getProductByName_shouldReturnProduct() {
+        // Given
+        Product product = new Product("MacBook Pro");
+        given(productRepository.findByName("MacBook Pro"))
+            .willReturn(Optional.of(product));
+
+        // When
+        Product found = productService.findByName("MacBook Pro");
+
+        // Then
+        assertThat(found.getName()).isEqualTo("MacBook Pro");
+        then(productRepository).should().findByName("MacBook Pro");
+    }
+
+    @Test
+    void getProductByName_shouldThrowWhenNotFound() {
+        given(productRepository.findByName("NonExistent"))
+            .willReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> productService.findByName("NonExistent"));
+        then(productRepository).should().findByName("NonExistent");
+    }
+}
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Interview Tip:</strong> "when().thenReturn() is the standard Mockito pattern. BDDMockito.given().willReturn() is preferred for BDD-style tests. Both achieve the same result — choose based on team convention."
+        </div>
+    </section>
+    <!-- 4. TESTING SERVICE LAYER -->
+    <section id="s4">
+        <h2><span class="num">4</span> Testing Service Layer</h2>
+
+        <p>The service layer contains <strong>all business logic</strong>. Testing it thoroughly is the highest priority because bugs here directly affect revenue and data.</p>
+
+        <h3>Key Principles</h3>
+        <ul>
+            <li><strong>Isolate from infrastructure</strong> — mock all repositories, external clients (Razorpay), and dependent services (EmailService)</li>
+            <li><strong>Test every code path</strong> — happy path, validation errors, insufficient stock, not found, unauthorized, duplicate data</li>
+            <li><strong>Test transaction behavior</strong> — if a service is @Transactional, ensure rollback happens on failure</li>
+        </ul>
+
+        <h3>ProductServiceTest — CRUD, Search, Pagination</h3>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class ProductServiceTest {
+
+    @Mock private ProductRepository productRepository;
+    @Mock private CategoryRepository categoryRepository;
+    @InjectMocks private ProductService productService;
+
+    private Product product;
+    private Category category;
+    private ProductRequest productRequest;
+
+    @BeforeEach
+    void setUp() {
+        category = new Category();
+        category.setId(1L);
+        category.setName("Electronics");
+
+        product = new Product();
+        product.setId(1L);
+        product.setName("iPhone 15");
+        product.setPrice(new BigDecimal("99999.00"));
+        product.setStock(50);
+        product.setCategory(category);
+        product.setActive(true);
+
+        productRequest = new ProductRequest();
+        productRequest.setName("iPhone 15");
+        productRequest.setPrice(new BigDecimal("99999.00"));
+        productRequest.setStock(50);
+        productRequest.setCategoryId(1L);
+    }
+
+    @Nested
+    @DisplayName("Create Product")
+    class CreateProductTests {
+
+        @Test
+        @DisplayName("Should create product when valid request")
+        void createProduct_shouldSucceed() {
+            given(categoryRepository.findById(1L)).willReturn(Optional.of(category));
+            given(productRepository.save(any(Product.class))).willReturn(product);
+
+            ProductResponse response = productService.createProduct(productRequest);
+
+            assertThat(response.getName()).isEqualTo("iPhone 15");
+            then(productRepository).should().save(any(Product.class));
+        }
+
+        @Test
+        @DisplayName("Should throw when category not found")
+        void createProduct_shouldThrow_whenCategoryNotFound() {
+            given(categoryRepository.findById(99L)).willReturn(Optional.empty());
+            productRequest.setCategoryId(99L);
+
+            assertThrows(ResourceNotFoundException.class,
+                () -> productService.createProduct(productRequest));
+            then(productRepository).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw when name is duplicate")
+        void createProduct_shouldThrow_whenDuplicateName() {
+            given(categoryRepository.findById(1L)).willReturn(Optional.of(category));
+            given(productRepository.existsByName("iPhone 15")).willReturn(true);
+
+            assertThrows(BadRequestException.class,
+                () -> productService.createProduct(productRequest));
+            then(productRepository).should(never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Get Product")
+    class GetProductTests {
+
+        @Test
+        @DisplayName("Should return product when found")
+        void getProduct_shouldSucceed() {
+            given(productRepository.findById(1L)).willReturn(Optional.of(product));
+
+            ProductResponse response = productService.getProduct(1L);
+
+            assertThat(response.getId()).isEqualTo(1L);
+            assertThat(response.getName()).isEqualTo("iPhone 15");
+        }
+
+        @Test
+        @DisplayName("Should throw when product not found")
+        void getProduct_shouldThrow_whenNotFound() {
+            given(productRepository.findById(999L)).willReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class,
+                () -> productService.getProduct(999L));
+        }
+    }
+
+    @Nested
+    @DisplayName("Search Products")
+    class SearchProductsTests {
+
+        @Test
+        @DisplayName("Should return paginated search results")
+        void search_shouldReturnPagedResults() {
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+            Page&lt;Product&gt; productPage = new PageImpl&lt;&gt;(List.of(product));
+
+            given(productRepository.findByNameContainingIgnoreCase("iPhone", pageable))
+                .willReturn(productPage);
+
+            Page&lt;ProductResponse&gt; result = productService.searchProducts("iPhone", pageable);
+
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).getName()).contains("iPhone");
+        }
+
+        @Test
+        @DisplayName("Should return empty page when no results")
+        void search_shouldReturnEmpty_whenNoResults() {
+            Pageable pageable = PageRequest.of(0, 10);
+            given(productRepository.findByNameContainingIgnoreCase("xyz", pageable))
+                .willReturn(Page.empty());
+
+            Page&lt;ProductResponse&gt; result = productService.searchProducts("xyz", pageable);
+
+            assertThat(result.isEmpty()).isTrue();
+        }
+    }
+}
+        </pre>
+
+        <h3>CartServiceTest — Add, Update, Remove, Validate</h3>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class CartServiceTest {
+
+    @Mock private CartRepository cartRepository;
+    @Mock private CartItemRepository cartItemRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private UserRepository userRepository;
+    @InjectMocks private CartService cartService;
+
+    private User user;
+    private Product product;
+    private Cart cart;
+    private CartItem cartItem;
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setId(1L);
+
+        product = new Product();
+        product.setId(1L);
+        product.setName("iPhone 15");
+        product.setPrice(new BigDecimal("99999.00"));
+        product.setStock(10);
+        product.setActive(true);
+
+        cart = new Cart();
+        cart.setId(1L);
+        cart.setUser(user);
+
+        cartItem = new CartItem();
+        cartItem.setId(1L);
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(2);
+        cartItem.setUnitPrice(product.getPrice());
+    }
+
+    @Test
+    @DisplayName("Add item to cart — new item")
+    void addItem_shouldCreateNewCartItem() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(productRepository.findById(1L)).willReturn(Optional.of(product));
+        given(cartRepository.findByUserId(1L)).willReturn(Optional.of(cart));
+        given(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+            .willReturn(Optional.empty());
+        given(cartItemRepository.save(any(CartItem.class))).willReturn(cartItem);
+
+        CartResponse response = cartService.addItem(1L, 1L, 2);
+
+        assertNotNull(response);
+        then(cartItemRepository).should().save(any(CartItem.class));
+    }
+
+    @Test
+    @DisplayName("Add item to cart — existing item, update quantity")
+    void addItem_shouldUpdateQuantity_whenItemExists() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(productRepository.findById(1L)).willReturn(Optional.of(product));
+        given(cartRepository.findByUserId(1L)).willReturn(Optional.of(cart));
+        given(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+            .willReturn(Optional.of(cartItem));
+
+        CartResponse response = cartService.addItem(1L, 1L, 3);
+
+        then(cartItemRepository).should().save(any(CartItem.class));
+        assertThat(cartItem.getQuantity()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("Add item to cart — insufficient stock")
+    void addItem_shouldThrow_whenInsufficientStock() {
+        product.setStock(1);
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(productRepository.findById(1L)).willReturn(Optional.of(product));
+        given(cartRepository.findByUserId(1L)).willReturn(Optional.of(cart));
+
+        assertThrows(BadRequestException.class,
+            () -> cartService.addItem(1L, 1L, 5));
+    }
+
+    @Test
+    @DisplayName("Update cart item quantity")
+    void updateQuantity_shouldUpdateSuccessfully() {
+        given(cartItemRepository.findById(1L)).willReturn(Optional.of(cartItem));
+        given(cartItemRepository.save(any(CartItem.class))).willReturn(cartItem);
+
+        CartResponse response = cartService.updateQuantity(1L, 1L, 5);
+
+        assertThat(cartItem.getQuantity()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("Remove cart item")
+    void removeItem_shouldRemoveSuccessfully() {
+        given(cartItemRepository.findById(1L)).willReturn(Optional.of(cartItem));
+
+        cartService.removeItem(1L, 1L);
+
+        then(cartItemRepository).should().delete(cartItem);
+    }
+
+    @Test
+    @DisplayName("Remove cart item — throws when item not in user's cart")
+    void removeItem_shouldThrow_whenItemNotOwnedByUser() {
+        Cart otherCart = new Cart();
+        otherCart.setId(99L);
+        cartItem.setCart(otherCart);
+
+        given(cartItemRepository.findById(1L)).willReturn(Optional.of(cartItem));
+
+        assertThrows(UnauthorizedException.class,
+            () -> cartService.removeItem(1L, 1L));
+    }
+}
+        </pre>
+
+        <h3>OrderServiceTest — Place Order, Cancel, Stock Validation</h3>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock private OrderRepository orderRepository;
+    @Mock private CartRepository cartRepository;
+    @Mock private CartItemRepository cartItemRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private PaymentService paymentService;
+    @Mock private EmailService emailService;
+    @InjectMocks private OrderService orderService;
+
+    private User user;
+    private Product product;
+    private Cart cart;
+    private CartItem cartItem;
+    private Order order;
+
+    @BeforeEach
+    void setUp() {
+        user = new User(); user.setId(1L);
+        product = new Product(); product.setId(1L);
+        product.setName("iPhone 15");
+        product.setPrice(new BigDecimal("99999.00"));
+        product.setStock(10);
+
+        cart = new Cart(); cart.setId(1L); cart.setUser(user);
+        cartItem = new CartItem(); cartItem.setId(1L);
+        cartItem.setCart(cart); cartItem.setProduct(product);
+        cartItem.setQuantity(2); cartItem.setUnitPrice(product.getPrice());
+
+        order = new Order(); order.setId(1L);
+        order.setUser(user); order.setStatus(OrderStatus.PENDING);
+        order.setTotalAmount(new BigDecimal("199998.00"));
+    }
+
+    @Test
+    @DisplayName("Place order should succeed with valid cart")
+    void placeOrder_shouldSucceed() {
+        OrderRequest request = new OrderRequest();
+        request.setShippingAddress("123 Main St");
+
+        given(cartRepository.findByUserIdWithItems(1L)).willReturn(Optional.of(cart));
+        given(orderRepository.save(any(Order.class))).willReturn(order);
+        given(paymentService.createRazorpayOrder(anyLong(), anyString()))
+            .willReturn(new PaymentResponse("rzp_order_123"));
+
+        OrderResponse response = orderService.placeOrder(1L, request);
+
+        assertThat(response.getStatus()).isEqualTo(OrderStatus.PENDING);
+        then(orderRepository).should().save(any(Order.class));
+        then(paymentService).should().createRazorpayOrder(anyLong(), anyString());
+        then(emailService).should().sendOrderConfirmation(any());
+    }
+
+    @Test
+    @DisplayName("Place order should throw when cart is empty")
+    void placeOrder_shouldThrow_whenCartEmpty() {
+        cart.setCartItems(Collections.emptyList());
+        given(cartRepository.findByUserIdWithItems(1L)).willReturn(Optional.of(cart));
+
+        assertThrows(BadRequestException.class,
+            () -> orderService.placeOrder(1L, new OrderRequest()));
+    }
+
+    @Test
+    @DisplayName("Place order should throw when stock insufficient")
+    void placeOrder_shouldThrow_whenInsufficientStock() {
+        product.setStock(1);
+        given(cartRepository.findByUserIdWithItems(1L)).willReturn(Optional.of(cart));
+
+        assertThrows(BadRequestException.class,
+            () -> orderService.placeOrder(1L, new OrderRequest()));
+    }
+
+    @Test
+    @DisplayName("Cancel order should succeed when order is pending")
+    void cancelOrder_shouldSucceed() {
+        order.setStatus(OrderStatus.PENDING);
+        given(orderRepository.findById(1L)).willReturn(Optional.of(order));
+
+        orderService.cancelOrder(1L, 1L);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        then(orderRepository).should().save(order);
+    }
+
+    @Test
+    @DisplayName("Cancel order should throw when already shipped")
+    void cancelOrder_shouldThrow_whenAlreadyShipped() {
+        order.setStatus(OrderStatus.SHIPPED);
+        given(orderRepository.findById(1L)).willReturn(Optional.of(order));
+
+        assertThrows(BadRequestException.class,
+            () -> orderService.cancelOrder(1L, 1L));
+    }
+
+    @Test
+    @DisplayName("Cancel order should throw when user is not owner")
+    void cancelOrder_shouldThrow_whenNotOwner() {
+        User otherUser = new User(); otherUser.setId(99L);
+        order.setUser(otherUser);
+        given(orderRepository.findById(1L)).willReturn(Optional.of(order));
+
+        assertThrows(UnauthorizedException.class,
+            () -> orderService.cancelOrder(1L, 1L));
+    }
+}
+        </pre>
+
+        <h3>AuthServiceTest — Register, Login, Duplicate Email</h3>
+        <pre>
+@ExtendWith(MockitoExtension.class)
+class AuthServiceTest {
+
+    @Mock private UserRepository userRepository;
+    @Mock private PasswordEncoder passwordEncoder;
+    @Mock private JwtTokenProvider jwtTokenProvider;
+    @Mock private RefreshTokenRepository refreshTokenRepository;
+    @InjectMocks private AuthService authService;
+
+    private RegisterRequest registerRequest;
+    private LoginRequest loginRequest;
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        registerRequest = new RegisterRequest();
+        registerRequest.setName("John Doe");
+        registerRequest.setEmail("john@example.com");
+        registerRequest.setPassword("Password@123");
+        registerRequest.setRole(Role.CUSTOMER);
+
+        loginRequest = new LoginRequest();
+        loginRequest.setEmail("john@example.com");
+        loginRequest.setPassword("Password@123");
+
+        user = new User();
+        user.setId(1L); user.setName("John Doe");
+        user.setEmail("john@example.com");
+        user.setPassword("encoded_password");
+        user.setRole(Role.CUSTOMER);
+    }
+
+    @Test
+    @DisplayName("Register should succeed with valid data")
+    void register_shouldSucceed() {
+        given(userRepository.existsByEmail("john@example.com")).willReturn(false);
+        given(passwordEncoder.encode("Password@123")).willReturn("encoded_password");
+        given(userRepository.save(any(User.class))).willReturn(user);
+        given(jwtTokenProvider.generateAccessToken(any(User.class)))
+            .willReturn("access_token");
+        given(jwtTokenProvider.generateRefreshToken(any(User.class)))
+            .willReturn("refresh_token");
+
+        AuthResponse response = authService.register(registerRequest);
+
+        assertThat(response.getAccessToken()).isEqualTo("access_token");
+        assertThat(response.getEmail()).isEqualTo("john@example.com");
+        then(userRepository).should().save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Register should throw when email already exists")
+    void register_shouldThrow_whenDuplicateEmail() {
+        given(userRepository.existsByEmail("john@example.com")).willReturn(true);
+
+        assertThrows(BadRequestException.class,
+            () -> authService.register(registerRequest));
+        then(userRepository).should(never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Login should succeed with valid credentials")
+    void login_shouldSucceed() {
+        given(userRepository.findByEmail("john@example.com"))
+            .willReturn(Optional.of(user));
+        given(passwordEncoder.matches("Password@123", "encoded_password"))
+            .willReturn(true);
+        given(jwtTokenProvider.generateAccessToken(user)).willReturn("access_token");
+        given(jwtTokenProvider.generateRefreshToken(user)).willReturn("refresh_token");
+
+        AuthResponse response = authService.login(loginRequest);
+
+        assertThat(response.getAccessToken()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Login should throw when email not found")
+    void login_shouldThrow_whenEmailNotFound() {
+        given(userRepository.findByEmail("john@example.com"))
+            .willReturn(Optional.empty());
+
+        assertThrows(BadRequestException.class,
+            () -> authService.login(loginRequest));
+    }
+
+    @Test
+    @DisplayName("Login should throw when password is wrong")
+    void login_shouldThrow_whenWrongPassword() {
+        given(userRepository.findByEmail("john@example.com"))
+            .willReturn(Optional.of(user));
+        given(passwordEncoder.matches("Password@123", "encoded_password"))
+            .willReturn(false);
+
+        assertThrows(BadRequestException.class,
+            () -> authService.login(loginRequest));
+    }
+}
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f511; Key Takeaway:</strong> Service layer tests should cover EVERY branch — success, not found, bad request, unauthorized, and data integrity violations. Each method in the service should have at least one happy-path test and one exception test.
+        </div>
+    </section>
+    <!-- 5. TESTING CONTROLLER LAYER WITH MOCKMVC -->
+    <section id="s5">
+        <h2><span class="num">5</span> Testing Controller Layer with MockMvc</h2>
+
+        <p><strong>@WebMvcTest</strong> loads only the web layer — controllers, filters, interceptors, and converters. It does NOT load services, repositories, or the full application context. This makes controller tests fast and focused.</p>
+
+        <h3>Core Concepts</h3>
+        <ul>
+            <li><code>@WebMvcTest(ProductController.class)</code> — loads only ProductController and web-related beans</li>
+            <li><code>@MockBean</code> — creates a mock of the service and injects it into the controller</li>
+            <li><code>MockMvc</code> — the main entry point for performing HTTP requests and asserting responses</li>
+            <li><code>jsonPath</code> — parses and asserts JSON response body</li>
+        </ul>
+
+        <h3>AuthControllerTest — Register, Login, Bad Requests</h3>
+        <pre>
+@WebMvcTest(AuthController.class)
+class AuthControllerTest {
+
+    @Autowired private MockMvc mockMvc;
+    @MockBean private AuthService authService;
+
+    @Test
+    @DisplayName("POST /api/auth/register — should return 201")
+    void register_shouldReturn201() throws Exception {
+        RegisterRequest request = new RegisterRequest("John", "john@test.com",
+            "Password@123", Role.CUSTOMER);
+        AuthResponse response = new AuthResponse("access", "refresh", 1L,
+            "john@test.com", "John", "CUSTOMER");
+
+        given(authService.register(any(RegisterRequest.class))).willReturn(response);
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.email").value("john@test.com"))
+            .andExpect(jsonPath("$.accessToken").value("access"));
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/register — should return 400 for invalid email")
+    void register_shouldReturn400_whenInvalidEmail() throws Exception {
+        RegisterRequest request = new RegisterRequest("John", "invalid-email",
+            "Password@123", Role.CUSTOMER);
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/login — should return 200")
+    void login_shouldReturn200() throws Exception {
+        LoginRequest request = new LoginRequest("john@test.com", "Password@123");
+        AuthResponse response = new AuthResponse("access", "refresh", 1L,
+            "john@test.com", "John", "CUSTOMER");
+
+        given(authService.login(any(LoginRequest.class))).willReturn(response);
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/login — should return 400 for invalid credentials")
+    void login_shouldReturn400_whenInvalidCredentials() throws Exception {
+        LoginRequest request = new LoginRequest("wrong@email.com", "wrongpass");
+
+        given(authService.login(any(LoginRequest.class)))
+            .willThrow(new BadRequestException("Invalid credentials"));
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Invalid credentials"));
+    }
+
+    private static String asJsonString(Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+        </pre>
+
+        <h3>ProductControllerTest — CRUD, Pagination, Security</h3>
+        <pre>
+@WebMvcTest(ProductController.class)
+class ProductControllerTest {
+
+    @Autowired private MockMvc mockMvc;
+    @MockBean private ProductService productService;
+    @Autowired private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("GET /api/products — should return paginated products")
+    @WithMockUser(roles = "CUSTOMER")
+    void getProducts_shouldReturnPagedResults() throws Exception {
+        ProductResponse product = new ProductResponse(1L, "iPhone 15",
+            new BigDecimal("99999.00"), 50, "Electronics", true);
+        Page&lt;ProductResponse&gt; page = new PageImpl&lt;&gt;(List.of(product));
+
+        given(productService.getAllProducts(any(Pageable.class))).willReturn(page);
+
+        mockMvc.perform(get("/api/products")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "name,asc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.content[0].name").value("iPhone 15"))
+            .andExpect(jsonPath("$.totalElements").isNumber());
+    }
+
+    @Test
+    @DisplayName("GET /api/products/{id} — should return product")
+    @WithMockUser(roles = "CUSTOMER")
+    void getProductById_shouldReturnProduct() throws Exception {
+        ProductResponse product = new ProductResponse(1L, "iPhone 15",
+            new BigDecimal("99999.00"), 50, "Electronics", true);
+
+        given(productService.getProduct(1L)).willReturn(product);
+
+        mockMvc.perform(get("/api/products/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1L))
+            .andExpect(jsonPath("$.name").value("iPhone 15"));
+    }
+
+    @Test
+    @DisplayName("GET /api/products/{id} — should return 404")
+    @WithMockUser(roles = "CUSTOMER")
+    void getProductById_shouldReturn404() throws Exception {
+        given(productService.getProduct(999L))
+            .willThrow(new ResourceNotFoundException("Product not found with id: 999"));
+
+        mockMvc.perform(get("/api/products/999"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Product not found with id: 999"));
+    }
+
+    @Test
+    @DisplayName("POST /api/products — should return 201 for admin")
+    @WithMockUser(roles = "ADMIN")
+    void createProduct_shouldReturn201() throws Exception {
+        ProductRequest request = new ProductRequest("iPhone 15",
+            new BigDecimal("99999.00"), 50, 1L);
+        ProductResponse response = new ProductResponse(1L, "iPhone 15",
+            new BigDecimal("99999.00"), 50, "Electronics", true);
+
+        given(productService.createProduct(any(ProductRequest.class))).willReturn(response);
+
+        mockMvc.perform(post("/api/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("iPhone 15"));
+    }
+
+    @Test
+    @DisplayName("POST /api/products — should return 403 for customer")
+    @WithMockUser(roles = "CUSTOMER")
+    void createProduct_shouldReturn403_forCustomer() throws Exception {
+        ProductRequest request = new ProductRequest("iPhone 15",
+            new BigDecimal("99999.00"), 50, 1L);
+
+        mockMvc.perform(post("/api/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/products — should return 401 when unauthenticated")
+    @WithAnonymousUser
+    void createProduct_shouldReturn401_whenUnauthenticated() throws Exception {
+        ProductRequest request = new ProductRequest("iPhone 15",
+            new BigDecimal("99999.00"), 50, 1L);
+
+        mockMvc.perform(post("/api/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("PUT /api/products/{id} — should return 200 for admin")
+    @WithMockUser(roles = "ADMIN")
+    void updateProduct_shouldReturn200() throws Exception {
+        ProductRequest request = new ProductRequest("iPhone 15 Pro",
+            new BigDecimal("129999.00"), 30, 1L);
+        ProductResponse response = new ProductResponse(1L, "iPhone 15 Pro",
+            new BigDecimal("129999.00"), 30, "Electronics", true);
+
+        given(productService.updateProduct(eq(1L), any(ProductRequest.class)))
+            .willReturn(response);
+
+        mockMvc.perform(put("/api/products/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("iPhone 15 Pro"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/products/{id} — should return 204 for admin")
+    @WithMockUser(roles = "ADMIN")
+    void deleteProduct_shouldReturn204() throws Exception {
+        doNothing().when(productService).deleteProduct(1L);
+
+        mockMvc.perform(delete("/api/products/1"))
+            .andExpect(status().isNoContent());
+    }
+}
+        </pre>
+
+        <h3>CartControllerTest — Add, Update, Remove, Get</h3>
+        <pre>
+@WebMvcTest(CartController.class)
+class CartControllerTest {
+
+    @Autowired private MockMvc mockMvc;
+    @MockBean private CartService cartService;
+    @Autowired private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("GET /api/cart — should return cart for authenticated user")
+    @WithMockUser(username = "1", roles = "CUSTOMER")
+    void getCart_shouldReturnCart() throws Exception {
+        CartResponse response = new CartResponse(1L, List.of(), new BigDecimal("0"));
+
+        given(cartService.getCart(1L)).willReturn(response);
+
+        mockMvc.perform(get("/api/cart"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1L));
+    }
+
+    @Test
+    @DisplayName("POST /api/cart/items — should add item")
+    @WithMockUser(username = "1", roles = "CUSTOMER")
+    void addItem_shouldReturn200() throws Exception {
+        AddCartItemRequest request = new AddCartItemRequest(1L, 2);
+        CartResponse response = new CartResponse(1L, List.of(), new BigDecimal("199998.00"));
+
+        given(cartService.addItem(anyLong(), anyLong(), anyInt())).willReturn(response);
+
+        mockMvc.perform(post("/api/cart/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalAmount").value("199998.00"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/cart/items/{itemId} — should update quantity")
+    @WithMockUser(username = "1", roles = "CUSTOMER")
+    void updateQuantity_shouldReturn200() throws Exception {
+        UpdateCartRequest request = new UpdateCartRequest(5);
+        CartResponse response = new CartResponse(1L, List.of(), new BigDecimal("499995.00"));
+
+        given(cartService.updateQuantity(anyLong(), anyLong(), anyInt()))
+            .willReturn(response);
+
+        mockMvc.perform(put("/api/cart/items/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalAmount").value("499995.00"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/cart/items/{itemId} — should remove item")
+    @WithMockUser(username = "1", roles = "CUSTOMER")
+    void removeItem_shouldReturn200() throws Exception {
+        CartResponse response = new CartResponse(1L, List.of(), new BigDecimal("0"));
+
+        given(cartService.removeItem(anyLong(), anyLong())).willReturn(response);
+
+        mockMvc.perform(delete("/api/cart/items/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalAmount").value("0"));
+    }
+
+    @Test
+    @DisplayName("POST /api/cart/items — should return 400 for invalid quantity")
+    @WithMockUser(username = "1", roles = "CUSTOMER")
+    void addItem_shouldReturn400_whenInvalidQuantity() throws Exception {
+        AddCartItemRequest request = new AddCartItemRequest(1L, 0);
+
+        mockMvc.perform(post("/api/cart/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/cart/items — should return 401 when unauthenticated")
+    @WithAnonymousUser
+    void addItem_shouldReturn401_whenUnauthenticated() throws Exception {
+        AddCartItemRequest request = new AddCartItemRequest(1L, 2);
+
+        mockMvc.perform(post("/api/cart/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized());
+    }
+}
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Interview Tip:</strong> "Use @WebMvcTest for controller tests — it's fast (loads only web layer) and focused (tests only HTTP concerns: status codes, JSON structure, validation, security). Mock all service dependencies with @MockBean."
+        </div>
+    </section>
+    <!-- 6. REPOSITORY TESTING WITH @DataJpaTest -->
+    <section id="s6">
+        <h2><span class="num">6</span> Repository Testing with @DataJpaTest</h2>
+
+        <p><strong>@DataJpaTest</strong> loads only the JPA layer — entities, repositories, and data source. It uses an <strong>embedded H2 in-memory database</strong> by default, making tests fast and isolated.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li>Auto-configures an embedded H2 database (or you can override with a real DB)</li>
+            <li>Scans only @Entity classes and Spring Data JPA repositories</li>
+            <li>Provides TestEntityManager for convenient test data setup</li>
+            <li>Each test is <strong>transactional</strong> — rolled back after execution</li>
+            <li>Does NOT load services, controllers, or web layer</li>
+        </ul>
+
+        <h3>Testing Custom Query Methods</h3>
+        <pre>
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+class ProductRepositoryTest {
+
+    @Autowired private ProductRepository productRepository;
+    @Autowired private TestEntityManager entityManager;
+
+    private Category category;
+    private Product product1;
+    private Product product2;
+
+    @BeforeEach
+    void setUp() {
+        category = new Category();
+        category.setName("Electronics");
+        entityManager.persist(category);
+
+        product1 = new Product();
+        product1.setName("iPhone 15");
+        product1.setDescription("Apple smartphone 2024");
+        product1.setPrice(new BigDecimal("99999.00"));
+        product1.setStock(50);
+        product1.setCategory(category);
+        product1.setActive(true);
+        entityManager.persist(product1);
+
+        product2 = new Product();
+        product2.setName("Samsung Galaxy S24");
+        product2.setDescription("Samsung smartphone 2024");
+        product2.setPrice(new BigDecimal("89999.00"));
+        product2.setStock(30);
+        product2.setCategory(category);
+        product2.setActive(true);
+        entityManager.persist(product2);
+
+        entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("Find by name containing — case insensitive")
+    void findByNameContainingIgnoreCase_shouldReturnMatchingProducts() {
+        List&lt;Product&gt; results = productRepository.findByNameContainingIgnoreCase("iphone");
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("iPhone 15");
+    }
+
+    @Test
+    @DisplayName("Find active products by category")
+    void findByCategoryAndActiveTrue_shouldReturnActiveProducts() {
+        List&lt;Product&gt; results = productRepository.findByCategoryAndActiveTrue(category);
+
+        assertThat(results).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Find by price range")
+    void findByPriceBetween_shouldReturnProductsInRange() {
+        List&lt;Product&gt; results = productRepository
+            .findByPriceBetween(new BigDecimal("50000"), new BigDecimal("100000"));
+
+        assertThat(results).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Find by stock less than threshold (low stock alert)")
+    void findByStockLessThan_shouldReturnLowStockProducts() {
+        List&lt;Product&gt; results = productRepository.findByStockLessThan(40);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("Samsung Galaxy S24");
+    }
+}
+        </pre>
+
+        <h3>Testing @Query Annotations</h3>
+        <pre>
+@DataJpaTest
+class OrderRepositoryTest {
+
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private TestEntityManager entityManager;
+
+    private User user;
+    private Order order1;
+    private Order order2;
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setName("John");
+        user.setEmail("john@test.com");
+        user.setPassword("encoded");
+        entityManager.persist(user);
+
+        order1 = new Order();
+        order1.setUser(user);
+        order1.setStatus(OrderStatus.PENDING);
+        order1.setTotalAmount(new BigDecimal("99999.00"));
+        entityManager.persist(order1);
+
+        order2 = new Order();
+        order2.setUser(user);
+        order2.setStatus(OrderStatus.DELIVERED);
+        order2.setTotalAmount(new BigDecimal("50000.00"));
+        entityManager.persist(order2);
+
+        entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("Custom @Query — find orders by user ID with items eagerly loaded")
+    void findByUserIdWithItems_shouldReturnOrders() {
+        List&lt;Order&gt; orders = orderRepository.findByUserIdWithItems(user.getId());
+
+        assertThat(orders).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Custom @Query — find total revenue for completed orders")
+    void findTotalRevenueByStatus_shouldReturnSum() {
+        BigDecimal revenue = orderRepository.findTotalRevenueByStatus(OrderStatus.DELIVERED);
+
+        assertThat(revenue).isEqualByComparingTo(new BigDecimal("50000.00"));
+    }
+
+    @Test
+    @DisplayName("Custom @Query — update order status")
+    void updateOrderStatus_shouldUpdateSuccessfully() {
+        int updated = orderRepository.updateOrderStatus(order1.getId(), OrderStatus.CONFIRMED);
+
+        assertThat(updated).isEqualTo(1);
+        entityManager.clear();
+        Order updatedOrder = orderRepository.findById(order1.getId()).orElseThrow();
+        assertThat(updatedOrder.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+    }
+}
+        </pre>
+
+        <h3>Testing Pagination and Sorting</h3>
+        <pre>
+@DataJpaTest
+class ProductPaginationTest {
+
+    @Autowired private ProductRepository productRepository;
+    @Autowired private TestEntityManager entityManager;
+
+    @BeforeEach
+    void setUp() {
+        Category cat = new Category();
+        cat.setName("Books");
+        entityManager.persist(cat);
+
+        for (int i = 1; i &lt;= 25; i++) {
+            Product p = new Product();
+            p.setName("Book " + i);
+            p.setPrice(new BigDecimal(i * 100));
+            p.setStock(10);
+            p.setCategory(cat);
+            p.setActive(true);
+            entityManager.persist(p);
+        }
+        entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("Find all with pagination — should return correct page")
+    void findAll_withPagination_shouldReturnCorrectPage() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        Page&lt;Product&gt; page = productRepository.findAll(pageable);
+
+        assertThat(page.getContent()).hasSize(10);
+        assertThat(page.getTotalElements()).isEqualTo(25);
+        assertThat(page.getTotalPages()).isEqualTo(3);
+        assertThat(page.getNumber()).isZero();
+        assertThat(page.getContent().get(0).getName()).isEqualTo("Book 1");
+    }
+
+    @Test
+    @DisplayName("Find all with pagination — second page")
+    void findAll_withPagination_secondPage() {
+        Pageable pageable = PageRequest.of(1, 10, Sort.by("name").ascending());
+        Page&lt;Product&gt; page = productRepository.findAll(pageable);
+
+        assertThat(page.getContent()).hasSize(10);
+        assertThat(page.getContent().get(0).getName()).isEqualTo("Book 11");
+    }
+
+    @Test
+    @DisplayName("Find all with sorting descending")
+    void findAll_withSortingDescending() {
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("price").descending());
+        Page&lt;Product&gt; page = productRepository.findAll(pageable);
+
+        assertThat(page.getContent().get(0).getPrice())
+            .isGreaterThan(page.getContent().get(4).getPrice());
+    }
+
+    @Test
+    @DisplayName("Custom search query with pagination")
+    void searchByName_withPagination() {
+        Pageable pageable = PageRequest.of(0, 5);
+        Page&lt;Product&gt; page = productRepository
+            .findByNameContainingIgnoreCase("book", pageable);
+
+        assertThat(page.getTotalElements()).isEqualTo(25);
+        assertThat(page.getContent()).hasSize(5);
+    }
+}
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Interview Tip:</strong> "@DataJpaTest is perfect for testing repository logic — custom queries, derived methods, pagination, and sorting. Each test is automatically rolled back, so tests never interfere with each other. Use TestEntityManager for clean test data setup."
+        </div>
+    </section>
+
+    <!-- 7. INTEGRATION TESTING WITH TESTCONTAINERS -->
+    <section id="s7">
+        <h2><span class="num">7</span> Integration Testing with TestContainers</h2>
+
+        <h3>What is TestContainers?</h3>
+        <p><strong>TestContainers</strong> is a Java library that allows you to programmatically start Docker containers for your tests. Instead of using an in-memory H2 database for integration tests, you spin up a <strong>real PostgreSQL container</strong> that mirrors your production environment.</p>
+
+        <h3>Why TestContainers?</h3>
+        <table>
+            <thead>
+                <tr><th>Approach</th><th>Pro</th><th>Con</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>H2 (In-Memory)</strong></td><td>Fast startup, no Docker needed</td><td>Different SQL dialect, missing features (JSONB, full-text search), false confidence</td></tr>
+                <tr><td><strong>TestContainers (PostgreSQL)</strong></td><td>Same database as production, real SQL, catches dialect issues</td><td>Slower startup (Docker), needs Docker installed, slightly longer test time</td></tr>
+                <tr><td><strong>Embedded PostgreSQL</strong></td><td>No Docker needed</td><td>Limited features, not identical to real PostgreSQL</td></tr>
+            </tbody>
+        </table>
+
+        <h3>PostgreSQL Container Configuration</h3>
+        <pre>
+@Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class ProductServiceIntegrationTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgreSQLContainer = new PostgreSQLContainer&lt;&gt;("postgres:16")
+        .withDatabaseName("ecommerce_test")
+        .withUsername("test")
+        .withPassword("test");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
+        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    }
+
+    @Autowired private TestRestTemplate restTemplate;
+    @Autowired private ProductRepository productRepository;
+
+    @Test
+    @DisplayName("Should bootstrap application context and connect to PostgreSQL")
+    void contextLoads() {
+        assertThat(postgreSQLContainer.isRunning()).isTrue();
+        assertThat(restTemplate).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should save and retrieve product from real PostgreSQL")
+    void shouldPersistProductInPostgreSQL() {
+        Product product = new Product();
+        product.setName("Real DB Product");
+        product.setPrice(new BigDecimal("100.00"));
+        product.setStock(10);
+        product.setActive(true);
+
+        Product saved = productRepository.save(product);
+        Product found = productRepository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getName()).isEqualTo("Real DB Product");
+        assertThat(found.getId()).isNotNull();
+    }
+}
+        </pre>
+
+        <h3>Redis Container Configuration (Optional)</h3>
+        <pre>
+@Testcontainers
+@SpringBootTest
+class RedisCacheIntegrationTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16");
+
+    @Container
+    static GenericContainer&lt;?&gt; redis = new GenericContainer&lt;&gt;("redis:7-alpine")
+        .withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.redis.host", redis::getHost);
+        registry.add("spring.redis.port", () -> redis.getMappedPort(6379));
+    }
+
+    @Autowired private ProductService productService;
+    @Autowired private CacheManager cacheManager;
+
+    @Test
+    @DisplayName("Should cache product after first retrieval")
+    void getProduct_shouldCacheResult() {
+        ProductResponse first = productService.getProduct(1L);
+        ProductResponse second = productService.getProduct(1L);
+
+        Cache cache = cacheManager.getCache("products");
+        assertThat(cache).isNotNull();
+        assertThat(cache.get(1L, ProductResponse.class)).isNotNull();
+    }
+}
+        </pre>
+
+        <h3>Full Request Flow Integration Test</h3>
+        <pre>
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+class FullOrderFlowIntegrationTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16");
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    }
+
+    @Autowired private TestRestTemplate restTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Test
+    @DisplayName("Complete order flow")
+    void completeOrderFlow_shouldSucceed() {
+        RegisterRequest register = new RegisterRequest("John", "john@test.com",
+            "Password@123", Role.CUSTOMER);
+        ResponseEntity&lt;AuthResponse&gt; registerResponse = restTemplate.postForEntity(
+            "/api/auth/register", register, AuthResponse.class);
+        assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        String token = registerResponse.getBody().getAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity&lt;?&gt; authEntity = new HttpEntity&lt;&gt;(headers);
+
+        jdbcTemplate.execute("INSERT INTO categories (id, name) VALUES (1, 'Electronics')");
+        jdbcTemplate.execute("INSERT INTO products (id, name, price, stock, category_id, is_active) "
+            + "VALUES (1, 'Test Product', 100.00, 10, 1, true)");
+
+        AddCartItemRequest cartRequest = new AddCartItemRequest(1L, 2);
+        ResponseEntity&lt;CartResponse&gt; cartResponse = restTemplate.exchange(
+            "/api/cart/items", HttpMethod.POST,
+            new HttpEntity&lt;&gt;(cartRequest, headers), CartResponse.class);
+        assertThat(cartResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setShippingAddress("123 Main St");
+        ResponseEntity&lt;OrderResponse&gt; orderResponse = restTemplate.exchange(
+            "/api/orders", HttpMethod.POST,
+            new HttpEntity&lt;&gt;(orderRequest, headers), OrderResponse.class);
+        assertThat(orderResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(orderResponse.getBody().getStatus()).isEqualTo(OrderStatus.PENDING);
+    }
+}
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f511; Key Insight:</strong> "Use @DataJpaTest with H2 for fast repository tests (no Docker overhead). Use @SpringBootTest + TestContainers for integration tests that need real database behavior — especially for full flow tests, transaction testing, and catching PostgreSQL-specific issues."
+        </div>
+    </section>
+    <!-- 8. TEST CONFIGURATION BEST PRACTICES -->
+    <section id="s8">
+        <h2><span class="num">8</span> Test Configuration Best Practices</h2>
+
+        <h3>application-test.yml Configuration</h3>
+        <pre>
+# src/test/resources/application-test.yml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  cache:
+    type: simple
+  security:
+    jwt:
+      secret: test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm
+      expiration: 3600000
+        </pre>
+
+        <h3>H2 vs TestContainers — When to Use Each</h3>
+        <table>
+            <thead>
+                <tr><th>Test Type</th><th>Database</th><th>Reason</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Repository tests (@DataJpaTest)</td><td><strong>H2</strong> (in-memory)</td><td>Fast, lightweight, no Docker needed. Sufficient for testing query logic, derived methods, pagination.</td></tr>
+                <tr><td>Service unit tests</td><td><strong>None</strong> (mocked)</td><td>Pure unit tests — repositories are mocked. No database needed.</td></tr>
+                <tr><td>Controller slice tests</td><td><strong>None</strong> (mocked services)</td><td>Services are mocked. No database needed.</td></tr>
+                <tr><td>Full integration tests</td><td><strong>TestContainers</strong> (PostgreSQL)</td><td>Need real database behavior — transaction isolation, JSONB queries, full-text search, concurrent access patterns.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>@ActiveProfiles and Test Slices</h3>
+        <pre>
+@SpringBootTest
+@ActiveProfiles("test")
+class FullContextTest {
+    // Full application context with test profile
+}
+
+@WebMvcTest(ProductController.class)
+@ActiveProfiles("test")
+class ProductControllerTest {
+    // Only web layer loaded
+}
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+class ProductRepositoryTest {
+    // Only JPA layer loaded
+}
+        </pre>
+
+        <h3>Test Slices — Comparison</h3>
+        <table>
+            <thead>
+                <tr><th>Annotation</th><th>What It Loads</th><th>When to Use</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>@WebMvcTest</code></td><td>Controllers, filters, converters, Jackson config, security config. Does NOT load services, repositories, or full context.</td><td>Testing HTTP mapping, request validation, security authorization, JSON serialization</td></tr>
+                <tr><td><code>@DataJpaTest</code></td><td>Entities, repositories, data source, JPA config. Does NOT load services or controllers.</td><td>Testing custom queries, derived query methods, pagination, sorting, entity mapping</td></tr>
+                <tr><td><code>@RestClientTest</code></td><td>RestTemplate or WebClient beans, Jackson config. Does NOT load full context.</td><td>Testing REST client calls to external services (e.g., Razorpay API client)</td></tr>
+                <tr><td><code>@JsonTest</code></td><td>Jackson/Gson serialization config only.</td><td>Testing JSON serialization/deserialization of DTOs</td></tr>
+                <tr><td><code>@SpringBootTest</code></td><td>Full application context. Every bean is loaded.</td><td>Integration tests, end-to-end flow tests, tests that need all layers</td></tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Best Practice:</strong> "Use test slices (@WebMvcTest, @DataJpaTest) for 90% of tests — they're fast and focused. Use @SpringBootTest sparingly for integration tests that genuinely need the full context. This keeps your test suite fast (under 5 minutes) while maintaining high confidence."
+        </div>
+    </section>
+
+    <!-- 9. COVERAGE & REPORTING -->
+    <section id="s9">
+        <h2><span class="num">9</span> Coverage &amp; Reporting</h2>
+
+        <h3>JaCoCo Maven Plugin Setup</h3>
+        <pre>
+&lt;!-- pom.xml --&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.jacoco&lt;/groupId&gt;
+    &lt;artifactId&gt;jacoco-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;0.8.12&lt;/version&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;prepare-agent&lt;/id&gt;
+            &lt;goals&gt;&lt;goal&gt;prepare-agent&lt;/goal&gt;&lt;/goals&gt;
+        &lt;/execution&gt;
+        &lt;execution&gt;
+            &lt;id&gt;report&lt;/id&gt;
+            &lt;phase&gt;verify&lt;/phase&gt;
+            &lt;goals&gt;&lt;goal&gt;report&lt;/goal&gt;&lt;/goals&gt;
+        &lt;/execution&gt;
+        &lt;execution&gt;
+            &lt;id&gt;check&lt;/id&gt;
+            &lt;phase&gt;verify&lt;/phase&gt;
+            &lt;goals&gt;&lt;goal&gt;check&lt;/goal&gt;&lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;rules&gt;
+                    &lt;rule&gt;
+                        &lt;element&gt;BUNDLE&lt;/element&gt;
+                        &lt;limits&gt;
+                            &lt;limit&gt;
+                                &lt;counter&gt;INSTRUCTION&lt;/counter&gt;
+                                &lt;value&gt;COVERED_RATIO&lt;/value&gt;
+                                &lt;minimum&gt;0.80&lt;/minimum&gt;
+                            &lt;/limit&gt;
+                            &lt;limit&gt;
+                                &lt;counter&gt;BRANCH&lt;/counter&gt;
+                                &lt;value&gt;COVERED_RATIO&lt;/value&gt;
+                                &lt;minimum&gt;0.75&lt;/minimum&gt;
+                            &lt;/limit&gt;
+                            &lt;limit&gt;
+                                &lt;counter&gt;LINE&lt;/counter&gt;
+                                &lt;value&gt;COVERED_RATIO&lt;/value&gt;
+                                &lt;minimum&gt;0.80&lt;/minimum&gt;
+                            &lt;/limit&gt;
+                        &lt;/limits&gt;
+                    &lt;/rule&gt;
+                &lt;/rules&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;
+        </pre>
+
+        <h3>Generating Coverage Reports</h3>
+        <pre>
+# Run tests with coverage
+mvn clean verify
+
+# Report location (HTML format)
+# target/site/jacoco/index.html — Open in browser for visual report
+
+# Key metrics:
+# - INSTRUCTION: Percentage of bytecode instructions executed
+# - BRANCH: Percentage of if/else branches covered
+# - LINE: Percentage of source lines covered
+# - METHOD: Percentage of methods called
+# - CLASS: Percentage of classes loaded
+        </pre>
+
+        <h3>What to Cover vs What Not to Cover</h3>
+        <table>
+            <thead>
+                <tr><th>&#x2705; Must Cover</th><th>&#x274c; Skip or Low Priority</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Service business logic (all branches)</td><td>Entity classes (POJOs with getters/setters)</td></tr>
+                <tr><td>Controller validation &amp; error handling</td><td>Configuration classes (SecurityConfig, SwaggerConfig)</td></tr>
+                <tr><td>Custom repository queries</td><td>Generated code (Lombok, MapStruct)</td></tr>
+                <tr><td>Exception paths &amp; edge cases</td><td>DTO classes (unless they have logic)</td></tr>
+                <tr><td>Transaction boundaries &amp; rollback</td><td>Static utility methods with no logic</td></tr>
+                <tr><td>Security authorization logic</td><td>Framework-provided code (Spring Security filters)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Reading Coverage Reports</h3>
+        <pre>
+JaCoCo HTML Report — Color Legend:
+  Green: Lines fully covered (&gt;=90% branches)
+  Yellow: Lines partially covered (&lt;90% branches)
+  Red: Lines not covered at all
+
+Example:
+  +----------------------------------------------+
+  | Element              | Missed | Coverage      |
+  +----------------------+--------+---------------+
+  | ProductService       |    12  | 87% (88/100) |
+  | CartService          |     8  | 92% (96/104) |
+  | OrderService         |    20  | 75% (60/80)  | &larr; Needs work
+  | AuthService          |     5  | 95% (95/100) |
+  | GlobalExceptionHandler|   2   | 80% (8/10)   |
+  +----------------------+--------+---------------+
+        </pre>
+
+        <h3>Mutation Testing with Pitest</h3>
+        <p><strong>Mutation testing</strong> evaluates the quality of your tests by introducing small changes (mutations) into your code and checking if your tests catch them.</p>
+        <pre>
+&lt;!-- pitest-maven plugin --&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.pitest&lt;/groupId&gt;
+    &lt;artifactId&gt;pitest-maven&lt;/artifactId&gt;
+    &lt;version&gt;1.16.0&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;targetClasses&gt;
+            &lt;param&gt;com.ecommerce.service.*&lt;/param&gt;
+        &lt;/targetClasses&gt;
+        &lt;targetTests&gt;
+            &lt;param&gt;com.ecommerce.service.*Test&lt;/param&gt;
+        &lt;/targetTests&gt;
+        &lt;mutationThreshold&gt;80&lt;/mutationThreshold&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+
+# Run mutation tests
+mvn org.pitest:pitest-maven:mutationCoverage
+
+# Report: target/pit-reports/index.html
+
+# What mutations look like:
+# Original:   if (stock &gt; 0)
+# Mutation 1: if (stock &gt;= 0)   -- Changed &gt; to &gt;=
+# Mutation 2: if (stock &lt; 0)    -- Changed &gt; to &lt;
+# Mutation 3: if (false)         -- Removed condition
+# Mutation 4: if (true)          -- Always true
+#
+# Good test: catches all 4 mutations -- 100% mutation score
+# Weak test: catches only 2/4 -- 50% mutation score
+        </pre>
+
+        <div class="highlight">
+            <strong>&#x1f4a1; Interview Tip:</strong> "JaCoCo tells you what code was executed. Pitest tells you if your tests actually verify behavior. 100% line coverage with weak assertions is worthless. Aim for 80% coverage with strong mutation scores."
+        </div>
+    </section>
+
+    <!-- 10. MOCKITO BEST PRACTICES & PITFALLS -->
+    <section id="s10">
+        <h2><span class="num">10</span> Mockito Best Practices &amp; Pitfalls</h2>
+
+        <h3>&#x2705; Do This</h3>
+
+        <h4>1. Don't Mock What You Don't Own</h4>
+        <pre>
+// BAD: Mocking third-party library class
+RazorpayClient mockClient = mock(RazorpayClient.class);
+
+// GOOD: Wrap in your own service and mock the wrapper
+@Mock private RazorpayPaymentGateway paymentGateway;
+// paymentGateway is YOUR interface/class, not Razorpay's
+        </pre>
+
+        <h4>2. Don't Mock Value Objects</h4>
+        <pre>
+// BAD: Mocking a value object
+Product product = mock(Product.class);
+when(product.getName()).thenReturn("iPhone");
+// product.equals() and product.hashCode() are broken!
+
+// GOOD: Use real objects
+Product product = new Product();
+product.setName("iPhone");
+        </pre>
+
+        <h4>3. Keep Mocks Simple</h4>
+        <pre>
+// BAD: Overly complex mock setup
+when(repo.findByCategoryAndPriceBetweenAndActiveTrueOrderByNameDesc(
+    any(), any(), any(), any())).thenReturn(...);
+
+// GOOD: Simplify queries or test separately
+// Test complex queries in @DataJpaTest, not in service unit tests
+        </pre>
+
+        <h4>4. Avoid Over-Mocking</h4>
+        <pre>
+// BAD: 7 mocks for one test
+@Mock private ServiceA a;
+@Mock private ServiceB b;
+@Mock private ServiceC c;
+@Mock private ServiceD d;
+@Mock private RepositoryE e;
+@Mock private RepositoryF f;
+@Mock private ClientG g;
+
+// GOOD: Split tests or refactor service
+// A service with 7+ dependencies should be refactored
+        </pre>
+
+        <h4>5. Use @InjectMocks Carefully</h4>
+        <pre>
+// BAD: @InjectMocks with field injection
+@Service
+public class OrderService {
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private ProductRepository productRepository;
+}
+
+// GOOD: Constructor injection (works better with mocks)
+@Service
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+
+    public OrderService(OrderRepository orderRepository,
+                        ProductRepository productRepository) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+    }
+}
+        </pre>
+
+        <h4>6. Never Mock the System Under Test</h4>
+        <pre>
+// BAD: Mocking the class being tested
+OrderService orderService = mock(OrderService.class);
+when(orderService.placeOrder(any(), any())).thenReturn(something);
+
+// GOOD: Use real instance with mocked dependencies
+@InjectMocks private OrderService orderService;
+@Mock private OrderRepository orderRepository;
+        </pre>
+
+        <h3>&#x26a0;&#xfe0f; Common Pitfalls</h3>
+        <table>
+            <thead>
+                <tr><th>Pitfall</th><th>Why It's Bad</th><th>Solution</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Mocking concrete classes instead of interfaces</td><td>Fragile — changes to concrete class break mocks</td><td>Prefer mocking interfaces; use constructor injection</td></tr>
+                <tr><td>Using when().thenReturn() on void methods</td><td>Won't compile — void methods don't return</td><td>Use doNothing().when() or doThrow().when()</td></tr>
+                <tr><td>Not verifying interactions</td><td>Test passes but method was never called</td><td>Use verify() to confirm interactions</td></tr>
+                <tr><td>Too many verify() calls</td><td>Brittle tests — internal refactoring breaks them</td><td>Verify only key interactions, not every call</td></tr>
+                <tr><td>Mocking static methods without MockedStatic</td><td>Test fails or mocks not applied</td><td>Use MockedStatic for static mocking</td></tr>
+                <tr><td>Not resetting mocks between tests</td><td>Test pollution — one test affects another</td><td>Use @Mock with @ExtendWith(MockitoExtension.class) for automatic reset</td></tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>&#x1f511; Golden Rule:</strong> "A test should mock only the direct dependencies of the class under test. If you're mocking classes that are dependencies of dependencies, your test design needs improvement."
+        </div>
+    </section>
+    <!-- 11. INTERVIEW QUESTIONS — BEGINNER -->
+    <section id="s11">
+        <h2><span class="num">11</span> Interview Questions — Beginner Level</h2>
+
+        <div class="qa-box">
+            <div class="q">Q1: What's the difference between a unit test and an integration test?</div>
+            <div class="a">
+                <strong>Answer:</strong><br><br>
+                <strong>Unit Test:</strong> Tests a single unit (class/method) in isolation. Dependencies are mocked. Fast (milliseconds). Focuses on business logic correctness.<br>
+                <em>Example:</em> Testing OrderService.placeOrder() with mocked OrderRepository and ProductRepository.<br><br>
+                <strong>Integration Test:</strong> Tests multiple components working together. Real dependencies (database, external services). Slower (seconds). Focuses on component interaction correctness.<br>
+                <em>Example:</em> Testing the full "Register -> Add to Cart -> Place Order" flow against a real PostgreSQL database via TestContainers.<br><br>
+                <strong>Key difference:</strong> Isolation vs interaction. Unit tests tell you WHAT broke. Integration tests tell you WHERE the components don't fit together.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q2: What is Mockito and why use it?</div>
+            <div class="a">
+                <strong>Answer:</strong> Mockito is a <strong>mocking framework</strong> for Java unit tests. It creates mock objects that simulate the behavior of real dependencies.<br><br>
+                <strong>Why use it:</strong><br>
+                1. <strong>Isolation</strong> — Test only the class under test, not its dependencies<br>
+                2. <strong>Speed</strong> — Mocked tests run in milliseconds (no DB, no network)<br>
+                3. <strong>Control</strong> — Simulate edge cases: exceptions, timeouts, null returns<br>
+                4. <strong>Verification</strong> — Confirm that methods were called with correct arguments<br><br>
+                <em>Example:</em> You want to test OrderService calls PaymentService when placing an order. Without Mockito, you need a real Payment integration. With Mockito, you mock PaymentService and verify the call.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q3: Explain @Mock vs @InjectMocks in Mockito.</div>
+            <div class="a">
+                <strong>Answer:</strong><br><br>
+                <strong>@Mock</strong> creates a <strong>mock instance</strong> of a dependency. The mock has no real behavior — every method returns default values (null, 0, false) unless you stub it.<br>
+                <code>@Mock private ProductRepository productRepository;</code><br><br>
+                <strong>@InjectMocks</strong> creates an <strong>instance of the class under test</strong> and injects the mocks into it. It tries constructor injection first, then setter, then field injection.<br>
+                <code>@InjectMocks private ProductService productService;</code><br><br>
+                <strong>How they work together:</strong> @Mock creates the fake dependencies. @InjectMocks creates the real object and injects those fakes into it.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q4: What is JUnit 5 @DisplayName used for?</div>
+            <div class="a">
+                <strong>Answer:</strong> @DisplayName provides a <strong>custom, human-readable name</strong> for a test class or test method. Instead of seeing <code>testProductSearchWithEmptyQueryReturnsEmpty()</code> in test reports, you see <code>"Should return empty results when search query is empty"</code>.<br><br>
+                <strong>Benefits:</strong> Readability (non-technical stakeholders understand reports), Documentation (tests become executable specifications), Better CI/CD reporting.<br><br>
+                <strong>Best practice:</strong> Use format: "Should [expected behavior] when [condition/scenario]".
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q5: How do you test exceptions in JUnit 5?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use <code>assertThrows()</code>.<br><br>
+                <pre>
+// Assert that exception is thrown
+assertThrows(ResourceNotFoundException.class,
+    () -> productService.getProduct(999L));
+
+// Assert + capture exception for further assertions
+ResourceNotFoundException ex = assertThrows(
+    ResourceNotFoundException.class,
+    () -> productService.getProduct(999L));
+assertEquals("Product not found with id: 999", ex.getMessage());
+                </pre>
+                <strong>Key points:</strong><br>
+                1. If no exception is thrown, the test FAILS<br>
+                2. If a DIFFERENT exception is thrown, the test FAILS<br>
+                3. assertThrows returns the exception instance for additional assertions<br>
+                4. For testing NO exception: <code>assertDoesNotThrow(() -> productService.getProduct(1L));</code>
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q6: What is the testing pyramid?</div>
+            <div class="a">
+                <strong>Answer:</strong> The testing pyramid describes the <strong>ideal distribution of tests</strong>:<br><br>
+                <strong>Base — Unit Tests (70-80%):</strong> Test individual classes/methods in isolation. Milliseconds each. Caught: Business logic bugs.<br><br>
+                <strong>Middle — Integration Tests (15-25%):</strong> Test interactions between components. Seconds each. Caught: Component interaction bugs.<br><br>
+                <strong>Top — End-to-End Tests (5-10%):</strong> Test the complete system. Minutes each. Caught: System-level integration bugs.<br><br>
+                <strong>Key principle:</strong> Write more unit tests, fewer integration tests, and even fewer E2E tests. The pyramid ensures fast feedback while maintaining confidence.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q7: What does @WebMvcTest do?</div>
+            <div class="a">
+                <strong>Answer:</strong> @WebMvcTest is a <strong>test slice annotation</strong> that loads only the web layer of a Spring Boot application. It auto-configures MockMvc and loads only controllers, filters, interceptors, converters, and security configuration.<br><br>
+                <strong>What it does NOT load:</strong> Services, repositories, full application context, database configuration.<br><br>
+                <strong>Why use it:</strong> Speed (loads only web beans), Focus (tests only HTTP concerns), Isolation (services are mocked with @MockBean).
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q8: What does @DataJpaTest do?</div>
+            <div class="a">
+                <strong>Answer:</strong> @DataJpaTest is a <strong>test slice annotation</strong> that loads only the JPA/data layer. It auto-configures an embedded H2 database, scans @Entity classes, and enables Spring Data JPA repositories.<br><br>
+                <strong>What it does NOT load:</strong> Services, controllers, web layer, security configuration.<br><br>
+                <strong>Key features:</strong><br>
+                1. Each test is <strong>transactional</strong> — automatically rolls back after execution<br>
+                2. Provides <strong>TestEntityManager</strong> for convenient test data setup<br>
+                3. Can be configured to use a real database instead of H2
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q9: How do you verify a method was called with Mockito?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use Mockito's <code>verify()</code> method.<br><br>
+                <pre>
+// Verify method was called exactly once (default)
+verify(productRepository).findById(1L);
+
+// Verify with call count
+verify(productRepository, times(1)).findById(1L);
+verify(productRepository, never()).delete(any());
+verify(productRepository, atLeast(1)).save(any());
+verify(productRepository, atMost(3)).findAll();
+
+// Verify with timeout (for async code)
+verify(emailService, timeout(1000)).sendOrderConfirmation(any());
+
+// Verify order of interactions
+InOrder inOrder = inOrder(productRepository, categoryRepository);
+inOrder.verify(productRepository).findById(1L);
+inOrder.verify(categoryRepository).findByName("Electronics");
+
+// Verify no unexpected interactions
+verifyNoMoreInteractions(productRepository);
+                </pre>
+                <strong>Important:</strong> verify() is most useful for checking side effects (save, sendEmail). For methods that return values, assertions on the return value are more important.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q10: What is TDD (Test-Driven Development)?</div>
+            <div class="a">
+                <strong>Answer:</strong> TDD is a development approach where you write <strong>tests before production code</strong>. The cycle is:<br><br>
+                <strong>Red -> Green -> Refactor</strong><br><br>
+                1. <strong>Red:</strong> Write a failing test for the feature you want to implement<br>
+                2. <strong>Green:</strong> Write the MINIMUM production code to make the test pass<br>
+                3. <strong>Refactor:</strong> Clean up the code while keeping the tests green<br><br>
+                <strong>Example:</strong><br>
+                <pre>
+// Step 1 (RED): Write test first
+@Test
+void applyDiscount_shouldApply10Percent_ForOrdersAbove1000() {
+    Order order = new Order(new BigDecimal("1500.00"));
+    orderService.applyDiscount(order);
+    assertEquals(new BigDecimal("1350.00"), order.getTotalAmount());
+}
+
+// Step 2 (GREEN): Write minimum code
+public void applyDiscount(Order order) {
+    if (order.getTotalAmount().compareTo(new BigDecimal("1000")) > 0) {
+        order.setTotalAmount(order.getTotalAmount()
+            .multiply(new BigDecimal("0.9")));
+    }
+}
+                </pre>
+                <strong>Benefits:</strong> Better design (code must be testable), documentation (tests define behavior), confidence (every line is tested), fewer bugs.
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. INTERVIEW QUESTIONS — INTERMEDIATE -->
+    <section id="s12">
+        <h2><span class="num">12</span> Interview Questions — Intermediate Level</h2>
+
+        <div class="qa-box">
+            <div class="q">Q11: How would you test a method that calls external API (Razorpay)?</div>
+            <div class="a">
+                <strong>Answer:</strong> Three approaches:<br><br>
+                <strong>1. Mock the wrapper service (Best):</strong> Wrap Razorpay in your own interface (PaymentGateway) and mock it.<br>
+                <pre>
+public interface PaymentGateway {
+    PaymentResponse createOrder(Long amount, String receiptId);
+}
+@Service
+public class RazorpayPaymentGateway implements PaymentGateway {
+    // Real Razorpay call
+}
+// In tests:
+@Mock private PaymentGateway paymentGateway;
+                </pre>
+                <strong>2. WireMock (For integration tests):</strong> Simulate the Razorpay HTTP server.<br>
+                <strong>3. @MockBean with Spring Boot test:</strong> Mock the RazorpayClient bean in the full context.<br><br>
+                <strong>Recommendation:</strong> Use interface wrapper for unit tests. Use WireMock for integration tests that verify HTTP handling (timeouts, retries, error responses).
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q12: What is the difference between when().thenThrow() and doThrow().when()?</div>
+            <div class="a">
+                <strong>Answer:</strong><br><br>
+                <strong>when().thenThrow()</strong> — Used for methods that return a value:<br>
+                <pre>
+when(productRepository.findById(anyLong()))
+    .thenThrow(new DatabaseException("Connection failed"));
+                </pre>
+                <strong>doThrow().when()</strong> — Used for <strong>void</strong> methods (no return value):<br>
+                <pre>
+doThrow(new RuntimeException())
+    .when(productRepository).delete(any(Product.class));
+                </pre>
+                <strong>Key difference:</strong> when().thenThrow() evaluates the method call inside when(), which requires the method to return something. Void methods can't be used inside when(), so use doThrow().when() instead.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q13: How do you test @Transactional rollback scenarios?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use an integration test with a real database:<br>
+                <pre>
+@SpringBootTest
+@Testcontainers
+class OrderServiceTransactionTest {
+
+    @Container static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16");
+    @Autowired private OrderService orderService;
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Test
+    @DisplayName("Should rollback entire order when payment fails")
+    void placeOrder_shouldRollback_whenPaymentFails() {
+        assertThrows(PaymentException.class,
+            () -> orderService.placeOrder(1L, request));
+
+        Integer orderCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM orders", Integer.class);
+        assertThat(orderCount).isZero();
+
+        Integer stock = jdbcTemplate.queryForObject(
+            "SELECT stock FROM products WHERE id = 1", Integer.class);
+        assertThat(stock).isEqualTo(10);
+    }
+}
+                </pre>
+                Verify that NO data was persisted after the exception — both orders and stock changes should be rolled back.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q14: What is TestContainers and when should you use it?</div>
+            <div class="a">
+                <strong>Answer:</strong> TestContainers is a Java library that starts <strong>real Docker containers</strong> for integration tests. Instead of H2, you spin up a real PostgreSQL container matching your production DB.<br><br>
+                <strong>When to use:</strong>&#x2705; PostgreSQL-specific features (JSONB, full-text search, tsvector) &#x2705; Transaction isolation and concurrency &#x2705; Database migration testing &#x2705; Full flow integration tests<br><br>
+                <strong>When NOT to use:</strong>&#x274c; Pure unit tests (use mocks) &#x274c; Simple repository queries (use @DataJpaTest with H2) &#x274c; When Docker is unavailable in CI<br><br>
+                <strong>Trade-off:</strong> Slower startup (10-30s for container) but catches DB-specific bugs H2 misses. Use @DataJpaTest for fast feedback, TestContainers in CI for confidence.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q15: How to test paginated endpoints?</div>
+            <div class="a">
+                <strong>Answer:</strong> Test both service and controller layers:<br><br>
+                <strong>Service layer:</strong><br>
+                <pre>
+@Test
+void getAllProducts_shouldReturnPagedResults() {
+    Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+    Page&lt;Product&gt; productPage = new PageImpl&lt;&gt;(
+        List.of(product), pageable, 25);
+
+    given(productRepository.findAll(pageable)).willReturn(productPage);
+
+    Page&lt;ProductResponse&gt; result = productService.getAllProducts(pageable);
+
+    assertThat(result.getContent()).hasSize(10);
+    assertThat(result.getTotalElements()).isEqualTo(25);
+    assertThat(result.getTotalPages()).isEqualTo(3);
+    assertThat(result.isFirst()).isTrue();
+}
+                </pre>
+                <strong>Controller layer:</strong>
+                Assert JSON structure: $.content (data array), $.totalElements, $.totalPages, $.number, $.size.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q16: What is BDDMockito?</div>
+            <div class="a">
+                <strong>Answer:</strong> BDDMockito is a Mockito extension that provides a <strong>BDD-style API</strong> using given() and then() instead of when() and verify() for more readable tests.<br><br>
+                <strong>Standard Mockito:</strong> <code>when(repo.findById(1L)).thenReturn(Optional.of(product));</code><br>
+                <strong>BDDMockito:</strong> <code>given(repo.findById(1L)).willReturn(Optional.of(product));</code><br><br>
+                <strong>Full example:</strong><br>
+                <pre>
+import static org.mockito.BDDMockito.*;
+
+@Test
+void getProduct_shouldReturnProduct() {
+    // Given
+    given(productRepository.findById(1L)).willReturn(Optional.of(product));
+    // When
+    Product result = productService.getProduct(1L);
+    // Then
+    assertThat(result).isNotNull();
+    then(productRepository).should().findById(1L);
+}
+                </pre>
+                <strong>Benefits:</strong> Readability (follows Given-When-Then), aligns with BDD frameworks like Cucumber.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q17: How to test file upload endpoints?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use MockMultipartFile with MockMvc:<br>
+                <pre>
+@Test
+@WithMockUser(roles = "ADMIN")
+void uploadImage_shouldReturn200() throws Exception {
+    MockMultipartFile file = new MockMultipartFile(
+        "image", "product.jpg",
+        MediaType.IMAGE_JPEG_VALUE, "fake-image-content".getBytes());
+
+    when(fileStorageService.storeFile(any(MultipartFile.class)))
+        .thenReturn("products/product.jpg");
+
+    mockMvc.perform(multipart("/api/products/1/image").file(file))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.fileName").value("products/product.jpg"));
+}
+                </pre>
+                Test: valid upload, empty file (400), wrong content type (400), unauthenticated (401), wrong role (403).
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q18: What are parameterized tests and when to use them?</div>
+            <div class="a">
+                <strong>Answer:</strong> Parameterized tests run the <strong>same test logic</strong> with multiple different inputs. Instead of 10 test methods, write one with 10 input sets.<br><br>
+                <strong>When to use:</strong>&#x2705; Boundary conditions &#x2705; Validation rules &#x2705; Same behavior across different data &#x2705; Reducing duplication<br><br>
+                <strong>Available sources:</strong> @ValueSource (single values), @CsvSource (CSV rows), @MethodSource (stream of Arguments), @EnumSource, @NullSource, @EmptySource.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q19: How do you mock static methods with Mockito?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use <code>MockedStatic</code> (available with mockito-inline artifact):<br>
+                <pre>
+@Test
+void createOrder_shouldGenerateOrderId() {
+    UUID fixedUuid = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    try (MockedStatic&lt;UUID&gt; mockedUuid = mockStatic(UUID.class)) {
+        mockedUuid.when(UUID::randomUUID).thenReturn(fixedUuid);
+
+        Order order = orderService.createOrder(/* ... */);
+
+        assertThat(order.getOrderNumber())
+            .contains(fixedUuid.toString().substring(0, 8));
+    }
+}
+                </pre>
+                <strong>&#x26a0;&#xfe0f; Use sparingly:</strong> Static mocking is a code smell. Only use for legacy code, utility methods (UUID, LocalDate.now()), or third-party static calls. Always use try-with-resources to auto-close the mock scope.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q20: How do you ensure tests are independent?</div>
+            <div class="a">
+                <strong>Answer:</strong> Key practices:<br><br>
+                1. <strong>Each test creates its own data</strong> — Use @BeforeEach to set up fresh data<br>
+                2. <strong>Clean up after tests</strong> — @AfterEach to delete data<br>
+                3. <strong>Use random data</strong> — <code>String email = "user_" + UUID.randomUUID() + "@test.com";</code><br>
+                4. <strong>Avoid shared mutable state</strong> — Don't use static lists; reinitialize in @BeforeEach<br>
+                5. <strong>Don't depend on execution order</strong> — JUnit 5 doesn't guarantee order<br>
+                6. <strong>Fresh TestContainers per class</strong> — Static container, but each test class gets its own<br><br>
+                <strong>Verify isolation:</strong> Run tests with random ordering:
+                <pre>
+&lt;!-- Maven Surefire --&gt;
+&lt;configuration&gt;
+    &lt;runOrder&gt;random&lt;/runOrder&gt;
+&lt;/configuration&gt;
+                </pre>
+            </div>
+        </div>
+    </section>
+    <!-- 13. INTERVIEW QUESTIONS — ADVANCED -->
+    <section id="s13">
+        <h2><span class="num">13</span> Interview Questions — Advanced Level</h2>
+
+        <div class="qa-box">
+            <div class="q">Q21: Design a test strategy for a flash sale feature handling 10K concurrent users.</div>
+            <div class="a">
+                <strong>Answer:</strong> A flash sale (100 items, 10K users) requires multi-layered testing:<br><br>
+                <strong>1. Unit Tests:</strong> Test inventory decrement logic, Redis counter atomicity.<br>
+                <pre>
+@Test
+void decrementStock_shouldPreventNegative() {
+    product.setStock(0);
+    assertThrows(BadRequestException.class,
+        () -> orderService.decrementStock(product, 1));
+}
+                </pre>
+                <strong>2. Concurrency Integration Tests:</strong><br>
+                <pre>
+@Test
+void concurrentPurchase_shouldNotExceedStock() throws Exception {
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+    CountDownLatch latch = new CountDownLatch(1);
+    AtomicInteger successCount = new AtomicInteger(0);
+
+    jdbcTemplate.execute("UPDATE products SET stock = 5 WHERE id = 1");
+
+    for (int i = 0; i &lt; 10; i++) {
+        executor.submit(() -> {
+            try {
+                latch.await();
+                orderService.placeOrder(userId, request);
+                successCount.incrementAndGet();
+            } catch (Exception e) { }
+        });
+    }
+    latch.countDown();
+    executor.shutdown();
+    executor.awaitTermination(10, TimeUnit.SECONDS);
+
+    assertThat(successCount.get()).isEqualTo(5);
+}
+                </pre>
+                <strong>3. Load Tests:</strong> Use JMeter/Gatling to simulate 10K users.<br>
+                <strong>4. Chaos Engineering:</strong> What happens when Redis goes down during the sale?<br>
+                <strong>5. Negative Testing:</strong> Duplicate requests, expired window, unauthenticated, insufficient balance, network timeout.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q22: How would you test optimistic locking for inventory?</div>
+            <div class="a">
+                <strong>Answer:</strong> Use @Version annotation and test concurrent updates:<br>
+                <pre>
+@Entity
+public class Product {
+    @Version
+    private Long version;
+    private Integer stock;
+}
+
+@Test
+void concurrentUpdate_shouldThrowOptimisticLockException() {
+    Product product1 = productRepository.findById(1L).orElseThrow();
+    Product product2 = productRepository.findById(1L).orElseThrow();
+
+    product1.setStock(product1.getStock() - 1);
+    productRepository.save(product1);  // version becomes 1
+
+    product2.setStock(product2.getStock() - 1);
+    // product2 still has version = 0
+
+    assertThrows(OptimisticLockException.class,
+        () -> productRepository.save(product2));
+}
+                </pre>
+                Also test retry mechanism: catch OptimisticLockException, wait, retry. After 3 retries, give up and report "Item sold out".
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q23: Explain test slicing and when to use each slice vs full context.</div>
+            <div class="a">
+                <strong>Answer:</strong> Test slices load only specific parts of the Spring context:<br><br>
+                <strong>@WebMvcTest:</strong> Web layer only (controllers, filters, security). Use for HTTP mapping, validation, security. Mock all services.<br><br>
+                <strong>@DataJpaTest:</strong> JPA layer only (entities, repositories). Use for custom queries, pagination, entity mapping. Auto-rolled back transactions.<br><br>
+                <strong>@RestClientTest:</strong> REST client beans. Use for testing external API clients (Razorpay) with WireMock.<br><br>
+                <strong>@JsonTest:</strong> JSON serialization only. Use for testing DTO serialization/deserialization.<br><br>
+                <strong>@SpringBootTest (full context):</strong> Everything. Use only for integration tests that genuinely need all layers. Slower but catches cross-layer issues.<br><br>
+                <strong>Rule of thumb:</strong> Use slices for 90% of tests (fast, focused). Use full context for 10% (integration, E2E flows).
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q24: How do you test async methods (@Async)?</div>
+            <div class="a">
+                <strong>Answer:</strong> Testing async methods requires handling the asynchronous execution:<br>
+                <pre>
+@Service
+public class EmailService {
+    @Async
+    public CompletableFuture&lt;Void&gt; sendOrderConfirmation(Order order) {
+        // Send email asynchronously
+        return CompletableFuture.completedFuture(null);
+    }
+}
+
+// Test 1: Verify the method was called (doesn't wait for completion)
+@Test
+void placeOrder_shouldTriggerEmailAsync() {
+    orderService.placeOrder(1L, request);
+
+    verify(emailService, timeout(1000))
+        .sendOrderConfirmation(any(Order.class));
+}
+
+// Test 2: Wait for async completion
+@Test
+void sendOrderConfirmation_shouldSendEmail() throws Exception {
+    CompletableFuture&lt;Void&gt; future = emailService.sendOrderConfirmation(order);
+
+    future.get(5, TimeUnit.SECONDS);  // Wait for async completion
+
+    // Verify email was actually sent
+    verify(emailSender).send(any(EmailMessage.class));
+}
+
+// Test 3: Test the async method directly (synchronous test)
+@Test
+void sendOrderConfirmation_shouldBuildCorrectEmail() {
+    // Since @Async uses AOP proxy, testing the underlying logic
+    // requires calling the method directly or using a spy
+    emailService.sendOrderConfirmation(order);
+    // Verify email content, recipient, etc.
+}
+                </pre>
+                <strong>Key considerations:</strong> Use timeout in verify() for async calls. For CompletableFuture methods, call .get() to wait for completion. Be aware that @Async creates a proxy — calling the method from within the same class bypasses the proxy.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q25: How do you test Redis caching behavior (@Cacheable)?</div>
+            <div class="a">
+                <strong>Answer:</strong> Test caching behavior by verifying that subsequent calls don't hit the database:<br>
+                <pre>
+@SpringBootTest
+@Testcontainers
+class ProductCachingTest {
+
+    @Container
+    static GenericContainer&lt;?&gt; redis = new GenericContainer&lt;&gt;("redis:7-alpine")
+        .withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.redis.host", redis::getHost);
+        registry.add("spring.redis.port", () -> redis.getMappedPort(6379));
+    }
+
+    @Autowired private ProductService productService;
+    @MockBean private ProductRepository productRepository;
+
+    @Test
+    void getProduct_shouldCacheResult() {
+        Product product = new Product("iPhone 15");
+        given(productRepository.findById(1L)).willReturn(Optional.of(product));
+
+        // First call: cache MISS -> calls repository
+        ProductResponse first = productService.getProduct(1L);
+
+        // Second call: cache HIT -> does NOT call repository
+        ProductResponse second = productService.getProduct(1L);
+
+        // Verify repository was called only ONCE
+        then(productRepository).should(times(1)).findById(1L);
+    }
+
+    @Test
+    void updateProduct_shouldEvictCache() {
+        // Similar test verifying that cache is cleared on update
+    }
+}
+                </pre>
+                <strong>Alternative:</strong> Use @SpringBootTest with simple cache manager (not Redis) for faster tests:
+                <pre>
+// application-test.yml
+spring.cache.type: simple  // In-memory ConcurrentMapCache
+                </pre>
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q26: How to avoid flaky tests in CI/CD?</div>
+            <div class="a">
+                <strong>Answer:</strong> Flaky tests (sometimes pass, sometimes fail) destroy trust in the test suite. Prevention strategies:<br><br>
+                <strong>1. Avoid shared mutable state</strong> — Each test should create and clean up its own data<br>
+                <strong>2. Use TestContainers, not embedded databases</strong> — H2 behaves differently than PostgreSQL<br>
+                <strong>3. Add timeouts to all async operations</strong> — <code>verify(service, timeout(5000)).method();</code><br>
+                <strong>4. Use fixed data, not random</strong> — Random dates, random strings can cause edge cases<br>
+                <strong>5. Don't depend on system clock</strong> — Use Clock injection or MockedStatic for time<br>
+                <strong>6. Avoid thread.sleep()</strong> — Use CountDownLatch, CompletableFuture, or Awaitility<br>
+                <strong>7. Database cleanup between tests</strong> — @Transactional rollback or @Sql cleanup scripts<br>
+                <strong>8. Retry flaky tests (last resort)</strong> — Use @RetryingTest or Surefire rerunFailingTestsCount<br><br>
+                <pre>
+&lt;!-- pom.xml: Retry flaky tests --&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;rerunFailingTestsCount&gt;2&lt;/rerunFailingTestsCount&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+                </pre>
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q27: How do you test database migration scripts?</div>
+            <div class="a">
+                <strong>Answer:</strong> Database migrations (Flyway/Liquibase) must be tested to ensure they work on production-scale data.<br><br>
+                <strong>1. TestContainer-based migration test:</strong><br>
+                <pre>
+@Testcontainers
+@SpringBootTest
+class DatabaseMigrationTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16");
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.flyway.enabled", () -> "true");
+    }
+
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Test
+    void allMigrationsShouldApplySuccessfully() {
+        // Verify tables exist
+        List&lt;String&gt; tables = jdbcTemplate.queryForList(
+            "SELECT table_name FROM information_schema.tables " +
+            "WHERE table_schema = 'public'", String.class);
+
+        assertThat(tables).contains("products", "orders", "users", "categories");
+    }
+
+    @Test
+    void migrationVersionShouldBeCorrect() {
+        String version = jdbcTemplate.queryForObject(
+            "SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1",
+            String.class);
+        assertThat(version).isEqualTo("7");
+    }
+}
+                </pre>
+                <strong>2. Rollback test:</strong> Apply migration V2, then rollback to V1, verify schema is back to V1 state.<br>
+                <strong>3. Data integrity test:</strong> Insert data before migration, run migration, verify data is still correct.<br>
+                <strong>4. Performance test:</strong> Run migration against a large dataset to ensure it completes within acceptable time.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q28: What is mutation testing and how does it improve test quality?</div>
+            <div class="a">
+                <strong>Answer:</strong> Mutation testing introduces small changes (mutations) into your code and checks if your tests detect them. It measures the <strong>quality</strong> of your tests, not just coverage.<br><br>
+                <strong>Examples of mutations:</strong><br>
+                &bull; <code>if (x &gt; 0)</code> mutated to <code>if (x &gt;= 0)</code> — boundary condition<br>
+                &bull; <code>if (condition)</code> mutated to <code>if (true)</code> — removed condition<br>
+                &bull; <code>return a + b;</code> mutated to <code>return a - b;</code> — arithmetic operator<br>
+                &bull; <code>list.add(item)</code> mutated to <code>list.remove(item)</code> — method call<br><br>
+                <strong>How it improves quality:</strong><br>
+                1. Exposes <strong>missing assertions</strong> — Code is executed but not verified<br>
+                2. Exposes <strong>weak assertions</strong> — Assertions that pass even with wrong output<br>
+                3. Shows <strong>untested branches</strong> — Conditions that tests don't fully cover<br><br>
+                <strong>Real example:</strong><br>
+                <pre>
+// Production code
+public boolean isEligibleForDiscount(Order order) {
+    return order.getTotalAmount().compareTo(new BigDecimal("1000")) > 0;
+}
+
+// Weak test (passes mutation testing poorly)
+@Test
+void testDiscount() {
+    order.setTotalAmount(new BigDecimal("1500"));
+    assertTrue(orderService.isEligibleForDiscount(order));
+    // Mutation: change > to >= — test still passes! Bug hidden!
+}
+
+// Strong test (catches the mutation)
+@Test
+void testDiscount_boundary() {
+    order.setTotalAmount(new BigDecimal("1000"));
+    assertFalse(orderService.isEligibleForDiscount(order));
+    // Mutation: change > to >= — test FAILS! Bug caught!
+}
+                </pre>
+                <strong>Tools:</strong> Pitest for Java. Aim for 80%+ mutation score.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q29: How to test idempotency in payment endpoints?</div>
+            <div class="a">
+                <strong>Answer:</strong> Idempotency means sending the same request multiple times produces the same result. For payments, this is critical — duplicate requests must not charge the customer twice.<br><br>
+                <strong>Implementation:</strong> Clients send an Idempotency-Key header. The server stores the key and response. Duplicate requests return the cached response.<br><br>
+                <strong>Test scenarios:</strong><br>
+                <pre>
+@Test
+@DisplayName("Same idempotency key returns cached response")
+void duplicateRequest_shouldReturnSameResponse() {
+    String idempotencyKey = UUID.randomUUID().toString();
+
+    // First request
+    mockMvc.perform(post("/api/payments")
+            .header("Idempotency-Key", idempotencyKey)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("created"));
+
+    // Second request with same key — should return cached result
+    mockMvc.perform(post("/api/payments")
+            .header("Idempotency-Key", idempotencyKey)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("created"));
+    // Verify payment was processed only ONCE
+    then(paymentService).should(times(1)).processPayment(any());
+}
+
+@Test
+@DisplayName("Different idempotency keys create separate payments")
+void differentKeys_shouldCreateSeparatePayments() {
+    mockMvc.perform(post("/api/payments")
+            .header("Idempotency-Key", UUID.randomUUID().toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody))
+        .andExpect(status().isOk());
+
+    mockMvc.perform(post("/api/payments")
+            .header("Idempotency-Key", UUID.randomUUID().toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody))
+        .andExpect(status().isOk());
+
+    then(paymentService).should(times(2)).processPayment(any());
+}
+
+@Test
+@DisplayName("Missing idempotency key returns 400")
+void missingIdempotencyKey_shouldReturn400() throws Exception {
+    mockMvc.perform(post("/api/payments")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody))
+        .andExpect(status().isBadRequest());
+}
+                </pre>
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q30: Design a test framework for verifying data consistency across order-payment-inventory transactions.</div>
+            <div class="a">
+                <strong>Answer:</strong> Data consistency across multiple services is the hardest problem in distributed systems. Here's a comprehensive test framework:<br><br>
+                <strong>1. Unit Tests (Fast feedback):</strong><br>
+                &bull; Test each service's business logic in isolation<br>
+                &bull; Mock all external dependencies<br>
+                &bull; Cover every branch, every exception path<br><br>
+                <strong>2. Integration Tests (Component interaction):</strong><br>
+                <pre>
+@Test
+@DisplayName("Order + Inventory + Payment consistency")
+void orderPaymentInventory_shouldBeConsistent() {
+    // Setup: Create product with stock=5
+    // Setup: Create user with sufficient balance
+
+    // Act: Place order for 2 items
+    OrderResponse order = orderService.placeOrder(userId, request);
+
+    // Assert: Inventory deducted
+    Integer stock = jdbcTemplate.queryForObject(
+        "SELECT stock FROM products WHERE id = ?", Integer.class, productId);
+    assertThat(stock).isEqualTo(3);
+
+    // Assert: Order created with correct total
+    BigDecimal total = jdbcTemplate.queryForObject(
+        "SELECT total_amount FROM orders WHERE id = ?",
+        BigDecimal.class, order.getId());
+    assertThat(total).isEqualByComparingTo(new BigDecimal("199998.00"));
+
+    // Assert: Payment record created
+    Integer paymentCount = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM payments WHERE order_id = ?",
+        Integer.class, order.getId());
+    assertThat(paymentCount).isEqualTo(1);
+}
+                </pre>
+                <strong>3. Concurrency Tests (Race conditions):</strong><br>
+                &bull; 10 threads try to buy the last item simultaneously<br>
+                &bull; Assert only 1 succeeds, 9 fail, stock = 0<br><br>
+                <strong>4. Compensation/Recovery Tests:</strong><br>
+                &bull; Payment succeeds but order creation fails — verify refund is triggered<br>
+                &bull; Inventory deducted but payment fails — verify inventory is restored<br><br>
+                <strong>5. Database Constraint Tests:</strong><br>
+                <pre>
+// Verify database constraints prevent inconsistencies
+@Test
+void databaseConstraints_shouldPreventOrphanedRecords() {
+    assertThrows(DataIntegrityViolationException.class, () -> {
+        jdbcTemplate.execute(
+            "INSERT INTO order_items (order_id, product_id) VALUES (999, 1)");
+        // order_id=999 doesn't exist in orders table
+    });
+}
+                </pre>
+                <strong>6. Chaos Tests:</strong><br>
+                &bull; Simulate database timeout during order placement<br>
+                &bull; Simulate Redis crash mid-transaction<br>
+                &bull; Verify the system reaches a consistent state (eventual consistency)<br><br>
+                <strong>7. Audit Log Verification:</strong><br>
+                Every state change should be logged. Verify the audit trail matches the actual database state.
+            </div>
+        </div>
+    </section>
+    <!-- 14. MINI CHALLENGE -->
+    <section id="s14">
+        <h2><span class="num">14</span> &#x1f3af; Mini Challenge — PaymentService Test Scenarios</h2>
+        <div class="challenge">
+            <h3>Your Task: Design Test Cases for PaymentService.createRazorpayOrder()</h3>
+            <p>You are given the following method to test. Do NOT write code — just <strong>describe the test scenarios</strong> (test method name, scenario, setup, expected outcome).</p>
+            <pre>
+@Service
+public class PaymentService {
+
+    private final RazorpayClient razorpayClient;
+    private final OrderRepository orderRepository;
+
+    public PaymentResponse createRazorpayOrder(Long orderId, Long amount) {
+        // 1. Fetch order from database
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+
+        // 2. Validate order is in PENDING status
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new BadRequestException("Order is not in PENDING status");
+        }
+
+        // 3. Call Razorpay API to create order
+        RazorpayOrder razorpayOrder;
+        try {
+            razorpayOrder = razorpayClient.createOrder(amount, orderId.toString());
+        } catch (RazorpayException e) {
+            throw new PaymentException("Failed to create Razorpay order: " + e.getMessage());
+        }
+
+        // 4. Validate Razorpay response
+        if (razorpayOrder == null || razorpayOrder.getId() == null) {
+            throw new PaymentException("Invalid response from Razorpay");
+        }
+
+        // 5. Save Razorpay order ID to order and return response
+        order.setRazorpayOrderId(razorpayOrder.getId());
+        orderRepository.save(order);
+
+        return new PaymentResponse(razorpayOrder.getId(), razorpayOrder.getStatus());
+    }
+}
+            </pre>
+
+            <h4>Design test cases for the following scenarios:</h4>
+
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Scenario</th><th>Test Setup</th><th>Expected Outcome</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><strong>Happy Path</strong> — Successful Razorpay order creation</td>
+                        <td>Mock orderRepository.findById() to return a valid PENDING order. Mock razorpayClient.createOrder() to return a valid RazorpayOrder with ID and status.</td>
+                        <td>Returns PaymentResponse with the razorpayOrderId. Verifies orderRepository.save() was called with the updated order (razorpayOrderId set).</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><strong>Order Not Found</strong> — orderId doesn't exist</td>
+                        <td>Mock orderRepository.findById() to return Optional.empty().</td>
+                        <td>Throws ResourceNotFoundException with message "Order not found: {orderId}". Verifies razorpayClient.createOrder() was NEVER called.</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><strong>Order Not in PENDING Status</strong> — order already completed/cancelled</td>
+                        <td>Mock orderRepository.findById() to return an order with status = CONFIRMED or CANCELLED.</td>
+                        <td>Throws BadRequestException with message "Order is not in PENDING status". Verifies razorpayClient.createOrder() was NEVER called.</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><strong>RazorpayException from API</strong> — Razorpay API call fails</td>
+                        <td>Mock orderRepository.findById() to return a valid PENDING order. Mock razorpayClient.createOrder() to throw RazorpayException.</td>
+                        <td>Throws PaymentException with message starting with "Failed to create Razorpay order:". Verifies orderRepository.save() was NEVER called (rollback).</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><strong>Null Response from Razorpay</strong> — API returns null</td>
+                        <td>Mock orderRepository.findById() to return a valid PENDING order. Mock razorpayClient.createOrder() to return null.</td>
+                        <td>Throws PaymentException with message "Invalid response from Razorpay". Verifies orderRepository.save() was NEVER called.</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><strong>Razorpay Order with Null ID</strong> — API returns object but ID is null</td>
+                        <td>Mock orderRepository.findById() to return a valid PENDING order. Mock razorpayClient.createOrder() to return a RazorpayOrder with null ID.</td>
+                        <td>Throws PaymentException with message "Invalid response from Razorpay". Verifies orderRepository.save() was NEVER called.</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><strong>Zero or Negative Amount</strong> — Invalid payment amount</td>
+                        <td>Pass amount = 0 or amount = -100. (Assumes validation at service level or Razorpay rejects it).</td>
+                        <td>Depending on implementation: either throws BadRequestException before calling Razorpay, or Razorpay throws RazorpayException for invalid amount.</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td><strong>Duplicate Razorpay Order ID</strong> — Same order ID submitted twice</td>
+                        <td>First call succeeds (sets razorpayOrderId). Second call with same order — order status is now CONFIRMED (not PENDING).</td>
+                        <td>Second call throws BadRequestException because order is not in PENDING status. This tests idempotency at the application level.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Bonus: Mock Setup for All Tests</h4>
+            <pre>
+@ExtendWith(MockitoExtension.class)
+class PaymentServiceTest {
+
+    @Mock private RazorpayClient razorpayClient;
+    @Mock private OrderRepository orderRepository;
+    @InjectMocks private PaymentService paymentService;
+
+    private Order pendingOrder;
+    private RazorpayOrder razorpayOrder;
+
+    @BeforeEach
+    void setUp() {
+        pendingOrder = new Order();
+        pendingOrder.setId(1L);
+        pendingOrder.setStatus(OrderStatus.PENDING);
+        pendingOrder.setTotalAmount(new BigDecimal("50000"));
+
+        razorpayOrder = new RazorpayOrder();
+        razorpayOrder.setId("rzp_order_123");
+        razorpayOrder.setStatus("created");
+    }
+
+    // Test methods for each scenario above...
+}
+            </pre>
+
+            <div class="highlight">
+                <strong>&#x1f4a1; Why This Challenge Matters:</strong> PaymentService.createRazorpayOrder() is a critical money-touching method. Every branch (found/not found, PENDING/not PENDING, success/failure/null response) must be tested. Missing even one branch could lead to charging a customer without creating an order, or creating an order without charging — both catastrophic in production.
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>&#x1f4d8; Phase 7 Complete — Testing</p>
+        <p>Built for Interview Preparation | Java 21 + Spring Boot 3+ | E-Commerce Backend</p>
+        <p>Covers: JUnit 5 | Mockito | @WebMvcTest | @DataJpaTest | TestContainers | JaCoCo | Pitest</p>
+        <p style="margin-top:10px;">"Type <strong>next phase</strong> to continue."</p>
+    </div>
+
+</div>
+</body>
+</html>

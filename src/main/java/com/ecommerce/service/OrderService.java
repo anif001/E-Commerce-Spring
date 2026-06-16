@@ -77,12 +77,12 @@ public class OrderService {
         orderItems.forEach(item -> item.setOrder(order));
         order.setOrderItems(orderItems);
 
-        order = orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        return toOrderResponse(order);
+        return toOrderResponse(savedOrder);
     }
 
     public OrderResponse getOrderById(Long orderId, Long userId) {
