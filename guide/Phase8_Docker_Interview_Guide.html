@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 8: Docker & Containerization — E-Commerce Backend Interview Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+            border-bottom: 2px solid #6C63FF;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #6C63FF, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle { color: #888; font-size: 1rem; margin-top: 10px; }
+        .header .badge {
+            display: inline-block;
+            background: #6C63FF; color: #fff;
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 0.8rem; margin-top: 12px;
+        }
+        section {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6C63FF;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        section h2 {
+            font-size: 1.5rem;
+            color: #6C63FF;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        section h3 {
+            font-size: 1.15rem;
+            color: #e0e0e0;
+            margin: 20px 0 10px;
+        }
+        section p { margin-bottom: 14px; color: #ccc; }
+        ul, ol { padding-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; color: #ccc; }
+        code {
+            background: #2a2a3e;
+            color: #6C63FF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        pre {
+            background: #12122a;
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid #2a2a3e;
+        }
+        pre code { background: none; padding: 0; color: #f0f0f0; }
+        .qa { margin-bottom: 16px; }
+        .qa .q {
+            font-weight: 600;
+            color: #6C63FF;
+            margin-bottom: 4px;
+        }
+        .qa .a { color: #ccc; padding-left: 16px; border-left: 2px solid #6C63FF; }
+        .note {
+            background: #1e2a3e;
+            border-left: 4px solid #ffd700;
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin: 14px 0;
+        }
+        .note strong { color: #ffd700; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #2a2a3e;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th { background: #6C63FF; color: #fff; }
+        td { background: #12122a; color: #ccc; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>Phase 8: Docker &amp; Containerization</h1>
+    <div class="subtitle">E-Commerce Backend — Docker Interview Guide with Multi-Stage Builds &amp; Docker Compose</div>
+    <div class="badge">Phase 8 of 10</div>
+</div>
+
+<section>
+    <h2>1. Why Docker?</h2>
+    <p>Docker packages the application and its dependencies into a lightweight, portable container that runs identically across development, staging, and production environments.</p>
+    <h3>Benefits for This Project</h3>
+    <ul>
+        <li><strong>Consistency</strong> — the app runs the same on every machine</li>
+        <li><strong>Dependency isolation</strong> — PostgreSQL, Redis, and the app each run in their own container</li>
+        <li><strong>Simplified setup</strong> — one <code>docker-compose up</code> starts the entire stack</li>
+        <li><strong>CI/CD ready</strong> — containers are the standard deployment artifact for pipelines</li>
+    </ul>
+</section>
+
+<section>
+    <h2>2. Dockerfile — Multi-Stage Build</h2>
+    <p>We use a <strong>multi-stage build</strong> to keep the final image small:</p>
+    <ul>
+        <li><strong>Stage 1 (build):</strong> Maven + JDK 17 compiles the JAR</li>
+        <li><strong>Stage 2 (runtime):</strong> JRE 17 runs the JAR — no Maven or source code included</li>
+    </ul>
+    <pre><code>FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn package -DskipTests -B
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre>
+
+    <h3>Key Decisions</h3>
+    <ul>
+        <li><code>mvn dependency:go-offline</code> — downloads dependencies <em>before</em> copying source, so source changes don't re-download deps (layer caching)</li>
+        <li><code>-DskipTests</code> — tests run in CI, not during image build</li>
+        <li><code>eclipse-temurin</code> — official, well-maintained OpenJDK builds</li>
+        <li><code>-alpine</code> — minimal base image (~120 MB vs ~400 MB for full JDK)</li>
+    </ul>
+</section>
+
+<section>
+    <h2>3. Docker Compose — Full Stack Orchestration</h2>
+    <pre><code>services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecommerce-postgres
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    container_name: ecommerce-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: my-super-secret-key...
+      JWT_ACCESS_TOKEN_EXPIRATION: 900000
+      JWT_REFRESH_TOKEN_EXPIRATION: 604800000
+      RAZORPAY_KEY_ID: rzp_test_xxxxxxxxxxxx
+      RAZORPAY_KEY_SECRET: your_razorpay_secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:</code></pre>
+
+    <h3>How Spring Boot Env Var Override Works</h3>
+    <p>Spring Boot automatically maps environment variables to properties using relaxed binding:</p>
+    <table>
+        <tr><th>Environment Variable</th><th>Spring Property</th></tr>
+        <tr><td><code>SPRING_DATASOURCE_URL</code></td><td><code>spring.datasource.url</code></td></tr>
+        <tr><td><code>SPRING_DATASOURCE_USERNAME</code></td><td><code>spring.datasource.username</code></td></tr>
+        <tr><td><code>SPRING_REDIS_HOST</code></td><td><code>spring.redis.host</code></td></tr>
+        <tr><td><code>JWT_SECRET</code></td><td><code>jwt.secret</code></td></tr>
+        <tr><td><code>RAZORPAY_KEY_ID</code></td><td><code>razorpay.key-id</code></td></tr>
+    </table>
+    <p>This lets us keep <code>application.yml</code> unchanged — the Docker environment overrides <code>localhost</code> references to service names (<code>postgres</code>, <code>redis</code>).</p>
+
+    <h3>Healthchecks &amp; depends_on</h3>
+    <p>The app container waits until both PostgreSQL and Redis pass their health checks before starting. Without this, the app would crash-loop trying to connect to unavailable services.</p>
+</section>
+
+<section>
+    <h2>4. .dockerignore</h2>
+    <p>Prevents unnecessary files from being copied into the Docker build context, speeding up builds and reducing image size:</p>
+    <pre><code>target/
+.git/
+.gitignore
+*.md
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+node_modules/</code></pre>
+</section>
+
+<section>
+    <h2>5. Running the Stack</h2>
+    <pre><code># Build and start all services
+docker compose up --build -d
+
+# View logs
+docker compose logs -f app
+
+# Stop everything
+docker compose down
+
+# Remove volumes too (resets database)
+docker compose down -v</code></pre>
+</section>
+
+<section>
+    <h2>6. Interview Questions &amp; Answers</h2>
+
+    <div class="qa">
+        <div class="q">Q: Why multi-stage builds?</div>
+        <div class="a">Multi-stage builds produce smaller, more secure runtime images. The build stage has Maven + JDK (hundreds of MB), but the runtime stage only contains the JRE and the JAR. No build tools, source code, or intermediate artifacts leak into the final image.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: Why <code>mvn dependency:go-offline</code> before copying source?</div>
+        <div class="a">Docker builds cache layers. If we copy <code>pom.xml</code> first and run <code>go-offline</code>, the dependency layer only changes when the POM changes. Source code changes re-trigger only the compile + package steps, not dependency downloads. This dramatically speeds up rebuilds.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: How does the app connect to PostgreSQL and Redis in Docker?</div>
+        <div class="a">Docker Compose creates an internal network. Services reach each other by container name (<code>postgres</code>, <code>redis</code>). Environment variables in the <code>app</code> service override the <code>localhost</code> values in <code>application.yml</code>, pointing to the container names instead.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What's the difference between <code>depends_on</code> with and without <code>condition</code>?</div>
+        <div class="a">Basic <code>depends_on</code> only waits for the container process to start, not for the service to be ready. With <code>condition: service_healthy</code>, it waits until the healthcheck passes (e.g., PostgreSQL accepting queries), preventing the app from crashing on startup.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: Why use a named volume for PostgreSQL data?</div>
+        <div class="a">Containers are ephemeral — removing them deletes all data. A named volume (<code>postgres-data</code>) persists database files on the host, surviving container restarts and rebuilds. Without it, every <code>docker compose down</code> would wipe the database.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: How would you deploy this to production?</div>
+        <div class="a">Options include (a) running <code>docker compose</code> on a VPS with environment variables provided via a <code>.env</code> file, (b) using Kubernetes with Helm charts for orchestration, or (c) using a container platform like AWS ECS/EKS, GCP Cloud Run, or Azure Container Apps. A CI/CD pipeline builds the image, pushes to a registry, and deploys the new image.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: How do you handle secrets in Docker?</div>
+        <div class="a">For development, environment variables in <code>docker-compose.yml</code> suffice. For production, use Docker secrets (swarm mode), a <code>.env</code> file (gitignored), or external secret managers like HashiCorp Vault, AWS Secrets Manager, or sealed secrets in Kubernetes.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What's the difference between an image and a container?</div>
+        <div class="a">An image is a read-only template with the application code, runtime, and dependencies. A container is a running instance of an image. You can start, stop, restart, and delete containers without affecting the image. Similar to how a class is a blueprint and an object is an instance.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What is layer caching and why does it matter?</div>
+        <div class="a">Each Dockerfile instruction creates a layer. Docker caches layers so unchanged steps reuse the cache. We structure the build so that rarely-changing steps (dependency downloads) come before frequently-changing steps (source code). This way, changing one Java file doesn't re-download all Maven dependencies.</div>
+    </div>
+</section>
+
+<section>
+    <h2>7. Common Commands Quick Reference</h2>
+    <table>
+        <tr><th>Command</th><th>Purpose</th></tr>
+        <tr><td><code>docker compose up -d</code></td><td>Start all services in background</td></tr>
+        <tr><td><code>docker compose build</code></td><td>Rebuild app image without starting</td></tr>
+        <tr><td><code>docker compose logs -f</code></td><td>Tail logs from all services</td></tr>
+        <tr><td><code>docker compose ps</code></td><td>Show container status</td></tr>
+        <tr><td><code>docker compose exec app sh</code></td><td>Open a shell inside the app container</td></tr>
+        <tr><td><code>docker image prune -a</code></td><td>Clean up unused images</td></tr>
+        <tr><td><code>docker system df</code></td><td>Show disk usage by Docker objects</td></tr>
+        <tr><td><code>docker compose down -v</code></td><td>Stop and remove volumes</td></tr>
+        <tr><td><code>docker history &lt;image&gt;</code></td><td>Show layers of an image</td></tr>
+    </table>
+</section>
+
+<section>
+    <h2>8. Image Size Breakdown</h2>
+    <table>
+        <tr><th>Stage</th><th>Size (approx)</th><th>Contents</th></tr>
+        <tr><td>Build stage</td><td>~600 MB</td><td>Alpine + Maven + JDK 17 + all dependencies</td></tr>
+        <tr><td>Runtime stage</td><td>~180 MB</td><td>Alpine + JRE 17 + app JAR only</td></tr>
+        <tr><td>Saved</td><td>~420 MB</td><td>Build tools and source excluded</td></tr>
+    </table>
+    <p>A ~180 MB image is fast to pull and deploy.</p>
+</section>
+
+</div>
+</body>
+</html>
