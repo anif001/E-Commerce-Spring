@@ -46,14 +46,16 @@
             font-size: 1.5rem;
             color: #6C63FF;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         section h3 {
             font-size: 1.15rem;
-            color: #e0e0e0;
+            color: #6C63FF;
             margin: 20px 0 10px;
+        }
+        section h4 {
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin: 16px 0 8px;
         }
         section p { margin-bottom: 14px; color: #ccc; }
         ul, ol { padding-left: 24px; margin-bottom: 14px; }
@@ -74,11 +76,13 @@
             border: 1px solid #2a2a3e;
         }
         pre code { background: none; padding: 0; color: #f0f0f0; }
-        .qa { margin-bottom: 16px; }
+        .qa { margin-bottom: 18px; border-bottom: 1px solid #2a2a3e; padding-bottom: 14px; }
+        .qa:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .qa .q {
             font-weight: 600;
             color: #6C63FF;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
         }
         .qa .a { color: #ccc; padding-left: 16px; border-left: 2px solid #6C63FF; }
         .note {
@@ -89,6 +93,14 @@
             margin: 14px 0;
         }
         .note strong { color: #ffd700; }
+        .warn {
+            background: #2e1a1a;
+            border-left: 4px solid #ff4444;
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin: 14px 0;
+        }
+        .warn strong { color: #ff4444; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -101,6 +113,10 @@
         }
         th { background: #6C63FF; color: #fff; }
         td { background: #12122a; color: #ccc; }
+        .yaml-comment { color: #6a9955; }
+        .yaml-key { color: #569cd6; }
+        .yaml-value { color: #ce9178; }
+        .yaml-punctuation { color: #d4d4d4; }
     </style>
 </head>
 <body>
@@ -114,24 +130,44 @@
 
 <section>
     <h2>1. What is CI/CD?</h2>
-    <p><strong>CI (Continuous Integration):</strong> Every push to the repository triggers an automated build and test suite. If tests fail, the developer knows immediately.</p>
-    <p><strong>CD (Continuous Deployment):</strong> After CI passes, the application is automatically deployed to a server or cloud platform.</p>
-    <h3>Why it matters for a fresher</h3>
+
+    <h3>Continuous Integration (CI)</h3>
+    <p>CI is the practice of automatically building and testing every code change pushed to the repository. In this project, every push or pull request to <code>main</code> triggers a workflow that compiles the code, runs all unit/integration tests against a real PostgreSQL database, and verifies the Docker image builds successfully. The key benefits are immediate feedback on breakage, early detection of integration conflicts, and a consistent quality gate that prevents broken code from reaching production.</p>
+
+    <h3>Continuous Deployment (CD)</h3>
+    <p>CD extends CI by automatically deploying the validated artifact to a production or staging environment. Here, after the CI workflow completes successfully on <code>main</code>, a separate CD workflow builds the Docker image, pushes it to GitHub Container Registry (GHCR), and SSHes into the deployment server to pull and restart the application with zero-downtime via <code>docker compose up --force-recreate</code>.</p>
+
+    <h3>Why CI/CD Matters at Scale</h3>
     <ul>
-        <li>Shows you understand modern DevOps workflows</li>
-        <li>Automates the tedious parts of testing and deployment</li>
-        <li>Catches integration bugs early</li>
-        <li>Most companies ask about CI/CD in interviews</li>
+        <li><strong>Catch bugs early:</strong> A failing test on a PR costs minutes to fix; a bug in production costs hours of incident response, rollback, and customer trust.</li>
+        <li><strong>Consistent process:</strong> Every push follows the exact same build, test, and deploy pipeline, eliminating "works on my machine" discrepancies and manual steps that cause environment drift.</li>
+        <li><strong>Fast feedback:</strong> Developers know within minutes (not days) whether their change is safe, enabling rapid iteration and confident shipping.</li>
+        <li><strong>Audit trail:</strong> Every deployment is tied to a specific commit, workflow run, and set of test results, making rollback and root-cause analysis straightforward.</li>
     </ul>
+    <div class="note">
+        <strong>Senior-level insight:</strong> CI/CD is not just about automation tools. It is a cultural discipline. The pipeline encodes your team's quality standards, release process, and compliance checks as code. A well-designed pipeline catches human error before it reaches customers and lets developers focus on feature work rather than release mechanics.
+    </div>
 </section>
 
 <section>
-    <h2>2. CI Pipeline (.github/workflows/ci.yml)</h2>
-    <p>Triggered on push/PR to <code>main</code>. Two jobs run in sequence:</p>
+    <h2>2. CI Pipeline (ci.yml)</h2>
+    <p>The CI workflow is defined at <code>.github/workflows/ci.yml</code>. It runs on every push and pull request targeting <code>main</code> and consists of <strong>two sequential jobs</strong>: <code>test</code> and <code>docker</code>. The full file is reproduced below with line-by-line analysis.</p>
 
-    <h3>Job 1: Build &amp; Test</h3>
-    <pre><code>jobs:
+    <h3>Full ci.yml</h3>
+    <pre><code>name: CI — Build, Test & Docker
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: ecommerce-backend
+
+jobs:
   test:
+    name: Build & Test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -140,72 +176,189 @@
           POSTGRES_DB: ecommerce
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
         ports:
           - 5432:5432
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - run: mvn test -B
+
+      - name: Run tests
+        run: mvn test -B
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ecommerce
-          JWT_SECRET: ${{ secrets.JWT_SECRET || 'fallback-secret' }}
-          ...</code></pre>
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+          SPRING_REDIS_HOST: localhost
+          SPRING_REDIS_PORT: 6379
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-key-that-is-at-least-32-chars-long' }}
+          JWT_ACCESS_TOKEN_EXPIRATION: 900000
+          JWT_REFRESH_TOKEN_EXPIRATION: 604800000
+          RAZORPAY_KEY_ID: rzp_test_ci
+          RAZORPAY_KEY_SECRET: ci_secret
 
-    <h3>What happens:</h3>
-    <ul>
-        <li>GitHub spins up a PostgreSQL 15 container as a service</li>
-        <li>JDK 17 is installed with Maven caching</li>
-        <li><code>mvn test -B</code> runs ALL 135+ tests</li>
-        <li>Failures upload test reports as artifacts for debugging</li>
-    </ul>
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: target/surefire-reports/
 
-    <h3>Job 2: Build Docker Image</h3>
-    <pre><code>  docker:
+  docker:
+    name: Build Docker Image
     runs-on: ubuntu-latest
     needs: [ test ]
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: false
-          tags: ecommerce-backend:latest
+          tags: ${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max</code></pre>
 
-    <p>The Docker image is built (but not pushed) to verify the Dockerfile works. Uses GitHub Actions cache for faster rebuilds.</p>
+    <h3>Line-by-Line Breakdown</h3>
+
+    <h4>Workflow Name and Triggers</h4>
+    <p><code>name: CI — Build, Test & Docker</code> — This name appears in the GitHub Actions tab and, critically, is referenced by the CD workflow's <code>workflow_run</code> trigger. The name must match exactly between files.</p>
+    <p><code>on: push: branches: [ main ]</code> and <code>pull_request: branches: [ main ]</code> — Two events trigger this workflow: direct pushes to <code>main</code> and pull requests opened against <code>main</code>. The <code>pull_request</code> trigger is essential for branch protection — it runs tests on the merge commit <em>before</em> the PR is merged, giving reviewers confidence that the target branch won't break.</p>
+
+    <h4>Environment Variables</h4>
+    <p><code>env: IMAGE_NAME: ecommerce-backend</code> — A workflow-level variable reused by the docker job. Referenced as <code>${{ env.IMAGE_NAME }}</code>. Using <code>env</code> for values used across jobs avoids duplication and makes the pipeline easier to maintain.</p>
+
+    <h4>Job 1: test</h4>
+    <p><code>runs-on: ubuntu-latest</code> — The job executes on a fresh Ubuntu virtual machine provided by GitHub. Each job gets its own isolated runner; state does not persist between jobs (except via artifacts or caches).</p>
+
+    <p><code>services: postgres:</code> — This is a <strong>service container</strong>. GitHub Actions spins up a separate Docker container alongside the job's primary container. The service container is reachable via <code>localhost</code> from the job steps. It lives for the duration of the job and is automatically torn down when the job completes.</p>
+    <ul>
+        <li><code>image: postgres:15-alpine</code> — The official PostgreSQL 15 image on Alpine Linux (small footprint).</li>
+        <li><code>env: POSTGRES_DB: ecommerce</code>, <code>POSTGRES_USER: postgres</code>, <code>POSTGRES_PASSWORD: postgres</code> — Environment variables passed to the container to initialize the database.</li>
+        <li><code>options: >- --health-cmd "pg_isready -U postgres" ...</code> — Health check configuration. GitHub Actions waits until the container reports healthy before running job steps. This prevents race conditions where tests start before the database is accepting connections. <code>--health-interval 5s</code> checks every 5 seconds; <code>--health-retries 5</code> gives up after 5 failures.</li>
+        <li><code>ports: - 5432:5432</code> — Maps the container's PostgreSQL port to the host (runner) on the standard port. The Spring Boot test configuration then points to <code>localhost:5432</code>.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Why a real PostgreSQL container instead of H2?</strong> Using the exact same database dialect as production ensures that SQL syntax, data type behavior, constraint enforcement, and migration scripts behave identically in CI and production. H2 has subtle incompatibilities (e.g., boolean handling, sequence generation, JSONB support) that can produce false-positive test passes. For a production system using PostgreSQL-specific features (JSONB columns, array types, <code>ON CONFLICT</code> clauses), real-PostgreSQL testing is non-negotiable.
+    </div>
+
+    <h4>Steps in the test job</h4>
+    <p><strong>Step 1: actions/checkout@v4</strong> — The official GitHub Action that checks out the repository's source code into the runner's workspace. Without this, subsequent steps have no code to work with.</p>
+
+    <p><strong>Step 2: actions/setup-java@v4</strong> — Installs JDK 17 from the Adoptium (Temurin) distribution. The <code>cache: maven</code> parameter tells the action to save and restore the Maven <code>~/.m2/repository</code> directory using GitHub Actions cache, so subsequent runs don't need to re-download all dependencies from Maven Central. This typically shaves 60-80% off the setup time.</p>
+
+    <p><strong>Step 3: Run tests</strong> — <code>mvn test -B</code> executes the full Maven test suite in batch mode (non-interactive). The <code>-B</code> flag suppresses progress output, making logs more concise. Environment variables override the application's <code>application.properties</code> or <code>application.yml</code> at runtime:</p>
+    <ul>
+        <li><code>SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ecommerce</code> — Points to the service container on localhost.</li>
+        <li><code>SPRING_DATASOURCE_USERNAME/PASSWORD: postgres</code> — Matches the service container credentials.</li>
+        <li><code>SPRING_JPA_HIBERNATE_DDL_AUTO: update</code> — Allows Hibernate to auto-create tables based on entities, avoiding the need for Flyway/Liquibase in CI.</li>
+        <li><code>SPRING_REDIS_HOST/PORT</code> — Configured even though Redis is not spun up as a service container here (tests requiring Redis would need an additional service entry).</li>
+        <li><code>JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret...' }}</code> — Uses the GitHub secret if available; falls back to a literal string for local/PR testing where secrets are not exposed.</li>
+        <li><code>RAZORPAY_KEY_ID/SECRET</code> — Test-only values for the payment gateway integration. These are not real credentials — they are placeholders that allow the test context to load without errors.</li>
+    </ul>
+
+    <p><strong>Step 4: Upload test reports</strong> — <code>actions/upload-artifact@v4</code> saves the Surefire test report XML files. The <code>if: always()</code> condition ensures this step runs even if tests fail, so developers can download and inspect the failure details. Artifacts are stored per-workflow-run in GitHub and expire after 90 days by default.</p>
+
+    <h4>Job 2: docker</h4>
+    <p><code>needs: [ test ]</code> — This keyword creates a <strong>hard dependency</strong>. The docker job waits for the test job to complete successfully. If tests fail, the docker job is <strong>skipped</strong> entirely (shown as "skipped" with a grey check in the UI). This prevents wasting runner minutes building a Docker image from broken code.</p>
+
+    <p><strong>docker/setup-buildx-action@v3</strong> — Configures Docker Buildx, which provides advanced build features like multi-platform builds, build cache export/import, and better layer caching. Without this step, <code>docker/build-push-action</code> would fall back to the legacy builder.</p>
+
+    <p><strong>docker/build-push-action@v5</strong> — The core build step:</p>
+    <ul>
+        <li><code>context: .</code> — The build context is the repository root (where the <code>Dockerfile</code> lives).</li>
+        <li><code>push: false</code> — The image is built but <strong>not</strong> pushed to any registry. This job purely validates that the Dockerfile can be built successfully (no missing files, no syntax errors, all layers resolve).</li>
+        <li><code>tags: ${{ env.IMAGE_NAME }}:latest</code> — Tags the image locally as <code>ecommerce-backend:latest</code>.</li>
+        <li><code>cache-from: type=gha</code> and <code>cache-to: type=gha,mode=max</code> — Uses GitHub Actions cache as the backend for Docker layer caching. <code>mode=max</code> caches all layers (not just the final image), which makes rebuilds significantly faster when only a few layers change. The cache is keyed by the workflow, so different branches/PRs get separate cache entries.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Why two jobs instead of one?</strong> Separating test and docker into two jobs with a <code>needs</code> dependency means tests can run in parallel with other work (if there were more jobs) and the docker job can be reused or side-stepped independently. It also makes the pipeline visualisation clearer in the GitHub Actions UI — you can see at a glance whether the failure was in tests or the build. Practically, if the docker job fails, you know the issue is in the Dockerfile or build context, not in the application code.
+    </div>
+
+    <h3>Pipeline Flow (CI)</h3>
+    <pre><code>Push/PR to main
+       |
+       v
+  +-------------------+
+  |  Job: test        |
+  |  - PostgreSQL     |---- If fail -> upload reports -> stop
+  |  - JDK 17 + Maven |
+  |  - mvn test -B    |
+  +--------+----------+
+           |
+           v (needs: [test])
+  +-------------------+
+  |  Job: docker      |
+  |  - Buildx setup   |---- Build image locally (push: false)
+  |  - Build image    |
+  +--------+----------+
+           |
+           v
+    CI passes</code></pre>
 </section>
 
 <section>
-    <h2>3. CD Pipeline (.github/workflows/cd.yml)</h2>
-    <pre><code>on:
+    <h2>3. CD Pipeline (cd.yml)</h2>
+    <p>The CD workflow is defined at <code>.github/workflows/cd.yml</code>. It is <strong>not</strong> triggered by push events directly. Instead, it uses the <code>workflow_run</code> trigger to run <em>after</em> the CI workflow completes on <code>main</code>. This two-pipeline architecture is a deliberate security and organisational pattern.</p>
+
+    <h3>Full cd.yml</h3>
+    <pre><code>name: CD — Deploy to Server
+
+on:
   workflow_run:
     workflows: [ "CI — Build, Test & Docker" ]
     branches: [ main ]
     types:
       - completed
 
+env:
+  IMAGE_NAME: ecommerce-backend
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.repository_owner }}/ecommerce-backend:latest
+
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: docker/login-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v5
+      - name: Build & push image
+        uses: docker/build-push-action@v5
         with:
+          context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/ecommerce-backend:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -213,128 +366,296 @@ jobs:
           script: |
             cd ~/ecommerce
             docker compose pull app
-            docker compose up -d --force-recreate app</code></pre>
+            docker compose up -d --force-recreate app
+            docker image prune -f</code></pre>
 
-    <h3>How it works:</h3>
+    <h3>Line-by-Line Breakdown</h3>
+
+    <h4>Trigger: workflow_run</h4>
+    <p><code>on: workflow_run: workflows: [ "CI — Build, Test & Docker" ]</code> — This workflow does <strong>not</strong> trigger on pushes or PRs. Instead, it triggers when the named workflow (<code>CI — Build, Test & Docker</code>) completes, but only on the <code>main</code> branch. The <code>types: [ completed ]</code> event fires regardless of whether the triggering workflow succeeded or failed — hence the explicit conclusion check in the job.</p>
+
+    <p>This design provides several advantages over a single monolithic workflow:</p>
     <ul>
-        <li>Only triggers <em>after</em> the CI workflow succeeds on <code>main</code></li>
-        <li>Builds the Docker image and pushes it to GitHub Container Registry (ghcr.io)</li>
-        <li>SSHes into your server, pulls the new image, and restarts the app</li>
-        <li>Zero-downtime deployment via <code>--force-recreate</code></li>
+        <li><strong>Separation of concerns:</strong> CI and CD are independent YAML files. The CD pipeline can be maintained, reviewed, and permissioned separately.</li>
+        <li><strong>Security:</strong> The CD workflow requires additional secrets (SSH keys, deploy credentials). By keeping it in a separate workflow triggered only on CI success, you avoid exposing these secrets to pull requests from forks.</li>
+        <li><strong>Reusability:</strong> The same pattern can be extended to deploy to multiple environments (staging, production) by adding more workflows that listen for the same CI completion event but filter by branch or other criteria.</li>
+    </ul>
+
+    <h4>Conclusion Check</h4>
+    <p><code>if: ${{ github.event.workflow_run.conclusion == 'success' }}</code> — This is the safety gate. Even though the workflow triggers on completion, we explicitly verify that the CI workflow concluded with <code>success</code> (not <code>failure</code>, <code>cancelled</code>, <code>skipped</code>, or <code>timed_out</code>). The <code>workflow_run</code> event payload contains a <code>conclusion</code> field reflecting the triggering workflow's final status.</p>
+
+    <div class="warn">
+        <strong>Common gotcha:</strong> Never use <code>on: workflow_run: ... types: [completed]</code> without also checking <code>conclusion == 'success'</code>. Without that check, the CD pipeline would trigger on CI failures too, potentially deploying broken or untested code.
+    </div>
+
+    <h4>Environment Variables</h4>
+    <p><code>REGISTRY: ghcr.io</code> — The target container registry is GitHub Container Registry. <code>ghcr.io</code> is GitHub's own OCI-compliant registry integrated with GitHub Packages.</p>
+    <p><code>IMAGE_TAG: ${{ github.repository_owner }}/ecommerce-backend:latest</code> — Push tag format for GHCR is <code>ghcr.io/&lt;owner&gt;/&lt;image&gt;:&lt;tag&gt;</code>. <code>github.repository_owner</code> is a built-in context variable that resolves to the repository owner's GitHub username (lowercase).</p>
+
+    <h4>Steps</h4>
+    <p><strong>Step 1: Checkout</strong> — Standard checkout. The source code is needed because <code>docker/build-push-action</code> reads the Dockerfile from the workspace.</p>
+
+    <p><strong>Step 2: docker/login-action@v3</strong> — Authenticates with GHCR using the automatically-provided <code>secrets.GITHUB_TOKEN</code>. The <code>GITHUB_TOKEN</code> is a temporary token that GitHub automatically injects into every workflow run. It has permissions scoped to the current repository and expires when the workflow completes. No manual credential management is needed.</p>
+
+    <div class="note">
+        <strong>GitHub Container Registry vs Docker Hub:</strong> GHCR is deeply integrated with the GitHub ecosystem. Authentication is handled via the built-in <code>GITHUB_TOKEN</code>, so there are no separate registry credentials to rotate or store. GHCR supports fine-grained package permissions at the repository level, has no pull rate limits for authenticated users, and keeps the image alongside the source code in the GitHub UI. Docker Hub, by contrast, requires a separate account/token, has rate limits on free tiers (200 pulls/hour for anonymous, higher for authenticated), and stores images in a separate namespace outside your GitHub repository.
+    </div>
+
+    <p><strong>Step 3: docker/build-push-action@v5</strong> — Nearly identical to the CI docker job, but with two critical differences:</p>
+    <ul>
+        <li><code>push: true</code> — The built image is pushed to GHCR, making it available for the deployment server to pull.</li>
+        <li><code>tags: ${{ env.REGISTRY }}/${{ env.IMAGE_TAG }}</code> — The full push URL, e.g., <code>ghcr.io/myuser/ecommerce-backend:latest</code>.</li>
+    </ul>
+
+    <p><strong>Step 4: appleboy/ssh-action@v1.0.3</strong> — This popular action SSHes into the deployment server and runs shell commands:</p>
+    <ul>
+        <li><code>cd ~/ecommerce</code> — Navigate to the project directory (where <code>docker-compose.yml</code> lives).</li>
+        <li><code>docker compose pull app</code> — Pull the latest image from GHCR.</li>
+        <li><code>docker compose up -d --force-recreate app</code> — Stop the current container, create a new one from the pulled image, and start it in detached mode. The <code>--force-recreate</code> flag ensures a fresh container even if the Compose configuration hasn't changed.</li>
+        <li><code>docker image prune -f</code> — Remove unused Docker images from the server to free disk space.</li>
+    </ul>
+
+    <p>The SSH action requires three secrets: <code>DEPLOY_HOST</code> (the server's public IP or hostname), <code>DEPLOY_USER</code> (the SSH username, e.g., <code>ubuntu</code> or <code>deploy</code>), and <code>DEPLOY_SSH_KEY</code> (the SSH private key that matches an authorized public key on the server). These secrets are set in the repository's GitHub Settings and never appear in the workflow file or logs.</p>
+
+    <h3>Pipeline Flow (CD)</h3>
+    <pre><code>CI workflow completes on main
+       |
+       v (workflow_run: completed)
+  Check conclusion == 'success'
+       |
+       +-- No -> Job skipped (deploy does not run)
+       |
+       v Yes
+  +---------------------+
+  | Job: deploy         |
+  | 1. Checkout code    |
+  | 2. Login to GHCR    |
+  | 3. Build & push     |
+  |    image to ghcr.io |
+  | 4. SSH into server  |
+  |    -> docker pull   |
+  |    -> docker up -d  |
+  |    -> image prune   |
+  +---------------------+
+       |
+       v
+  App deployed</code></pre>
+</section>
+
+<section>
+    <h2>4. GitHub Actions Concepts</h2>
+    <p>A senior engineer must understand these primitives to design, debug, and optimise pipelines. Each concept is defined below with its role in this project.</p>
+
+    <table>
+        <tr><th>Concept</th><th>Definition</th><th>In This Project</th></tr>
+        <tr>
+            <td><strong>Workflow</strong></td>
+            <td>A YAML file in <code>.github/workflows/</code> that defines an automated process. It is the top-level unit of CI/CD configuration.</td>
+            <td><code>ci.yml</code> (build/test/docker) and <code>cd.yml</code> (deploy). Each workflow is independent but linked via <code>workflow_run</code>.</td>
+        </tr>
+        <tr>
+            <td><strong>Job</strong></td>
+            <td>A set of steps that execute on the same runner. Jobs in the same workflow run in parallel unless they declare <code>needs</code> dependencies.</td>
+            <td>CI has two jobs (<code>test</code>, <code>docker</code>) running sequentially. CD has one job (<code>deploy</code>).</td>
+        </tr>
+        <tr>
+            <td><strong>Step</strong></td>
+            <td>An individual unit of work within a job — either a shell command (<code>run:</code>) or a reusable action (<code>uses:</code>).</td>
+            <td>Examples: <code>uses: actions/checkout@v4</code>, <code>run: mvn test -B</code>.</td>
+        </tr>
+        <tr>
+            <td><strong>Action</strong></td>
+            <td>A reusable, versioned package of logic published to the GitHub Marketplace or a public repository.</td>
+            <td><code>actions/checkout</code>, <code>actions/setup-java</code>, <code>docker/build-push-action</code>, <code>appleboy/ssh-action</code>.</td>
+        </tr>
+        <tr>
+            <td><strong>Runner</strong></td>
+            <td>A virtual machine (or self-hosted machine) that executes jobs. Each job gets a fresh runner with a clean filesystem.</td>
+            <td>All jobs use <code>runs-on: ubuntu-latest</code>, GitHub's hosted Ubuntu runner.</td>
+        </tr>
+        <tr>
+            <td><strong>Event</strong></td>
+            <td>A trigger that starts a workflow. Events include <code>push</code>, <code>pull_request</code>, <code>workflow_run</code>, <code>schedule</code>, and many more.</td>
+            <td>CI is triggered by <code>push</code>/<code>pull_request</code> to <code>main</code>. CD is triggered by <code>workflow_run</code> completion.</td>
+        </tr>
+        <tr>
+            <td><strong>Needs</strong></td>
+            <td>Declares that a job depends on one or more other jobs. The dependent job starts only after all its dependencies succeed.</td>
+            <td><code>needs: [ test ]</code> on the docker job ensures tests pass first.</td>
+        </tr>
+        <tr>
+            <td><strong>Service Container</strong></td>
+            <td>A Docker container that runs alongside the job steps, accessible via <code>localhost</code>. Used to provide databases, caches, or other dependencies without external infrastructure.</td>
+            <td>The PostgreSQL 15 container in the test job provides a real database for integration tests.</td>
+        </tr>
+        <tr>
+            <td><strong>Artifact</strong></td>
+            <td>Files persisted after a job completes, downloadable from the GitHub Actions UI. Artifacts live for configurable retention (default 90 days).</td>
+            <td><code>target/surefire-reports/</code> uploaded in the test job to make test results inspectable even on failure.</td>
+        </tr>
+        <tr>
+            <td><strong>Cache</strong></td>
+            <td>A key-value store for reusing dependency trees and build outputs across workflow runs, reducing execution time.</td>
+            <td>Maven cache via <code>setup-java: cache: maven</code> and Docker layer cache via <code>type=gha</code>.</td>
+        </tr>
+    </table>
+</section>
+
+<section>
+    <h2>5. Secrets Management</h2>
+    <p>Secrets are sensitive values that the pipeline needs but must never appear in plaintext in the repository or logs. GitHub provides a secrets store at the repository, environment, and organisation level.</p>
+
+    <h3>How to Configure Secrets</h3>
+    <p>Navigate to <strong>Settings > Secrets and variables > Actions</strong> in your GitHub repository. Click "New repository secret" and enter the name and value. Secrets are encrypted with AES-256 before storage and are only decrypted at runtime within the workflow runner. They are masked in all log output (shown as <code>***</code>).</p>
+
+    <h3>Secrets Used in This Project</h3>
+    <table>
+        <tr><th>Secret</th><th>Used In</th><th>Purpose</th></tr>
+        <tr><td><code>JWT_SECRET</code></td><td>CI (test step)</td><td>JWT token signing key. The CI workflow falls back to a hardcoded test value if the secret is not set (via <code>||</code> operator), but production deployments require a strong, non-guessable secret.</td></tr>
+        <tr><td><code>RAZORPAY_KEY_ID</code></td><td>CI (test step)</td><td>Razorpay payment gateway test key. CI uses a hardcoded placeholder (<code>rzp_test_ci</code>) for integration tests that mock the payment provider.</td></tr>
+        <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td>CI (test step)</td><td>Razorpay payment gateway test secret. Same pattern as the key.</td></tr>
+        <tr><td><code>GITHUB_TOKEN</code></td><td>CD (login step)</td><td>Automatically injected by GitHub — not a manual secret. Scoped to the current repository, expires when the workflow ends. Used to authenticate with GHCR.</td></tr>
+        <tr><td><code>DEPLOY_HOST</code></td><td>CD (SSH step)</td><td>The IP address or hostname of the deployment server.</td></tr>
+        <tr><td><code>DEPLOY_USER</code></td><td>CD (SSH step)</td><td>The SSH username for the deployment server (e.g., <code>ubuntu</code>, <code>ec2-user</code>, <code>deploy</code>).</td></tr>
+        <tr><td><code>DEPLOY_SSH_KEY</code></td><td>CD (SSH step)</td><td>The private SSH key used to authenticate with the server. The corresponding public key must be in the server's <code>~/.ssh/authorized_keys</code>.</td></tr>
+    </table>
+
+    <h3>Why Never Hardcode Secrets</h3>
+    <ul>
+        <li><strong>Exposure in logs:</strong> If a secret value appears in a <code>run:</code> command, it will be printed in plaintext in the workflow log.</li>
+        <li><strong>Repository history:</strong> A hardcoded secret committed to <code>application.properties</code> or a workflow file lives forever in Git history, even if later removed.</li>
+        <li><strong>Forked PRs:</strong> Pull requests from forked repositories cannot access repository secrets (by design). Hardcoded values would bypass this security boundary.</li>
+        <li><strong>Rotation difficulty:</strong> Changing a hardcoded secret requires a code change, commit, and deployment. Changing a GitHub secret is a 30-second operation in the Settings UI.</li>
     </ul>
 
     <div class="note">
-        <strong>Note:</strong> The CD workflow requires server secrets to be configured in your GitHub repository settings (<code>DEPLOY_HOST</code>, <code>DEPLOY_USER</code>, <code>DEPLOY_SSH_KEY</code>).
+        <strong>Best practice:</strong> Use the <code>${{ secrets.SECRET_NAME || 'fallback' }}</code> pattern in CI test steps. This allows PRs from forks (which lack secret access) to run tests with a non-sensitive fallback value, while the real secret is used when the workflow runs from the main repository. Never use this pattern in the CD workflow, where secrets are always required and should not have fallbacks.
     </div>
 </section>
 
 <section>
-    <h2>4. Setting Up Secrets in GitHub</h2>
-    <p>Go to <strong>Settings → Secrets and variables → Actions</strong> in your repository and add:</p>
-    <table>
-        <tr><th>Secret Name</th><th>Purpose</th></tr>
-        <tr><td><code>JWT_SECRET</code></td><td>JWT signing key (at least 32 chars)</td></tr>
-        <tr><td><code>RAZORPAY_KEY_ID</code></td><td>Razorpay test key</td></tr>
-        <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td>Razorpay test secret</td></tr>
-        <tr><td><code>DEPLOY_HOST</code></td><td>Server IP (e.g., 123.456.78.90)</td></tr>
-        <tr><td><code>DEPLOY_USER</code></td><td>SSH username (e.g., ubuntu)</td></tr>
-        <tr><td><code>DEPLOY_SSH_KEY</code></td><td>SSH private key for server access</td></tr>
-    </table>
-    <p>Secrets are encrypted and never exposed in logs.</p>
+    <h2>6. Pipeline Design Patterns</h2>
+    <p>The CI/CD pipeline in this project demonstrates several fundamental design patterns that appear in production-grade pipelines across the industry.</p>
+
+    <h3>Sequential Job Dependency (Test > Docker)</h3>
+    <p>The <code>needs: [ test ]</code> declaration creates a strict ordering: the Docker build job waits for the test job to succeed. This is a <strong>fail-fast</strong> pattern. If the tests fail, the pipeline stops immediately and does not waste resources building an image from broken code. The alternative (running test and docker in parallel) would waste compute on every failure and potentially produce a container image from code that failed its tests.</p>
+
+    <h3>Conditional Deployment (CI Must Pass)</h3>
+    <p>The CD pipeline uses <code>workflow_run</code> with a <code>conclusion == 'success'</code> check. This is a <strong>quality gate</strong> pattern. No code is deployed unless the entire CI pipeline (build, test, docker build) has completed successfully on the main branch. This prevents scenarios where a developer merges partially broken code that CI flagged but someone forgot to check.</p>
+
+    <h3>Artifact Sharing (Test Reports)</h3>
+    <p>The test job uploads <code>target/surefire-reports/</code> as an artifact with <code>if: always()</code>. This <strong>always-upload</strong> pattern ensures failure analysis data is preserved even when the job fails. Without this, a test failure would stop the job and the detailed Surefire XML reports would be lost when the runner is torn down.</p>
+
+    <h3>Caching (Maven and Docker Layers)</h3>
+    <p>Two levels of caching are employed:</p>
+    <ul>
+        <li><strong>Maven dependency cache</strong> — <code>actions/setup-java@v4</code> with <code>cache: maven</code> automatically saves and restores <code>~/.m2/repository</code>. The cache key is derived from the <code>pom.xml</code> hash; when dependencies change, the cache is invalidated and rebuilt.</li>
+        <li><strong>Docker layer cache</strong> — <code>cache-from: type=gha</code> and <code>cache-to: type=gha,mode=max</code> export and import Docker build cache to GitHub's cache service. This avoids re-downloading base images and re-running unchanged layers on every build.</li>
+    </ul>
+    <p>Both caches are keyed per branch and shareable across workflow runs. Cache hits reduce the test job setup by 60-80% and the Docker build by 40-60%.</p>
+
+    <h3>Two-Workflow Separation (CI/CD Split)</h3>
+    <p>Using separate YAML files for CI and CD with a <code>workflow_run</code> bridge is a <strong>separation of concerns</strong> pattern. It allows different permission sets, separate maintenance schedules, and independent failure domains. If the CD workflow has a syntax error, CI still runs for developers. If CI is temporarily failing, you can disable it without affecting the CD configuration.</p>
 </section>
 
 <section>
-    <h2>5. GitHub Actions Concepts</h2>
-    <table>
-        <tr><th>Concept</th><th>Description</th></tr>
-        <tr><td><strong>Workflow</strong></td><td>A YAML file defining an automated process</td></tr>
-        <tr><td><strong>Job</strong></td><td>A set of steps that run on the same runner</td></tr>
-        <tr><td><strong>Step</strong></td><td>A single command or action</td></tr>
-        <tr><td><strong>Action</strong></td><td>A reusable unit of logic (e.g., <code>actions/checkout</code>)</td></tr>
-        <tr><td><strong>Runner</strong></td><td>A virtual machine that executes workflows</td></tr>
-        <tr><td><strong>Event</strong></td><td>What triggers the workflow (push, PR, schedule)</td></tr>
-        <tr><td><strong>Needs</strong></td><td>Defines job dependencies</td></tr>
-        <tr><td><strong>Service container</strong></td><td>Ephemeral database/redis for tests</td></tr>
-        <tr><td><strong>Artifact</strong></td><td>Files uploaded from a workflow (e.g., test reports)</td></tr>
-        <tr><td><strong>Cache</strong></td><td>Reuse Maven dependencies across runs</td></tr>
-    </table>
-</section>
-
-<section>
-    <h2>6. Interview Questions &amp; Answers</h2>
+    <h2>7. Interview Q&A</h2>
 
     <div class="qa">
-        <div class="q">Q: What is CI and why is it important?</div>
-        <div class="a">CI (Continuous Integration) means merging code changes frequently and automatically running builds and tests on each merge. It catches bugs early, prevents integration conflicts, and gives immediate feedback to developers. Without CI, bugs might only surface days later during manual testing.</div>
+        <div class="q">Q1: What is the difference between CI and CD, and how do they interact in this project?</div>
+        <div class="a">CI (Continuous Integration) is the automated process of building and testing every code change. In this project, the CI workflow compiles the application with Maven, runs all tests against a real PostgreSQL service container, and verifies the Docker image builds. CD (Continuous Deployment) takes the validated artifact from CI and deploys it automatically. Here, the CD workflow triggers on CI completion, builds and pushes the Docker image to GHCR, then SSHes into the server to pull and restart the application. CI answers "does this code work?" and CD answers "can we ship it safely?" CI is a prerequisite for CD — you should never deploy code that hasn't passed CI.</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: Why use a service container for PostgreSQL in CI instead of an in-memory database?</div>
-        <div class="a">Using the real PostgreSQL container ensures tests run against the same database dialect and features as production. In-memory databases like H2 have subtle differences that can hide SQL compatibility bugs. For a project using PostgreSQL-specific features, testing against real PostgreSQL is more reliable.</div>
+        <div class="q">Q2: Why does the CI pipeline use a PostgreSQL service container instead of H2 or an embedded database?</div>
+        <div class="a">A real PostgreSQL container ensures tests run against the exact same database dialect, data types, and constraint behaviour as production. H2 has well-documented incompatibilities with PostgreSQL (JSONB handling, sequence generation, boolean literals, ON CONFLICT clauses, array types). A test that passes on H2 but fails on PostgreSQL is a false positive that erodes confidence in the pipeline. For a production application using PostgreSQL-specific features, the service container guarantees that the test environment mirrors production as closely as possible. Additionally, the health check configuration (<code>pg_isready</code>) avoids race conditions where the test runner connects before the database is ready to accept connections.</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: How does <code>needs: [ test ]</code> work in the CI pipeline?</div>
-        <div class="a">The <code>needs</code> keyword creates a dependency. The Docker job only starts after the test job completes successfully. If tests fail, the Docker job is skipped entirely, preventing wasted time building an image from broken code.</div>
+        <div class="q">Q3: How does the <code>needs</code> keyword work, and what happens if a needed job fails?</div>
+        <div class="a"><code>needs: [ test ]</code> on the docker job creates a directed dependency. The docker job starts only after the test job completes with a conclusion of <code>success</code>. If the test job fails (any test failure, compilation error, or infrastructure issue), the docker job is automatically <strong>skipped</strong> — it does not run at all, and the workflow is marked as failed. This is visible in the GitHub Actions UI as a grey checkmark for the skipped job. The <code>needs</code> keyword supports multiple dependencies (<code>needs: [test, lint, security-scan]</code>) and creates a fan-in pattern where the dependent job waits for all its dependencies to succeed. There is no built-in timeout for <code>needs</code> — the job waits indefinitely until its dependencies complete or the workflow times out (6 hours by default).</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: What are GitHub secrets and why use them?</div>
-        <div class="a">Secrets are encrypted environment variables stored in the repository settings. They are never printed in logs or exposed to forks. We use them for sensitive values like JWT secrets, API keys, and SSH private keys instead of hardcoding them in the workflow file.</div>
+        <div class="q">Q4: What is the difference between GitHub Secrets and environment variables in a workflow?</div>
+        <div class="a">Secrets (<code>${{ secrets.SECRET_NAME }}</code>) are encrypted values stored in the repository settings. They are AES-256 encrypted at rest, decrypted only at runtime within the runner, and masked in all log output. Environment variables (<code>${{ env.VAR_NAME }}</code> or defined in the workflow's <code>env:</code> block) are plaintext values visible in logs and accessible to all steps. Secrets should be used for credentials, API keys, tokens, and any value that would cause harm if exposed. Environment variables are appropriate for non-sensitive configuration like <code>IMAGE_NAME: ecommerce-backend</code>. A subtle point: secrets are not available to workflows triggered by pull requests from forked repositories — this is a security feature that prevents PRs from exfiltrating secrets. Environment variables, by contrast, are always available. This is why the CI test step uses the pattern <code>${{ secrets.JWT_SECRET || 'fallback' }}</code> to handle both cases.</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: How would you trigger a deployment only after CI passes?</div>
-        <div class="a">The CD workflow uses <code>workflow_run</code> trigger with a filter on <code>workflows: ["CI — Build, Test & Docker"]</code> and <code>types: [completed]</code>. It then checks <code>conclusion == 'success'</code> to ensure CI passed. This guarantees only tested code gets deployed.</div>
+        <div class="q">Q5: Why does the CD workflow use <code>workflow_run</code> instead of <code>push</code> as its trigger?</div>
+        <div class="a">The <code>workflow_run</code> trigger decouples the CD pipeline from direct push events and ties it to the completion of the CI workflow. This provides several advantages. First, <strong>safety</strong>: deployment only happens after the full CI pipeline (build, test, docker build) has completed successfully on main — not merely because a push happened. Second, <strong>security</strong>: the CD workflow requires access to deployment secrets (SSH keys, host addresses). If CD were triggered by <code>push</code>, those secrets would be accessible within any workflow run, including ones that bypassed the CI quality gate. Third, <strong>separation of concerns</strong>: the CD workflow can be maintained independently, with different permissions and reviewers. The <code>workflow_run</code> event is the idiomatic way to chain workflows in GitHub Actions when one workflow must complete before the next begins. We also add the explicit <code>if: github.event.workflow_run.conclusion == 'success'</code> guard to handle edge cases where the CI workflow completed but failed.</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: What's the difference between GitHub Container Registry (ghcr.io) and Docker Hub?</div>
-        <div class="a">ghcr.io is GitHub's own registry integrated with GitHub Packages. It uses <code>GITHUB_TOKEN</code> for authentication (no separate credentials needed), supports fine-grained permissions per repository, and has no pull rate limits. Docker Hub is the public default registry but has pull rate limits on free tiers.</div>
+        <div class="q">Q6: Compare GitHub Container Registry (GHCR) with Docker Hub for this pipeline.</div>
+        <div class="a">GHCR (ghcr.io) is tightly integrated with the GitHub ecosystem. It uses the built-in <code>GITHUB_TOKEN</code> for authentication, eliminating the need to store separate registry credentials as secrets. GHCR supports fine-grained permissions at the repository level, so you can control who can read and write packages using the same GitHub teams and roles. There are no pull rate limits for authenticated users. Docker Hub, while more widely known, requires a separate Docker Hub account and access token stored as a GitHub secret, has pull rate limits (200 pulls/hour for unauthenticated, higher for authenticated but still bounded), and manages packages in a namespace separate from the repository source code. For a project already on GitHub, GHCR reduces operational complexity and credential surface area. The main advantage of Docker Hub is broader ecosystem support and integration with third-party tools that may not support GHCR.</div>
     </div>
 
     <div class="qa">
-        <div class="q">Q: What would you add to improve this pipeline?</div>
-        <div class="a">Possible improvements: (a) parallelize test jobs across different JVM versions, (b) add SonarCloud for code quality checks, (c) add Snyk/Dependabot for vulnerability scanning, (d) add Slack/email notifications on failure, (e) trigger deployment to a staging environment for PR previews, (f) add end-to-end tests with a real browser.</div>
+        <div class="q">Q7: How does the CD workflow know whether the CI workflow passed? Walk through the mechanism.</div>
+        <div class="a">The CD workflow uses the <code>workflow_run</code> event trigger with <code>workflows: ["CI — Build, Test & Docker"]</code> and <code>types: [completed]</code>. When GitHub completes any run of the named workflow, it generates a <code>workflow_run</code> event that contains a <code>workflow_run</code> object in the event payload. This object has a <code>conclusion</code> field that reflects the final status of the triggering workflow run (<code>success</code>, <code>failure</code>, <code>cancelled</code>, <code>skipped</code>, <code>timed_out</code>). The CD workflow's deploy job includes the condition <code>if: ${{ github.event.workflow_run.conclusion == 'success' }}</code>, which evaluates the payload field at runtime. If the conclusion is anything other than <code>success</code>, the job is skipped. This is important because the <code>workflow_run</code> event fires on <em>every</em> completion regardless of outcome — without the explicit check, the CD workflow would trigger on CI failures too. The event payload also includes <code>head_branch</code>, <code>head_sha</code>, and other contextual data, but the conclusion check is the primary safety gate.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q8: What would you improve in this pipeline if you were designing it for a production system with 10+ developers?</div>
+        <div class="a">Several improvements would be appropriate for a team-scale pipeline. (a) <strong>Add a linting/formatting job:</strong> Introduce <code>mvn checkstyle:check</code> or a SpotBugs analysis as a fast, parallel job that fails quickly on style or static-analysis issues without waiting for the full test suite. (b) <strong>Parallelise the test job:</strong> Split tests by module or use Maven's <code>-T</code> option for parallel test execution, reducing CI cycle time. (c) <strong>Add a dedicated integration test phase:</strong> Use Maven profiles (<code>-Pintegration-tests</code>) or <code>mvn verify</code> with the Failsafe plugin to separate fast unit tests from slower integration tests, running them sequentially or only on certain branches. (d) <strong>Introduce a staging deployment:</strong> Deploy every successful <code>main</code> build to a staging environment for automated smoke tests before the production deployment. (e) <strong>Add security scanning:</strong> Integrate <code>trivy</code> or <code>snyk</code> to scan the Docker image for known CVEs during the CI docker job. (f) <strong>Implement matrix builds:</strong> If the application needs to support multiple JDK versions or platforms, use a build matrix strategy. (g) <strong>Notification integration:</strong> Send Slack or email notifications on deployment success or failure so the team doesn't need to watch the Actions UI. (h) <strong>Version tagging:</strong> Replace the <code>latest</code> tag with a semantic version derived from the commit or a Git tag (<code>v1.2.3</code>), enabling rollback to a specific known-good version.</div>
     </div>
 </section>
 
 <section>
-    <h2>7. Visual Pipeline Flow</h2>
-    <pre><code>Push to main
-    │
-    ▼
-┌─────────────────────┐
-│  CI Workflow        │
-│  ┌───────────────┐  │
-│  │ 1. Build&Test │──│── If FAIL → report + stop
-│  └───────┬───────┘  │
-│          ▼          │
-│  ┌───────────────┐  │
-│  │ 2. Docker     │  │── Build image (no push)
-│  │    Build      │  │
-│  └───────┬───────┘  │
-└──────────┼──────────┘
-           ▼  (CI succeeded)
-┌─────────────────────┐
-│  CD Workflow        │
-│  ┌───────────────┐  │
-│  │ 1. Login to   │  │
-│  │    GHCR       │  │
-│  └───────┬───────┘  │
-│          ▼          │
-│  ┌───────────────┐  │
-│  │ 2. Build &    │  │
-│  │    Push Image │  │
-│  └───────┬───────┘  │
-│          ▼          │
-│  ┌───────────────┐  │
-│  │ 3. SSH Deploy │  │
-│  │    & Restart  │  │
-│  └───────┬───────┘  │
-└──────────┼──────────┘
-           ▼
-    App deployed ✓</code></pre>
+    <h2>8. Visual Pipeline Summary</h2>
+    <pre><code> Developer pushes to main (or opens PR)
+        |
+        v
+  +==========================================+
+  |  CI WORKFLOW (ci.yml)                   |
+  |==========================================|
+  |  Trigger: push / pull_request -> main    |
+  |                                          |
+  |  +----------+                            |
+  |  | Job:     |  Service: PostgreSQL 15    |
+  |  | test     |  - ports: 5432:5432        |
+  |  |          |  - health check pg_isready |
+  |  |          |  Steps:                    |
+  |  |          |  1. actions/checkout@v4    |
+  |  |          |  2. setup-java@v4 (JDK 17) |
+  |  |          |  3. mvn test -B            |
+  |  |          |     env: real PG creds     |
+  |  |          |  4. Upload test reports    |
+  |  +----+-----+                            |
+  |       | needs: [test]                    |
+  |  +----v-----+                            |
+  |  | Job:     |  Steps:                    |
+  |  | docker   |  1. checkout               |
+  |  |          |  2. setup-buildx           |
+  |  |          |  3. docker build (no push) |
+  |  |          |     cache: gha             |
+  |  +----------+                            |
+  +==========================================+
+        |  workflow_run triggers on completed
+        |  + conclusion == 'success'
+        v
+  +==========================================+
+  |  CD WORKFLOW (cd.yml)                    |
+  |==========================================|
+  |  Trigger: workflow_run (CI completed)    |
+  |  Safety: conclusion == 'success'         |
+  |                                          |
+  |  +----------+                            |
+  |  | Job:     |  Steps:                    |
+  |  | deploy   |  1. actions/checkout@v4    |
+  |  |          |  2. docker/login (GHCR)    |
+  |  |          |  3. docker build & push    |
+  |  |          |     to ghcr.io             |
+  |  |          |  4. SSH deploy:            |
+  |  |          |     - docker compose pull  |
+  |  |          |     - docker compose up -d |
+  |  |          |     - docker image prune   |
+  |  +----------+                            |
+  +==========================================+
+        |
+        v
+  Application deployed on server</code></pre>
 </section>
 
 </div>

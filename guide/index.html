@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Backend — Complete Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .header {
+            text-align: center;
+            padding: 50px 0 40px;
+            border-bottom: 2px solid #6C63FF;
+            margin-bottom: 50px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #6C63FF, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle { color: #888; font-size: 1.05rem; margin-top: 10px; }
+        .header .stack {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .stack span {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #a8e6cf;
+        }
+
+        .intro {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 50px;
+            color: #999;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: #1a1a2e;
+            border-radius: 14px;
+            padding: 28px;
+            border: 1px solid #2d2d44;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            border-color: #6C63FF;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(108,99,255,0.15);
+        }
+        .card .phase-num {
+            font-size: 0.75rem;
+            color: #6C63FF;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            margin: 8px 0 10px;
+            color: #fff;
+        }
+        .card p {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 14px;
+        }
+        .card .topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .card .topics span {
+            background: #12122a;
+            border: 1px solid #2a2a3e;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: #a8e6cf;
+        }
+        .card .arrow {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #2d2d44;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        .card:hover .arrow { color: #6C63FF; right: 16px; }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #555;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .header h1 { font-size: 1.6rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>E-Commerce Backend</h1>
+        <div class="subtitle">Production-Ready Spring Boot Backend — Complete Documentation &amp; Interview Guide</div>
+        <div class="stack">
+            <span>Java 17</span>
+            <span>Spring Boot 3.4</span>
+            <span>PostgreSQL</span>
+            <span>Redis</span>
+            <span>JWT</span>
+            <span>Docker</span>
+            <span>GitHub Actions</span>
+        </div>
+    </div>
+
+    <p class="intro">
+        Click any phase to open its detailed guide. Each phase covers all annotations used, why they are chosen over alternatives, architecture decisions, coupling &amp; interfaces, exception handling, and the complete workflow — as expected by senior Java developers and architects in production companies.
+    </p>
+
+    <div class="grid">
+        <a class="card" href="Phase1_System_Design_Interview_Guide.html">
+            <div class="phase-num">Phase 1</div>
+            <h2>System Design &amp; Architecture</h2>
+            <p>High-level architecture, request flow, tech stack decisions, monolith vs microservices, system design concepts.</p>
+            <div class="topics">
+                <span>Architecture</span>
+                <span>Scalability</span>
+                <span>Tech Selection</span>
+                <span>Request Flow</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase2_Setup_Interview_Guide.html">
+            <div class="phase-num">Phase 2</div>
+            <h2>Project Setup &amp; Maven</h2>
+            <p>pom.xml, Spring Boot starters, dependencies, application.yml, profiles, Maven build lifecycle, plugins.</p>
+            <div class="topics">
+                <span>Maven</span>
+                <span>Starters</span>
+                <span>Configuration</span>
+                <span>Build Lifecycle</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase3_Entities_Interview_Guide.html">
+            <div class="phase-num">Phase 3</div>
+            <h2>Entities &amp; JPA Models</h2>
+            <p>All entity classes, JPA annotations, relationships (ManyToOne, OneToMany), database schema, enums, JSON serialization.</p>
+            <div class="topics">
+                <span>@Entity</span>
+                <span>Relationships</span>
+                <span>Schema Design</span>
+                <span>JSON</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase4_Repositories_Interview_Guide.html">
+            <div class="phase-num">Phase 4</div>
+            <h2>Repositories &amp; Data Access</h2>
+            <p>Spring Data JPA repositories, custom @Query, derived methods, pagination, sorting, @Transactional, specifications.</p>
+            <div class="topics">
+                <span>@Query</span>
+                <span>Pagination</span>
+                <span>@Transactional</span>
+                <span>Derived Queries</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase5_Services_Interview_Guide.html">
+            <div class="phase-num">Phase 5</div>
+            <h2>Services &amp; Business Logic</h2>
+            <p>Service layer (@Service), business rules, exception handling, DTO mapping, orchestration patterns, email &amp; payment integration.</p>
+            <div class="topics">
+                <span>@Service</span>
+                <span>Business Logic</span>
+                <span>Exceptions</span>
+                <span>Integration</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase6_Controllers_Interview_Guide.html">
+            <div class="phase-num">Phase 6</div>
+            <h2>Controllers &amp; REST APIs</h2>
+            <p>REST endpoints, request mapping annotations, DTOs, validation (@Valid), security (@PreAuthorize), HTTP status codes, Swagger.</p>
+            <div class="topics">
+                <span>@RestController</span>
+                <span>Validation</span>
+                <span>Security</span>
+                <span>Status Codes</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase7_Testing_Interview_Guide.html">
+            <div class="phase-num">Phase 7</div>
+            <h2>Testing</h2>
+            <p>JUnit 5, Mockito, @WebMvcTest, @DataJpaTest, @SpringBootTest, MockMvc, integration testing, test best practices.</p>
+            <div class="topics">
+                <span>JUnit 5</span>
+                <span>Mockito</span>
+                <span>MockMvc</span>
+                <span>Integration Tests</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase8_Docker_Interview_Guide.html">
+            <div class="phase-num">Phase 8</div>
+            <h2>Docker &amp; Containerization</h2>
+            <p>Multi-stage Dockerfile, docker-compose (PostgreSQL + Redis + App), health checks, environment configuration, networking.</p>
+            <div class="topics">
+                <span>Dockerfile</span>
+                <span>Docker Compose</span>
+                <span>Networking</span>
+                <span>Health Checks</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="card" href="Phase9_CICD_Interview_Guide.html">
+            <div class="phase-num">Phase 9</div>
+            <h2>CI/CD Pipeline</h2>
+            <p>GitHub Actions, CI workflow (build + test + Docker), CD workflow (deploy to server), secrets management, pipeline design.</p>
+            <div class="topics">
+                <span>GitHub Actions</span>
+                <span>CI/CD</span>
+                <span>Automation</span>
+                <span>Deployment</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+    </div>
+
+    <div class="footer">
+        <p>E-Commerce Backend — Complete Documentation</p>
+        <p style="margin-top:4px;">Built with Spring Boot 3.4.1 | Java 17 | PostgreSQL | Redis | Docker | GitHub Actions</p>
+    </div>
+</div>
+</body>
+</html>

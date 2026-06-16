@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2: Project Setup & Maven Configuration — E-Commerce Backend Interview Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+            border-bottom: 2px solid #6C63FF;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #6C63FF, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        .header .badge {
+            display: inline-block;
+            background: #6C63FF;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 12px;
+        }
+        section {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6C63FF;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        section h2 {
+            font-size: 1.5rem;
+            color: #6C63FF;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        section h2 .num {
+            background: #6C63FF;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        section h3 {
+            color: #ff6b6b;
+            margin: 20px 0 10px;
+            font-size: 1.1rem;
+        }
+        section h4 {
+            color: #4ecdc4;
+            margin: 15px 0 8px;
+        }
+        p { margin-bottom: 12px; }
+        ul, ol { margin: 10px 0 15px 25px; }
+        li { margin-bottom: 6px; }
+        code {
+            background: #2d2d44;
+            color: #f8c555;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #0d0d1a;
+            color: #a8e6cf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 15px 0;
+            border: 1px solid #2d2d44;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #2d2d44;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background: #6C63FF;
+            color: #fff;
+            font-weight: 600;
+        }
+        td { background: #12122a; }
+        .highlight {
+            background: #2d2d44;
+            border-left: 4px solid #f8c555;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+        .highlight strong { color: #f8c555; }
+        .qa-box {
+            background: #0f0f1a;
+            border: 1px solid #6C63FF;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .qa-box .q { color: #ff6b6b; font-weight: bold; }
+        .qa-box .a { color: #4ecdc4; margin-top: 5px; }
+        .toc {
+            background: #12122a;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            border: 1px solid #2d2d44;
+        }
+        .toc h3 { color: #6C63FF; margin-bottom: 12px; }
+        .toc ol { margin: 0; padding-left: 20px; }
+        .toc li { margin-bottom: 5px; }
+        .toc a { color: #a8e6cf; text-decoration: none; }
+        .toc a:hover { color: #6C63FF; text-decoration: underline; }
+        .dep-group {
+            background: #12122a;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin: 12px 0;
+            border-left: 3px solid #6C63FF;
+        }
+        .dep-group h4 { color: #6C63FF; margin: 0 0 8px 0; }
+        .dep-group p { margin-bottom: 6px; font-size: 0.9rem; }
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #555;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            section { padding: 20px; }
+            .header h1 { font-size: 1.5rem; }
+            table { font-size: 0.75rem; }
+            th, td { padding: 6px 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Phase 2: Project Setup &amp; Maven Configuration</h1>
+        <div class="subtitle">pom.xml Deep Dive, application.yml, Spring Boot Starters, Build Lifecycle, Profiles, Interview Q&A</div>
+        <span class="badge">Interview Edition — Full Explanation + Q&amp;A</span>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+            <li><a href="#s1">pom.xml Deep Dive — Every Section Explained</a></li>
+            <li><a href="#s2">Application Properties (application.yml) Explained</a></li>
+            <li><a href="#s3">Spring Boot Starters — What They Are and How They Work</a></li>
+            <li><a href="#s4">Maven Build Lifecycle</a></li>
+            <li><a href="#s5">Spring Profiles — Dev, Test, Prod</a></li>
+            <li><a href="#s6">application-test.yml — Test Configuration</a></li>
+            <li><a href="#s7">Interview Questions &amp; Answers</a></li>
+        </ol>
+    </div>
+
+    <!-- 1. pom.xml DEEP DIVE -->
+    <section id="s1">
+        <h2><span class="num">1</span> pom.xml Deep Dive</h2>
+        <p>The <code>pom.xml</code> (Project Object Model) is the heart of any Maven project. It defines the project structure, dependencies, build configuration, and plugins. Every Spring Boot application starts here.</p>
+
+        <h3>Parent — spring-boot-starter-parent</h3>
+        <pre>
+&lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;3.4.1&lt;/version&gt;
+    &lt;relativePath/&gt;
+&lt;/parent&gt;
+        </pre>
+        <p><strong>What it does:</strong> <code>spring-boot-starter-parent</code> is a special parent POM that provides:</p>
+        <ul>
+            <li><strong>Dependency Management:</strong> Pre-defined versions for hundreds of dependencies (Spring, Jackson, Hibernate, etc.). You no longer need to specify versions for Spring-managed dependencies — they inherit from the parent.</li>
+            <li><strong>Plugin Configuration:</strong> Pre-configured Maven plugins (spring-boot-maven-plugin, maven-compiler-plugin, maven-surefire-plugin) with sensible defaults.</li>
+            <li><strong>Java Version:</strong> Default Java version set to 17 (matching our project).</li>
+            <li><strong>Resource Filtering:</strong> Automatic filtering of application properties using Maven's resource filtering.</li>
+        </ul>
+        <p><strong>Why we chose it:</strong> It eliminates version management for all Spring-managed libraries. Without it, you would manually track and align versions of every Spring dependency, which is error-prone and tedious.</p>
+        <p><strong>Alternatives:</strong> You could use <code>spring-boot-dependencies</code> as a BOM import in <code>&lt;dependencyManagement&gt;</code> instead of using <code>&lt;parent&gt;</code>. This is useful when you already have a corporate parent POM. However, <code>spring-boot-starter-parent</code> is the recommended approach for most projects because it also provides plugin defaults.</p>
+
+        <h3>Properties</h3>
+        <pre>
+&lt;properties&gt;
+    &lt;java.version&gt;17&lt;/java.version&gt;
+    &lt;jjwt.version&gt;0.12.6&lt;/jjwt.version&gt;
+    &lt;razorpay.version&gt;1.4.4&lt;/razorpay.version&gt;
+    &lt;springdoc.version&gt;2.7.0&lt;/springdoc.version&gt;
+    &lt;testcontainers.version&gt;1.20.4&lt;/testcontainers.version&gt;
+&lt;/properties&gt;
+        </pre>
+        <p>These properties centralize version numbers so they can be reused across multiple dependencies. Key choices:</p>
+        <ul>
+            <li><code>java.version: 17</code> — Java 17 is the current LTS release with long-term support. It gives us pattern matching, records, sealed classes, and better performance than Java 11.</li>
+            <li><code>jjwt.version: 0.12.6</code> — io.jsonwebtoken (jjwt) is the most popular JWT library for Java. Version 0.12.x supports HMAC, RSA, and ECDSA algorithms. We chose this over Auth0's java-jwt because jjwt has a cleaner API for building/parsing JWTs and better Spring integration.</li>
+            <li><code>razorpay.version: 1.4.4</code> — Official Razorpay Java SDK. We use the latest stable version for payment gateway integration.</li>
+            <li><code>springdoc.version: 2.7.0</code> — SpringDoc OpenAPI generates Swagger UI automatically. We chose this over Springfox because Springfox is no longer actively maintained and has compatibility issues with Spring Boot 3.x.</li>
+            <li><code>testcontainers.version: 1.20.4</code> — TestContainers version for integration testing with real databases.</li>
+        </ul>
+
+        <h3>Dependencies by Group</h3>
+
+        <div class="dep-group">
+            <h4>Web Layer — spring-boot-starter-web</h4>
+            <p><strong>Dependency:</strong> <code>org.springframework.boot:spring-boot-starter-web</code></p>
+            <p><strong>What it does:</strong> Brings in everything needed to build REST APIs — Spring MVC (DispatcherServlet), embedded Tomcat server, Jackson for JSON serialization/deserialization, and validation support.</p>
+            <p><strong>Why we chose Tomcat:</strong> It is the default embedded servlet container in Spring Boot. Tomcat is mature, well-tested, and performs excellently for most use cases. Alternatives include Undertow (better throughput for high-concurrency) and Jetty (lighter weight, used in embedded environments). We stick with Tomcat because it is the most widely deployed and has the best community support. For an e-commerce backend, Tomcat handles our expected load well.</p>
+            <p><strong>Alternatives not chosen:</strong> <code>spring-boot-starter-webflux</code> (reactive stack with Netty) — we don't need reactive programming for this project. The standard servlet stack (Tomcat + Spring MVC) is simpler, more familiar, and sufficient for our CRUD-heavy workloads.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Data Access — JPA + PostgreSQL</h4>
+            <p><strong>Dependencies:</strong> <code>spring-boot-starter-data-jpa</code>, <code>org.postgresql:postgresql</code> (runtime scope)</p>
+            <p><strong>What it does:</strong> Spring Data JPA provides the Hibernate ORM integration — entity mapping, repository interfaces (CRUD, pagination, custom queries), and transaction management. The PostgreSQL driver enables JDBC communication with our database.</p>
+            <p><strong>Why Hibernate:</strong> It is the most mature JPA implementation (15+ years). It supports lazy loading, caching (first-level and second-level), HQL/JPQL queries, criteria API, and automatic schema generation. Alternatives include EclipseLink (more standards-compliant but less popular) and MyBatis (SQL-centric, not JPA). For an e-commerce app with complex entity relationships (Product -> Category, Order -> OrderItem), Hibernate's ORM capabilities are ideal.</p>
+            <p><strong>Connection Pooling:</strong> Spring Boot automatically configures HikariCP when it detects <code>spring-boot-starter-data-jpa</code> on the classpath. HikariCP is the fastest connection pool in the Java ecosystem, with zero-overhead and lightning-fast initialization. Alternatives include Tomcat JDBC Pool (slower, more features we don't need) and DBCP2 (legacy, performance issues). HikariCP is the undisputed default.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Redis — Caching &amp; Session Store</h4>
+            <p><strong>Dependency:</strong> <code>spring-boot-starter-data-redis</code></p>
+            <p><strong>What it does:</strong> Provides Redis integration via Lettuce (a non-blocking, scalable Redis client). We use Redis for caching product listings, storing refresh tokens, rate-limiting counters, and optional cart persistence.</p>
+            <p><strong>Why Lettuce over Jedis:</strong> Jedis is a blocking client — each thread holds a connection while waiting for a response. Lettuce is asynchronous and uses Netty, supporting multiplexing (one connection handles multiple requests concurrently). This is crucial for high-throughput applications. Spring Boot 2.x+ defaults to Lettuce.</p>
+            <p><strong>Alternatives:</strong> You could use a simple <code>ConcurrentHashMap</code> for in-memory caching, but it won't survive restarts or scale across multiple instances. Redis is the standard for distributed caching.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Security &amp; JWT — Authentication &amp; Authorization</h4>
+            <p><strong>Dependencies:</strong> <code>spring-boot-starter-security</code>, <code>jjwt-api</code>, <code>jjwt-impl</code> (runtime), <code>jjwt-jackson</code> (runtime)</p>
+            <p><strong>What it does:</strong> Spring Security provides the filter chain architecture that intercepts every HTTP request. It handles authentication (who you are) and authorization (what you can do). The jjwt libraries handle JWT token generation (signing with HMAC-SHA256) and validation (parsing claims, checking expiry).</p>
+            <p><strong>Why jjwt over alternatives:</strong> Auth0's java-jwt is simpler but lacks features like JWT compression or custom claim validation. Nimbus JOSE + JWT is more comprehensive but complex. jjwt strikes the right balance — clean builder API, built-in Jackson integration (<code>jjwt-jackson</code> for POJO deserialization), and separate API/impl JARs (api is compile-time, impl is runtime — follows the "interface segregation" principle).</p>
+            <p><strong>Why separate jjwt JARs:</strong> <code>jjwt-api</code> is the public API (compile-scope), <code>jjwt-impl</code> and <code>jjwt-jackson</code> are runtime implementations. This means your code only depends on the API; the implementation can be swapped without recompiling consumer code. This is a security-conscious design pattern.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Validation — Bean Validation API</h4>
+            <p><strong>Dependency:</strong> <code>spring-boot-starter-validation</code></p>
+            <p><strong>What it does:</strong> Brings in Hibernate Validator (the reference implementation of Jakarta Bean Validation 3.0). It enables <code>@Valid</code> and <code>@Validated</code> annotations on controller request bodies, plus field-level annotations like <code>@NotBlank</code>, <code>@Email</code>, <code>@Size</code>, <code>@Min</code>, <code>@Pattern</code>.</p>
+            <p><strong>Why we need it:</strong> Without validation, every controller method would need manual null-checking and format verification. Declarative validation keeps controllers clean and ensures consistent error messages.</p>
+            <p><strong>Alternatives:</strong> Manual validation in service classes — which leads to code duplication. Jakarta Validation is the standard, portable, and testable approach.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Email — JavaMailSender</h4>
+            <p><strong>Dependency:</strong> <code>spring-boot-starter-mail</code></p>
+            <p><strong>What it does:</strong> Provides <code>JavaMailSender</code> interface with SMTP support for sending transactional emails (order confirmation, password reset, shipping updates). Under the hood, it uses Jakarta Mail (formerly JavaMail).</p>
+            <p><strong>Alternatives:</strong> SendGrid API (third-party, needs separate SDK), Amazon SES (AWS-specific). Spring Mail is framework-native, simpler to configure, and uses standard SMTP which works with any provider.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>API Documentation — SpringDoc OpenAPI</h4>
+            <p><strong>Dependency:</strong> <code>org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdoc.version}</code></p>
+            <p><strong>What it does:</strong> Automatically generates OpenAPI 3.0 specification from your Spring MVC controllers. Provides a Swagger UI at <code>/swagger-ui.html</code> and an OpenAPI JSON at <code>/api-docs</code>. Every <code>@RestController</code>, <code>@RequestMapping</code>, and <code>@RequestParam</code> is documented without manual effort.</p>
+            <p><strong>Why SpringDoc over Springfox:</strong> Springfox (the older library) has not kept pace with Spring Boot 3.x. It requires complex configuration, has annotation processing bugs, and breaks with newer Spring versions. SpringDoc is the modern, maintained alternative with seamless Spring Boot 3 support.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Lombok — Boilerplate Reduction</h4>
+            <p><strong>Dependency:</strong> <code>org.projectlombok:lombok</code> (optional)</p>
+            <p><strong>What it does:</strong> Lombok is a compile-time annotation processor that generates getters, setters, constructors, builders, <code>toString()</code>, <code>equals()</code>, and <code>hashCode()</code> automatically. Annotations like <code>@Getter</code>, <code>@Setter</code>, <code>@Builder</code>, <code>@NoArgsConstructor</code>, <code>@AllArgsConstructor</code>, and <code>@Data</code> eliminate hundreds of lines of repetitive code.</p>
+            <p><strong>Why we use it:</strong> Entity classes in an e-commerce project have 10-20 fields each. Writing getters/setters/constructors manually for 15+ entities is tedious, error-prone, and clutters the codebase. Lombok keeps entity files concise and readable.</p>
+            <p><strong>Alternatives:</strong> Java 16+ records (immutable data carriers — but entities are mutable, so records don't work for JPA). Kotlin (language-level data classes — but requires switching the whole project). Manually generated code (IDEs can auto-generate, but the source file becomes bloated). Lombok is the pragmatic choice for Java + JPA projects.</p>
+            <p><strong>How it works:</strong> Lombok hooks into the Java compiler's annotation processing API (JSR 269). During compilation, when the compiler encounters <code>@Getter</code> on a class, Lombok's annotation processor generates the getter methods directly into the AST (Abstract Syntax Tree) before bytecode generation. The generated code is invisible to you but present in the compiled <code>.class</code> file. This is why Lombok is an <code>optional</code> dependency — it's only needed at compile time.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Razorpay — Payment Gateway</h4>
+            <p><strong>Dependency:</strong> <code>com.razorpay:razorpay-java:${razorpay.version}</code></p>
+            <p><strong>What it does:</strong> Official Java SDK for Razorpay, India's leading payment gateway. It provides APIs for creating orders, capturing payments, refunds, and webhook signature verification.</p>
+            <p><strong>Why Razorpay:</strong> For an e-commerce project targeting the Indian market, Razorpay is the de facto standard. It supports UPI, credit/debit cards, net banking, EMI, and wallets — all through a single integration. Alternatives include Stripe (not fully India-optimized), PayU, and CCAvenue. Razorpay has the cleanest API and best developer experience among Indian payment gateways.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Development Tools</h4>
+            <p><strong>Dependency:</strong> <code>spring-boot-devtools</code> (runtime, optional)</p>
+            <p><strong>What it does:</strong> Provides automatic restart (when classpath files change), LiveReload (browser auto-refresh), and remote debugging support. Speeds up development by eliminating manual restarts.</p>
+            <p><strong>Note:</strong> This is <code>runtime</code> scope and always excluded from the final JAR when building for production.</p>
+        </div>
+
+        <div class="dep-group">
+            <h4>Test Dependencies — JUnit, Mockito, TestContainers, H2</h4>
+            <p><strong>Dependencies:</strong> <code>spring-boot-starter-test</code>, <code>spring-security-test</code>, <code>spring-boot-testcontainers</code>, <code>testcontainers</code>, <code>testcontainers:postgresql</code>, <code>testcontainers:junit-jupiter</code>, <code>com.h2database:h2</code></p>
+            <p><strong>What they do:</strong></p>
+            <ul>
+                <li><code>spring-boot-starter-test</code> — Brings JUnit 5, Mockito, AssertJ, Hamcrest, and Spring Test utilities in one starter.</li>
+                <li><code>spring-security-test</code> — Utility classes for testing secured endpoints (<code>@WithMockUser</code>, <code>@WithAnonymousUser</code>, SecurityMockMvcRequestPostProcessors).</li>
+                <li><code>testcontainers</code> — JUnit extension for spinning up disposable Docker containers (PostgreSQL) during integration tests.</li>
+                <li><code>h2</code> — In-memory database for unit tests where we don't need a real PostgreSQL container.</li>
+            </ul>
+            <p><strong>Why both H2 and TestContainers:</strong> H2 is fast for unit tests (milliseconds to start). TestContainers is for integration tests that must run against a real PostgreSQL to catch database-specific issues. This layered testing strategy balances speed and accuracy.</p>
+        </div>
+
+        <h3>Dependency Management — TestContainers BOM</h3>
+        <pre>
+&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.testcontainers&lt;/groupId&gt;
+            &lt;artifactId&gt;testcontainers-bom&lt;/artifactId&gt;
+            &lt;version&gt;${testcontainers.version}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;
+        </pre>
+        <p><strong>What is a BOM (Bill of Materials)?</strong> A BOM is a POM that lists dependency versions but does not add them to your project. You declare the BOM in <code>&lt;dependencyManagement&gt;</code>, and then any TestContainers dependency you use (<code>postgresql</code>, <code>junit-jupiter</code>, <code>mysql</code>, etc.) inherits the version from the BOM. This ensures all TestContainers modules are on the same version, preventing classpath conflicts.</p>
+        <p><strong>Why we use the TestContainers BOM:</strong> Without it, you would manually specify <code>&lt;version&gt;1.20.4&lt;/version&gt;</code> on every TestContainers dependency. If you forget to update one, you could end up with incompatible versions. The BOM eliminates this risk.</p>
+
+        <h3>Plugins</h3>
+        <pre>
+&lt;build&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+                &lt;excludes&gt;
+                    &lt;exclude&gt;
+                        &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+                        &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+                    &lt;/exclude&gt;
+                &lt;/excludes&gt;
+            &lt;/configuration&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+                &lt;source&gt;17&lt;/source&gt;
+                &lt;target&gt;17&lt;/target&gt;
+                &lt;annotationProcessorPaths&gt;
+                    &lt;path&gt;
+                        &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+                        &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+                    &lt;/path&gt;
+                &lt;/annotationProcessorPaths&gt;
+            &lt;/configuration&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/build&gt;
+        </pre>
+
+        <p><strong>spring-boot-maven-plugin:</strong></p>
+        <ul>
+            <li><strong>What it does:</strong> Packages the application as an executable fat JAR. It combines all dependencies into a single archive with a nested JAR layout, and adds a <code>META-INF/MANIFEST.MF</code> pointing to the main class. Running <code>mvn package</code> produces <code>target/ecommerce-backend-0.0.1-SNAPSHOT.jar</code> which can be launched with <code>java -jar</code>.</li>
+            <li><strong>Lombok exclusion:</strong> The <code>&lt;excludes&gt;</code> configuration prevents Lombok from being included in the final JAR. Lombok is only needed at compile time — including it in production would waste space and serve no purpose.</li>
+        </ul>
+
+        <p><strong>maven-compiler-plugin:</strong></p>
+        <ul>
+            <li><strong>What it does:</strong> Configures the Java compiler. We set <code>&lt;source&gt;17&lt;/source&gt;</code> and <code>&lt;target&gt;17&lt;/target&gt;</code> explicitly (though the parent POM already sets these — explicit is safe).</li>
+            <li><strong>annotationProcessorPaths:</strong> This is where we declare Lombok as an annotation processor. The <code>&lt;annotationProcessorPaths&gt;</code> configuration ensures Lombok runs during compilation. Without this, Lombok annotations like <code>@Getter</code> would be ignored and cause compilation errors. This is the standard Maven configuration for Lombok (alternatively, you could add it to <code>&lt;annotationProcessors&gt;</code> or let IDEs handle it, but the explicit path ensures consistent builds across all environments).</li>
+        </ul>
+
+        <div class="highlight">
+            <strong>Key Interview Insight:</strong> The separation of <code>spring-boot-maven-plugin</code> (packaging the app) and <code>maven-compiler-plugin</code> (compiling the code) follows Maven's single-responsibility principle. Each plugin handles one phase of the build lifecycle. Neither plugin is optional — without the compiler plugin, your source won't compile; without the boot plugin, the JAR won't be executable.
+        </div>
+    </section>
+
+    <!-- 2. APPLICATION YML -->
+    <section id="s2">
+        <h2><span class="num">2</span> application.yml — Every Property Explained</h2>
+        <p>Here is our complete <code>application.yml</code> with every property explained:</p>
+        <pre>
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Kolkata
+
+server:
+  port: 8080
+
+jwt:
+  secret: my-super-secret-key-that-is-at-least-32-chars-long-for-hs256
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+razorpay:
+  key-id: rzp_test_xxxxxxxxxxxx
+  key-secret: your_razorpay_secret
+
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+        </pre>
+
+        <h3>Spring Datasource — HikariCP Pooling</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Why This Value</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>spring.datasource.url</code></td><td><code>jdbc:postgresql://localhost:5432/ecommerce</code></td><td>PostgreSQL running locally on default port 5432, database named <code>ecommerce</code>.</td></tr>
+                <tr><td><code>spring.datasource.username/password</code></td><td><code>postgres / postgres</code></td><td>Development defaults. In production, these come from environment variables or secrets manager.</td></tr>
+                <tr><td><code>spring.datasource.driver-class-name</code></td><td><code>org.postgresql.Driver</code></td><td>Explicitly declaring the driver class. Spring Boot can auto-detect it from the JDBC URL, but explicit is safer.</td></tr>
+                <tr><td><code>spring.datasource.hikari.maximum-pool-size</code></td><td><code>10</code></td><td>Maximum 10 connections in the pool. Formula: <code>(cores * 2) + effective_spindle_count</code>. For a 4-core dev machine, 10 connections is a good starting point. Too few = requests queue up. Too many = database overloaded with context switching. Production profiling may adjust this up to 20-30.</td></tr>
+                <tr><td><code>spring.datasource.hikari.minimum-idle</code></td><td><code>5</code></td><td>Keep 5 idle connections ready. Reduces latency for sudden traffic spikes — no need to open new connections from scratch. Set equal to <code>maximum-pool-size</code> if you want a fixed-size pool (no idle timeout).</td></tr>
+                <tr><td><code>spring.datasource.hikari.idle-timeout</code></td><td><code>300000</code> (5 min)</td><td>A connection stays idle for 5 minutes before being closed (only if pool size exceeds <code>minimum-idle</code>). This prevents stale connections from lingering. 5 minutes is short enough to be responsive yet long enough not to thrash connections.</td></tr>
+                <tr><td><code>spring.datasource.hikari.connection-timeout</code></td><td><code>20000</code> (20 sec)</td><td>Maximum time to wait for a connection from the pool. If no connection is available within 20 seconds, an exception is thrown. This prevents indefinite waits during outages. 20 seconds is generous — typical connection acquisition is under 10ms.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>JPA / Hibernate Settings</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Explanation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>spring.jpa.hibernate.ddl-auto</code></td><td><code>update</code></td><td>Hibernate automatically updates the database schema to match entity definitions. It creates missing tables, adds missing columns, but NEVER drops tables or columns. In production, this should be <code>validate</code> or managed via Flyway/Liquibase migrations. For development, <code>update</code> is convenient for rapid iteration.</td></tr>
+                <tr><td><code>spring.jpa.show-sql</code></td><td><code>true</code></td><td>Logs every SQL statement to the console. Helps debug Hibernate-generated queries during development. Disable in production for performance.</td></tr>
+                <tr><td><code>spring.jpa.properties.hibernate.format_sql</code></td><td><code>true</code></td><td>Pretty-prints SQL statements with indentation for readability.</td></tr>
+                <tr><td><code>spring.jpa.properties.hibernate.dialect</code></td><td><code>org.hibernate.dialect.PostgreSQLDialect</code></td><td>Tells Hibernate which SQL dialect to use. PostgreSQLDialect generates PostgreSQL-optimized SQL (e.g., <code>LIMIT</code> instead of <code>ROWNUM</code>, <code>nextval</code> for sequences). Spring Boot usually auto-detects this from the JDBC URL, but explicit configuration removes any ambiguity.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Redis Configuration</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Explanation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>spring.redis.host</code></td><td><code>localhost</code></td><td>Redis server hostname. In production, this could be an ElastiCache endpoint.</td></tr>
+                <tr><td><code>spring.redis.port</code></td><td><code>6379</code></td><td>Default Redis port.</td></tr>
+                <tr><td><code>spring.redis.timeout</code></td><td><code>2000ms</code></td><td>Maximum wait time for Redis connection. If Redis is down, fail fast (2 seconds) rather than hanging indefinitely.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Jackson Serialization</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Explanation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>spring.jackson.serialization.write-dates-as-timestamps</code></td><td><code>false</code></td><td>Serializes dates as ISO-8601 strings (<code>"2026-06-16T14:30:00"</code>) instead of numeric timestamps. ISO strings are human-readable and standard across frontend frameworks.</td></tr>
+                <tr><td><code>spring.jackson.date-format</code></td><td><code>yyyy-MM-dd HH:mm:ss</code></td><td>Custom date format pattern. Matches typical frontend expectations.</td></tr>
+                <tr><td><code>spring.jackson.time-zone</code></td><td><code>Asia/Kolkata</code></td><td>Sets the default timezone to IST (UTC+5:30). Important for e-commerce — order timestamps should reflect the user's local timezone, not server UTC.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>JWT Configuration</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Explanation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>jwt.secret</code></td><td><code>my-super-secret-key-that-is-at-least-32-chars-long-for-hs256</code></td><td>Base64-encoded or plaintext secret key for HMAC-SHA256 signing. Must be at least 256 bits (32 characters) for HS256 algorithm. In production, inject via environment variable or Vault — never hardcode.</td></tr>
+                <tr><td><code>jwt.access-token-expiration</code></td><td><code>900000</code> (15 min)</td><td>Short-lived access token. 15 minutes is the industry standard — short enough to limit damage if stolen, long enough to avoid excessive refresh token calls. Token contains user ID and roles.</td></tr>
+                <tr><td><code>jwt.refresh-token-expiration</code></td><td><code>604800000</code> (7 days)</td><td>Long-lived refresh token stored in Redis. 7 days is a common balance — users don't need to log in every week, but tokens aren't valid indefinitely. Revocation is handled by deleting from Redis on logout.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Razorpay Configuration</h3>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Explanation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>razorpay.key-id</code></td><td><code>rzp_test_xxxxxxxxxxxx</code></td><td>Test mode key ID from Razorpay dashboard. In production, use live keys and store securely as environment variables.</td></tr>
+                <tr><td><code>razorpay.key-secret</code></td><td><code>your_razorpay_secret</code></td><td>Secret key for authenticating API calls. Never commit the real secret to version control. Use <code>${RAZORPAY_KEY_SECRET}</code> environment variable substitution.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Logging Levels</h3>
+        <table>
+            <thead>
+                <tr><th>Logger</th><th>Level</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>com.ecommerce</code></td><td><code>DEBUG</code></td><td>Our application code — debug level shows service calls, repository queries, and controller flow during development.</td></tr>
+                <tr><td><code>org.springframework.security</code></td><td><code>INFO</code></td><td>Security framework logs — INFO shows authentication successes/failures without verbose filter chain internals.</td></tr>
+                <tr><td><code>org.hibernate.SQL</code></td><td><code>DEBUG</code></td><td>Shows actual SQL statements with parameter values. Combine with <code>format_sql=true</code> for readability. Disable in production.</td></tr>
+            </tbody>
+        </table>
+        <div class="highlight">
+            <strong>Key Insight:</strong> Never hardcode secrets in YAML files committed to version control. Use Spring's property placeholder resolution: <code>${JWT_SECRET}</code> resolves from environment variables. The dev YAML has dummy values for local development only.
+        </div>
+    </section>
+
+    <!-- 3. SPRING BOOT STARTERS -->
+    <section id="s3">
+        <h2><span class="num">3</span> Spring Boot Starters — Auto-Configuration Explained</h2>
+
+        <h3>What Are Starters?</h3>
+        <p>A <strong>Starter</strong> is a curated set of dependencies bundled into a single Maven artifact. Instead of adding 10 individual JARs for building a web application (Spring MVC, Tomcat, Jackson, validation, etc.), you add one dependency:</p>
+        <pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+&lt;/dependency&gt;
+        </pre>
+        <p>This single line pulls in:</p>
+        <ul>
+            <li><code>spring-boot-starter</code> (core auto-configuration)</li>
+            <li><code>spring-boot-starter-tomcat</code> (embedded Tomcat)</li>
+            <li><code>spring-webmvc</code> (Spring MVC framework)</li>
+            <li><code>jackson-databind</code> (JSON serialization)</li>
+            <li><code>hibernate-validator</code> (bean validation)</li>
+            <li><code>spring-boot-starter-logging</code> (Logback + SLF4J)</li>
+            <li>And their transitive dependencies</li>
+        </ul>
+        <p><strong>Why starters simplify setup:</strong></p>
+        <ol>
+            <li><strong>Single dependency</strong> — One line replaces 10+. Your <code>pom.xml</code> stays clean and readable.</li>
+            <li><strong>Version-managed</strong> — All versions are managed by the parent POM. No need to track which Jackson version is compatible with which Spring version.</li>
+            <li><strong>Auto-discovery</strong> — Adding <code>spring-boot-starter-data-jpa</code> automatically enables Hibernate, HikariCP, and <code>@EnableJpaRepositories</code>.</li>
+            <li><strong>Opinionated defaults</strong> — Spring Boot auto-configures sensible defaults. You only override what you need in <code>application.yml</code>.</li>
+        </ol>
+
+        <h3>The Auto-Configuration Mechanism</h3>
+        <p>Spring Boot's auto-configuration works through a multi-step process:</p>
+
+        <h4>1. The @SpringBootApplication Annotation</h4>
+        <pre>
+@SpringBootApplication  // (at the bottom of this file)
+public class EcommerceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EcommerceApplication.class, args);
+    }
+}
+        </pre>
+        <p><code>@SpringBootApplication</code> is a meta-annotation that combines:</p>
+        <ul>
+            <li><code>@EnableAutoConfiguration</code> — Tells Spring Boot to automatically configure beans based on classpath dependencies.</li>
+            <li><code>@ComponentScan</code> — Scans the current package and sub-packages for <code>@Component</code>, <code>@Service</code>, <code>@Repository</code>, <code>@Controller</code> beans.</li>
+            <li><code>@Configuration</code> — Marks the class as a source of bean definitions.</li>
+        </ul>
+
+        <h4>2. How Auto-Configuration Reads Your Classpath</h4>
+        <p>When the application starts:</p>
+        <ol>
+            <li>Spring Boot scans all JARs for files named <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> (previously <code>spring.factories</code>).</li>
+            <li>Each auto-configuration class in these files is loaded conditionally.</li>
+            <li>Conditions are evaluated using <code>@ConditionalOnClass</code> (does the class exist on the classpath?), <code>@ConditionalOnMissingBean</code> (is the bean already defined?), <code>@ConditionalOnProperty</code> (is the property set?), etc.</li>
+        </ol>
+
+        <h4>Concrete Example — How Spring Boot Configures JPA</h4>
+        <pre>
+1. pom.xml includes spring-boot-starter-data-jpa
+2. JAR on classpath contains:
+   META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+   → Contains: org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+3. On startup:
+   @ConditionalOnClass({ DataSource.class, EntityManagerFactory.class })
+   @ConditionalOnMissingBean({ JpaVendorAdapter.class })
+   → TRUE — Spring Boot automatically configures:
+      • LocalContainerEntityManagerFactoryBean
+      • JpaVendorAdapter (Hibernate)
+      • JpaTransactionManager
+      • PersistenceExceptionTranslationPostProcessor
+4. Additionally:
+   @ConditionalOnClass({ HikariDataSource.class })
+   → TRUE — HikariCP connection pool is auto-configured
+        </pre>
+
+        <div class="highlight">
+            <strong>Interview Answer:</strong> "Spring Boot starters use a convention-over-configuration approach. Each starter is a pre-bundled set of dependencies. Behind the scenes, auto-configuration classes use <code>@Conditional</code> annotations to check what libraries are on the classpath and configure them automatically. You only write configuration for things that deviate from the defaults."
+        </div>
+    </section>
+
+    <!-- 4. MAVEN BUILD LIFECYCLE -->
+    <section id="s4">
+        <h2><span class="num">4</span> Maven Build Lifecycle</h2>
+        <p>Maven follows a fixed sequence of build phases called the <strong>default lifecycle</strong>. Each phase represents a stage in the build process. Here are the key phases and what happens in each:</p>
+
+        <table>
+            <thead>
+                <tr><th>Phase</th><th>What Happens</th><th>Our Plugin Hooks</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>compile</strong></td>
+                    <td>Compiles Java source files from <code>src/main/java</code> to <code>target/classes</code></td>
+                    <td><code>maven-compiler-plugin</code> runs here, invoking <code>javac</code> with Java 17 and Lombok annotation processing</td>
+                </tr>
+                <tr>
+                    <td><strong>test-compile</strong></td>
+                    <td>Compiles test source files from <code>src/test/java</code> to <code>target/test-classes</code></td>
+                    <td><code>maven-compiler-plugin</code> runs again for test sources</td>
+                </tr>
+                <tr>
+                    <td><strong>test</strong></td>
+                    <td>Runs unit/integration tests using the test framework (JUnit 5 via <code>maven-surefire-plugin</code>)</td>
+                    <td><code>maven-surefire-plugin</code> (inherited from parent POM) executes all <code>@Test</code> methods. Fails the build if any test fails.</td>
+                </tr>
+                <tr>
+                    <td><strong>package</strong></td>
+                    <td>Packages compiled code into a distributable format (JAR, WAR, etc.)</td>
+                    <td><code>spring-boot-maven-plugin</code> repackages the standard JAR into an executable fat JAR with all dependencies nested inside</td>
+                </tr>
+                <tr>
+                    <td><strong>install</strong></td>
+                    <td>Copies the built JAR into the local Maven repository (<code>~/.m2/repository</code>) so other local projects can use it</td>
+                    <td>No custom plugin — standard Maven behavior</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>How Our Plugins Hook Into the Lifecycle</h3>
+        <pre>
+mvn clean install  →  [clean] validate → compile → test-compile → test → package → verify → install
+
+Step by step for our project:
+
+1. mvn compile
+   → maven-compiler-plugin:compile (Java 17 + Lombok processing)
+   → Output: target/classes/com/ecommerce/*.class
+
+2. mvn test-compile
+   → maven-compiler-plugin:testCompile (test sources)
+   → Output: target/test-classes/com/ecommerce/*Test.class
+
+3. mvn test
+   → maven-surefire-plugin:test (runs all @Test methods)
+   → If any test fails → BUILD FAILURE
+
+4. mvn package
+   → jar:jar (standard JAR packaging from maven-jar-plugin, inherited)
+   → spring-boot-maven-plugin:repackage (converts to executable fat JAR)
+   → Output: target/ecommerce-backend-0.0.1-SNAPSHOT.jar
+
+5. mvn install
+   → Copies JAR to ~/.m2/repository/com/ecommerce/ecommerce-backend/0.0.1-SNAPSHOT/
+        </pre>
+
+        <div class="highlight">
+            <strong>Key Interview Detail:</strong> The <code>spring-boot-maven-plugin</code> does NOT replace the standard JAR — it <strong>repackage</strong>s it. The original JAR (<code>ecommerce-backend-0.0.1-SNAPSHOT.jar.original</code>) is preserved alongside the executable JAR. The original JAR contains only your project's classes (no dependencies), while the executable JAR includes all dependency JARs in a nested layout.
+        </div>
+    </section>
+
+    <!-- 5. SPRING PROFILES -->
+    <section id="s5">
+        <h2><span class="num">5</span> Spring Profiles — Dev, Test, Prod</h2>
+
+        <h3>What Are Profiles?</h3>
+        <p>Spring Profiles allow you to define different configurations for different environments. Instead of manually editing <code>application.yml</code> before each deployment, you create separate profile-specific files and activate them with a single property or environment variable.</p>
+
+        <h3>Our Profile Strategy</h3>
+        <table>
+            <thead>
+                <tr><th>Profile</th><th>File</th><th>Active When</th><th>Database</th><th>Redis</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>default</strong> (dev)</td>
+                    <td><code>application.yml</code></td>
+                    <td>Local development (<code>mvn spring-boot:run</code>)</td>
+                    <td>PostgreSQL (local)</td>
+                    <td>Redis (local)</td>
+                </tr>
+                <tr>
+                    <td><strong>test</strong></td>
+                    <td><code>application-test.yml</code></td>
+                    <td>Running tests (<code>mvn test</code>)</td>
+                    <td>H2 (in-memory)</td>
+                    <td>Disabled</td>
+                </tr>
+                <tr>
+                    <td><strong>prod</strong></td>
+                    <td><code>application-prod.yml</code></td>
+                    <td>Production deployment</td>
+                    <td>PostgreSQL (RDS/Cloud SQL)</td>
+                    <td>Redis (ElastiCache)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>How Profile Activation Works</h3>
+        <pre>
+# Method 1: application.yml
+spring:
+  profiles:
+    active: prod
+
+# Method 2: Command-line argument
+java -jar app.jar --spring.profiles.active=prod
+
+# Method 3: Environment variable (production standard)
+export SPRING_PROFILES_ACTIVE=prod
+
+# Method 4: Maven test (automatically uses "test" profile)
+mvn test  # Spring Boot's Maven plugin activates "test" profile automatically
+        </pre>
+
+        <h3>How Spring Resolves Properties</h3>
+        <p>Spring Boot loads properties in a specific priority order. Profile-specific files take precedence over the default file, and the order of precedence (highest first) is:</p>
+        <ol>
+            <li>Command-line arguments (<code>--spring.profiles.active=prod</code>)</li>
+            <li>OS environment variables (<code>SPRING_PROFILES_ACTIVE</code>)</li>
+            <li>Profile-specific <code>application-{profile}.yml</code></li>
+            <li>Default <code>application.yml</code></li>
+        </ol>
+        <p>This means properties in <code>application-prod.yml</code> override those in <code>application.yml</code> when the <code>prod</code> profile is active.</p>
+
+        <div class="highlight">
+            <strong>Interview Tip:</strong> "Profiles are not just for databases. We use them to configure different logging levels, different external service endpoints, feature flags, and even different bean definitions. For example, we can define a <code>@Profile("dev")</code> bean that seeds dummy data, and it won't be created in production."
+        </div>
+    </section>
+
+    <!-- 6. APPLICATION-TEST YML -->
+    <section id="s6">
+        <h2><span class="num">6</span> application-test.yml — Test Configuration</h2>
+        <pre>
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,
+             org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  mail:
+    host: localhost
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+server:
+  port: 0
+
+jwt:
+  secret: test-secret-key-that-is-at-least-32-chars-long-for-testing
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+razorpay:
+  key-id: rzp_test_test
+  key-secret: test_secret
+
+logging:
+  level:
+    com.ecommerce: DEBUG
+        </pre>
+
+        <h3>Why Each Test Configuration is Set This Way</h3>
+
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>spring.autoconfigure.exclude</code></td>
+                    <td>Redis auto-configuration classes</td>
+                    <td>Redis requires a running server. In tests, we don't want to start Redis (it would fail if not installed). By excluding both <code>RedisAutoConfiguration</code> and <code>RedisRepositoriesAutoConfiguration</code>, we disable all Redis beans. If any code tries to use Redis, it will throw an error — which is desired because tests should not depend on an external cache.</td>
+                </tr>
+                <tr>
+                    <td><code>spring.datasource.url</code></td>
+                    <td><code>jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1</code></td>
+                    <td>H2 in-memory database. <code>DB_CLOSE_DELAY=-1</code> keeps the database alive as long as the JVM is running (prevents premature shutdown). <code>DB_CLOSE_ON_EXIT=FALSE</code> prevents H2 from closing the database when the last connection is closed. H2 is fast (starts in milliseconds), requires no installation, and is perfectly suited for unit tests that don't need PostgreSQL-specific features (JSONB, tsvector, etc.).</td>
+                </tr>
+                <tr>
+                    <td><code>spring.jpa.hibernate.ddl-auto</code></td>
+                    <td><code>create-drop</code></td>
+                    <td>Creates tables at the start of each test and drops them at the end. This ensures every test class runs against a clean, predictable schema. No test pollution from previous tests. <code>create-drop</code> is stricter than <code>update</code> and is the standard choice for testing.</td>
+                </tr>
+                <tr>
+                    <td><code>spring.jpa.show-sql</code></td>
+                    <td><code>false</code></td>
+                    <td>Disables SQL logging in tests. Test output would be unreadable with hundreds of SQL statements. If you need to debug SQL in tests, enable it selectively per test class.</td>
+                </tr>
+                <tr>
+                    <td><code>spring.jpa.properties.hibernate.dialect</code></td>
+                    <td><code>H2Dialect</code></td>
+                    <td>Informs Hibernate to generate H2-compatible SQL. H2 supports most PostgreSQL syntax, but there are differences (sequences, JSON functions). The dialect ensures compatibility.</td>
+                </tr>
+                <tr>
+                    <td><code>spring.mail.*</code></td>
+                    <td>localhost:25 with no auth</td>
+                    <td>Disables real email sending. By default, <code>spring-boot-starter-mail</code> will try to connect to an SMTP server on localhost:25, which fails fast. The greenmail library (or mocking) is used for actual email testing.</td>
+                </tr>
+                <tr>
+                    <td><code>server.port</code></td>
+                    <td><code>0</code></td>
+                    <td>Random port. When running integration tests with <code>@SpringBootTest(webEnvironment = RANDOM_PORT)</code>, the server starts on a random available port to avoid port conflicts when running tests in parallel.</td>
+                </tr>
+                <tr>
+                    <td><code>jwt.secret</code></td>
+                    <td>Test-specific secret</td>
+                    <td>Uses a separate test key. This ensures test JWT tokens are not validated by the production secret, and vice versa.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Why This Matters for CI/CD</h3>
+        <p>In a CI/CD pipeline (e.g., GitHub Actions), the test profile ensures:</p>
+        <ul>
+            <li><strong>No external dependencies:</strong> Tests don't need Redis or PostgreSQL installed on the CI runner. H2 is an in-memory database with zero setup.</li>
+            <li><strong>Fast execution:</strong> H2 starts in ~100ms. TestContainers PostgreSQL takes 5-10 seconds to start (used only for specific PostgreSQL integration tests).</li>
+            <li><strong>Deterministic environment:</strong> Every CI run is identical — same database, same config, no state pollution.</li>
+            <li><strong>Parallel safety:</strong> Random ports and in-memory databases mean tests can run in parallel without conflicts.</li>
+        </ul>
+        <div class="highlight">
+            <strong>Interview Answer:</strong> "For unit tests and most integration tests, we use H2 in-memory with the test profile. This eliminates external dependencies (no Redis, no PostgreSQL) from the CI pipeline, making tests fast, deterministic, and parallel-safe. We use TestContainers only for the subset of tests that specifically need PostgreSQL features like JSONB queries or full-text search."
+        </div>
+    </section>
+
+    <!-- 7. INTERVIEW Q&A -->
+    <section id="s7">
+        <h2><span class="num">7</span> Interview Questions &amp; Answers</h2>
+
+        <h3>Beginner Level</h3>
+
+        <div class="qa-box">
+            <div class="q">Q1: What is spring-boot-starter-parent and why do we need it?</div>
+            <div class="a">
+                <code>spring-boot-starter-parent</code> is a special parent POM provided by Spring Boot that serves as the foundation for any Spring Boot project. It provides three key benefits:<br><br>
+                <strong>Dependency Management:</strong> It declares versions for hundreds of commonly used dependencies (Spring, Jackson, Hibernate, etc.) via Maven's <code>&lt;dependencyManagement&gt;</code> section. When you add <code>spring-boot-starter-web</code>, you don't specify a version — the parent POM provides it. This prevents version conflicts across compatible libraries.<br><br>
+                <strong>Plugin Configuration:</strong> It pre-configures essential Maven plugins — <code>maven-compiler-plugin</code> (Java source/target level), <code>maven-surefire-plugin</code> (JUnit integration), <code>spring-boot-maven-plugin</code> (executable JAR packaging) — with sensible defaults.<br><br>
+                <strong>Resource filtering and placeholders:</strong> It enables Maven resource filtering, allowing you to use <code>@project.version@</code> placeholders in application properties.<br><br>
+                <strong>Alternative:</strong> If your organization already has a corporate parent POM, you can import <code>spring-boot-dependencies</code> as a BOM in <code>&lt;dependencyManagement&gt;</code> instead of using the parent. However, you then lose the plugin defaults and resource filtering.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q2: What is the difference between @SpringBootApplication and @EnableAutoConfiguration + @ComponentScan + @Configuration individually?</div>
+            <div class="a">
+                <code>@SpringBootApplication</code> is a <strong>composed annotation</strong> — a convenience annotation that bundles three annotations together:<br><br>
+                - <code>@EnableAutoConfiguration</code> — Enables Spring Boot's auto-configuration mechanism, which automatically configures beans based on classpath dependencies (e.g., if H2 is on the classpath, auto-configure a DataSource for it).<br>
+                - <code>@ComponentScan</code> — Tells Spring to scan the current package and all sub-packages for <code>@Component</code>, <code>@Service</code>, <code>@Repository</code>, <code>@Controller</code> beans and register them.<br>
+                - <code>@Configuration</code> — Marks the class as a source of bean definitions via <code>@Bean</code> methods.<br><br>
+                <strong>Functionally, they are equivalent.</strong> You could replace <code>@SpringBootApplication</code> with these three annotations and the application would behave identically. However, <code>@SpringBootApplication</code> is preferred because:<br>
+                1. It's more concise (1 annotation vs 3)<br>
+                2. It's self-documenting — anyone reading the code immediately knows this is the Spring Boot entry point<br>
+                3. It's a single point of change if Spring Boot introduces additional defaults in future versions<br><br>
+                There is one subtle difference: <code>@SpringBootApplication</code>'s <code>@ComponentScan</code> excludes certain Spring-internal types. In practice, this rarely matters.
+            </div>
+        </div>
+
+        <h3>Intermediate Level</h3>
+
+        <div class="qa-box">
+            <div class="q">Q3: How does Spring Boot know which database driver and dialect to use?</div>
+            <div class="a">
+                Spring Boot uses its <strong>auto-configuration</strong> mechanism combined with <strong>classpath detection</strong> and <strong>@ConditionalOnClass</strong> annotations.<br><br>
+                <strong>The process:</strong><br>
+                1. When you add <code>org.postgresql:postgresql</code> to your <code>pom.xml</code>, the PostgreSQL JDBC driver JAR is on the classpath.<br>
+                2. Spring Boot's <code>DataSourceAutoConfiguration</code> class has <code>@ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })</code> — it's activated because Spring JDBC is present via <code>spring-boot-starter-data-jpa</code>.<br>
+                3. Based on the <code>spring.datasource.url</code> property (<code>jdbc:postgresql://...</code>), Spring Boot infers the driver class name as <code>org.postgresql.Driver</code>.<br>
+                4. Similarly, <code>HibernateJpaAutoConfiguration</code> detects the PostgreSQL URL and selects <code>PostgreSQLDialect</code> automatically.<br>
+                5. If you had added the H2 dependency instead, Spring Boot would auto-configure an H2 DataSource with H2Dialect — zero configuration changes needed.<br><br>
+                <strong>Why we still specify driver-class-name and dialect explicitly:</strong> Auto-detection works 99% of the time, but explicit configuration removes ambiguity. If a new Hibernate version renames the dialect class, explicit configuration protects against breakage.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q4: What is HikariCP and why does Spring Boot use it as the default connection pool?</div>
+            <div class="a">
+                HikariCP is a high-performance JDBC connection pool library. Spring Boot 2.x+ uses it as the default connection pool when it detects <code>spring-boot-starter-data-jpa</code> or <code>spring-boot-starter-jdbc</code> on the classpath.<br><br>
+                <strong>Why HikariCP is the best choice:</strong><br>
+                1. <strong>Performance:</strong> HikariCP is the fastest connection pool in the Java ecosystem. Benchmarks show it is 2-3x faster than Tomcat JDBC Pool and DBCP2 for connection acquisition and release. It achieves this through code optimization (bytecode-level tweaks, fewer <code>synchronized</code> blocks, lock-free handoff where possible).<br>
+                2. <strong>Small footprint:</strong> The library is only ~200KB. It has minimal dependencies (just SLF4J).<br>
+                3. <strong>Zero-config defaults:</strong> HikariCP works well out of the box with sensible defaults (max pool size = 10, connection timeout = 30 seconds).<br>
+                4. <strong>Reliability:</strong> It actively tests connections before handing them out, handles connection timeouts gracefully, and provides detailed logging for pool metrics.<br><br>
+                <strong>Alternatives and why they are not default:</strong><br>
+                - <strong>Tomcat JDBC Pool:</strong> Was the default in Spring Boot 1.x. It is slower and more complex. Still used when running inside a traditional Tomcat container (JNDI datasource).<br>
+                - <strong>DBCP2 (Commons DBCP):</strong> Older, slower, and has known issues with connection leaks under load. Not recommended for production.<br>
+                - <strong>Vibur:</strong> A good alternative but less widely adopted. HikariCP is the community standard.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q5: What are Spring Boot Starters? Can you explain the naming convention and give examples?</div>
+            <div class="a">
+                Spring Boot Starters are <strong>curated dependency descriptors</strong>. They are Maven POMs that bundle a coherent set of compatible dependencies for a specific purpose. Instead of manually adding 10 individual dependencies and ensuring they are all on compatible versions, you add one starter dependency.<br><br>
+                <strong>Naming convention:</strong><br>
+                - <strong>Official Spring starters:</strong> <code>spring-boot-starter-{name}</code><br>
+                  Examples: <code>spring-boot-starter-web</code>, <code>spring-boot-starter-data-jpa</code>, <code>spring-boot-starter-security</code><br>
+                - <strong>Third-party starters:</strong> <code>{name}-spring-boot-starter</code><br>
+                  Examples: <code>springdoc-openapi-starter-webmvc-ui</code>, <code>mybatis-spring-boot-starter</code><br><br>
+                <strong>Examples of what starters include:</strong><br>
+                - <code>spring-boot-starter-web</code> includes: spring-webmvc, spring-boot-starter-tomcat, jackson-databind, hibernate-validator, spring-boot-starter-logging, and their transitive deps (~15 JARs total from 1 line).<br>
+                - <code>spring-boot-starter-data-jpa</code> includes: spring-orm, hibernate-core, spring-data-jpa, spring-boot-starter-jdbc (which brings HikariCP), and all transitive deps.<br>
+                - <code>spring-boot-starter-test</code> includes: JUnit 5, Mockito, AssertJ, Hamcrest, JSONassert, and Spring Test utilities.<br><br>
+                <strong>Why starters matter:</strong> They enforce version compatibility. If you mix Spring Boot 3.4.1 with an incompatible Jackson version, you get runtime errors. Starters + parent POM guarantee all versions are tested and compatible.
+            </div>
+        </div>
+
+        <h3>Advanced Level</h3>
+
+        <div class="qa-box">
+            <div class="q">Q6: How does @SpringBootApplication work internally? Walk through the startup process.</div>
+            <div class="a">
+                <strong>Step-by-step breakdown from main() to a running application:</strong><br><br>
+                <strong>1. SpringApplication.run() is called:</strong><br>
+                - Creates a <code>StopWatch</code> to track startup time<br>
+                - Detects the web application type (SERVLET — based on Tomcat on classpath)<br>
+                - Reads <code>spring.factories</code> / <code>AutoConfiguration.imports</code> from all JARs to find all auto-configuration classes<br>
+                - Creates an <code>ApplicationContext</code> (specifically <code>AnnotationConfigServletWebServerApplicationContext</code>)<br><br>
+                <strong>2. Prepare the environment:</strong><br>
+                - Loads application.yml/properties from classpath<br>
+                - Resolves active profiles from <code>spring.profiles.active</code><br>
+                - Binds all properties to a unified <code>Environment</code> object<br><br>
+                <strong>3. @SpringBootApplication is processed:</strong><br>
+                - <code>@ComponentScan</code> creates a <code>ClassPathScanningCandidateComponentProvider</code> that scans the base package and sub-packages<br>
+                - Every class annotated with <code>@Component</code>, <code>@Service</code>, <code>@Repository</code>, <code>@Controller</code>, <code>@Configuration</code> is discovered and registered as a bean definition<br><br>
+                <strong>4. Auto-configuration phase:</strong><br>
+                - All auto-configuration classes (found in step 1) are loaded<br>
+                - Each class has <code>@Conditional*</code> annotations evaluated at runtime:<br>
+                  → <code>@ConditionalOnClass</code>: Is a specific class on the classpath? (e.g., <code>DataSource.class</code>)<br>
+                  → <code>@ConditionalOnMissingBean</code>: Has the user already defined this bean? (user beans take priority)<br>
+                  → <code>@ConditionalOnProperty</code>: Is a specific property set? (e.g., <code>spring.datasource.url</code>)<br>
+                - Matching auto-configurations register their beans (DataSource, EntityManagerFactory, JwtDecoder, etc.)<br><br>
+                <strong>5. Servlet container starts:</strong><br>
+                - Tomcat is embedded (or Undertow/Jetty depending on starter)<br>
+                - DispatcherServlet is registered at <code>/</code><br>
+                - Server port (8080 by default) is bound<br><br>
+                <strong>6. ApplicationReadyEvent is published:</strong><br>
+                - <code>CommandLineRunner</code> and <code>ApplicationRunner</code> beans execute<br>
+                - The application is now ready to accept HTTP requests<br><br>
+                <strong>Total time:</strong> Typically 2-5 seconds for a Spring Boot 3 application with JPA + Security.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q7: What is the difference between @Configuration and @Component in Spring?</div>
+            <div class="a">
+                While both annotations register classes as Spring beans, they serve different purposes and have different internal behavior.<br><br>
+                <strong>@Component:</strong><br>
+                - A generic stereotype annotation for any Spring-managed bean<br>
+                - Used for <strong>auto-detection</strong> via classpath scanning (each class is instantiated directly)<br>
+                - <code>@Bean</code> methods inside a <code>@Component</code> class are NOT processed as configuration methods — they are treated as regular factory methods<br>
+                - Use for: <code>@Service</code>, <code>@Repository</code>, <code>@Controller</code>, utility beans<br><br>
+                <strong>@Configuration:</strong><br>
+                - A specialized form of <code>@Component</code> that signals the class contains <code>@Bean</code> definitions<br>
+                - <code>@Configuration</code> classes are <strong>CGLIB-proxied</strong> — Spring creates a subclass of the configuration class at runtime. This proxy intercepts calls to <code>@Bean</code> methods to ensure they return singleton beans (not new instances each time)<br>
+                - If a <code>@Bean</code> method inside a <code>@Configuration</code> calls another <code>@Bean</code> method, the proxy returns the existing singleton, not a new instance<br>
+                - In a <code>@Component</code>, calling one <code>@Bean</code> method from another would create a new instance each time — the singleton scope is NOT enforced<br><br>
+                <strong>Concrete example:</strong><br>
+                <pre>@Configuration
+public class AppConfig {
+    @Bean
+    public DataSource dataSource() { return new HikariDataSource(); }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource()); // singleton guaranteed
+    }
+}</pre>
+                In <code>@Configuration</code>, <code>dataSource()</code> is called once and the same instance is used for <code>jdbcTemplate()</code>. In <code>@Component</code>, <code>dataSource()</code> would be called twice, creating two separate DataSource instances — a bug.<br><br>
+                <strong>When to use each:</strong><br>
+                - <code>@Configuration</code>: For classes that define <code>@Bean</code> methods (e.g., SecurityConfig, RedisConfig)<br>
+                - <code>@Component</code> (and its specializations): For classes that are themselves beans and don't define factory methods
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q8: How does Lombok work at compile time? What is annotation processing in Java?</div>
+            <div class="a">
+                Lombok works through <strong>JSR 269 Pluggable Annotation Processing API</strong> — a standardized mechanism in Java for processing annotations at compile time.<br><br>
+                <strong>How it works step-by-step:</strong><br><br>
+                1. <strong>Write code:</strong> You annotate a class with <code>@Getter</code>, <code>@Setter</code>, <code>@Builder</code>, etc.<br><br>
+                2. <strong>Compilation starts:</strong> <code>javac</code> begins compiling your source files. It reads annotations and checks if any registered annotation processors handle them.<br><br>
+                3. <strong>Lombok's processor runs:</strong> Lombok's <code>LombokProcessor</code> implements <code>javax.annotation.processing.Processor</code>. When <code>javac</code> encounters <code>@Getter</code>, it invokes Lombok's processor.<br><br>
+                4. <strong>AST modification:</strong> Lombok does NOT generate a separate source file. Instead, it directly modifies the <strong>Abstract Syntax Tree (AST)</strong> — the in-memory tree structure representing your source code. It injects new method declarations (getters, setters, toString, etc.) into the AST.<br><br>
+                5. <strong>Bytecode generation:</strong> <code>javac</code> continues compilation with the modified AST. The injected methods are compiled into the <code>.class</code> file just as if you had written them manually.<br><br>
+                6. <strong>Result:</strong> The compiled <code>.class</code> file contains all the generated methods. This is why Lombok is a compile-time only dependency (marked <code>&lt;optional&gt;true&lt;/optional&gt;</code>) — the runtime doesn't need Lombok; the methods are already in the bytecode.<br><br>
+                <strong>Why this matters:</strong><br>
+                - <strong>No runtime overhead:</strong> Lombok isn't loaded at runtime. Generated code is ordinary bytecode.<br>
+                - <strong>IDE support:</strong> IDEs (IntelliJ, Eclipse) run annotation processors during editing, so you see the generated getters/setters in code completion and navigation.<br>
+                - <strong>Limitation:</strong> Lombok uses undocumented internal javac APIs to modify the AST. This means it may break with new Java versions. However, Project Lombok is actively maintained and typically updates within weeks of a new Java release.<br><br>
+                <strong>Maven configuration required:</strong> In <code>pom.xml</code>, we must add Lombok to <code>&lt;annotationProcessorPaths&gt;</code> in the <code>maven-compiler-plugin</code> configuration. This tells javac to include Lombok's processor in the annotation processing round.
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>E-Commerce Backend — Phase 2: Project Setup &amp; Maven Configuration</p>
+        <p style="margin-top:4px;">Java 17 | Spring Boot 3.4.1 | Maven | PostgreSQL | Redis | JWT | Razorpay | TestContainers</p>
+    </div>
+
+</div>
+</body>
+</html>

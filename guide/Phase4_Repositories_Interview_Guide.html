@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 4 - Repositories & Data Access Interview Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+    line-height: 1.7;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-size: 2.4rem;
+    color: #fff;
+    border-left: 5px solid #6C63FF;
+    padding-left: 20px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 1rem;
+    margin-left: 25px;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1.6rem;
+    color: #6C63FF;
+    margin: 50px 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1e1e30;
+  }
+  h3 {
+    font-size: 1.2rem;
+    color: #c0bfff;
+    margin: 30px 0 12px;
+  }
+  h4 {
+    font-size: 1rem;
+    color: #a8a0ff;
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 14px; color: #ccc; }
+  ul, ol { margin: 8px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a { color: #6C63FF; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .code-block {
+    background: #16162a;
+    border: 1px solid #2a2a45;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 14px 0 22px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    position: relative;
+  }
+  .code-block .filename {
+    display: inline-block;
+    background: #6C63FF;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 12px;
+    border-radius: 4px;
+    position: absolute;
+    top: -12px;
+    left: 14px;
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 0.3px;
+  }
+  .code-block code { color: #e8e8e8; }
+  .code-block .kw { color: #c678dd; }
+  .code-block .type { color: #61afef; }
+  .code-block .str { color: #98c379; }
+  .code-block .num { color: #d19a66; }
+  .code-block .ann { color: #e5c07b; }
+  .code-block .cm { color: #5c6370; font-style: italic; }
+  .code-block .fn { color: #61afef; }
+  .code-block .var { color: #e06c75; }
+  .code-block .op { color: #abb2bf; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 0.9rem;
+  }
+  th {
+    background: #1e1e30;
+    color: #6C63FF;
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid #2a2a45;
+    font-weight: 600;
+  }
+  td {
+    padding: 9px 14px;
+    border: 1px solid #2a2a45;
+    background: #141428;
+  }
+  tr:hover td { background: #1a1a30; }
+
+  .card {
+    background: #141428;
+    border: 1px solid #2a2a45;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 18px 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  .tag {
+    display: inline-block;
+    background: #2a2a50;
+    color: #6C63FF;
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-right: 4px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tag-jpa { background: #1e3a5f; color: #5dade2; }
+  .tag-jpql { background: #3a1e3a; color: #c39bd3; }
+  .tag-sql { background: #1e3a2a; color: #7dcea0; }
+  .tag-perf { background: #3a2a1e; color: #f0c27a; }
+
+  .qa-block {
+    border-left: 3px solid #6C63FF;
+    padding: 16px 20px;
+    margin: 16px 0;
+    background: #12121e;
+    border-radius: 0 8px 8px 0;
+  }
+  .qa-block .q { color: #6C63FF; font-weight: 700; font-size: 1.05rem; }
+  .qa-block .a { color: #ccc; margin-top: 6px; }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    background: rgba(15,15,26,0.96);
+    border-bottom: 1px solid #2a2a45;
+    padding: 12px 0;
+    margin-bottom: 40px;
+    z-index: 100;
+    backdrop-filter: blur(6px);
+  }
+  .nav a {
+    color: #888;
+    margin-right: 20px;
+    font-size: 0.85rem;
+    transition: color 0.15s;
+  }
+  .nav a:hover { color: #6C63FF; }
+
+  @media (max-width: 700px) {
+    body { padding: 20px 12px; }
+    h1 { font-size: 1.5rem; }
+    .nav a { margin-right: 12px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="container">
+    <a href="#overview">Overview</a>
+    <a href="#repositories">Repositories</a>
+    <a href="#derived">Derived Queries</a>
+    <a href="#query">@Query</a>
+    <a href="#pagination">Pagination</a>
+    <a href="#transactions">Transactions</a>
+    <a href="#performance">Performance</a>
+    <a href="#qa">Q&A</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Phase 4: Repositories &amp; Data Access</h1>
+  <p class="subtitle">Spring Data JPA Repository Layer &mdash; Senior-Level Interview Deep Dive</p>
+
+  <!-- ===================== SECTION 1 ===================== -->
+  <h2 id="overview">1. Spring Data JPA Overview</h2>
+
+  <p>
+    Spring Data JPA is a subproject of Spring Data that provides repository support for the Jakarta Persistence API (JPA).
+    Its core promise: <strong>you define interfaces with method signatures, and Spring provides the implementation at runtime</strong>.
+    No boilerplate DAO classes, no manual <code>EntityManager</code> plumbing for standard operations.
+  </p>
+
+  <h3>How It Works Without Written Implementations</h3>
+  <p>
+    When the Spring container starts, it scans for interfaces extending repository markers (e.g., <code>JpaRepository</code>)
+    and, for each, dynamically creates a <strong>JDK dynamic proxy</strong>. The proxy intercepts every method call and
+    routes it through Spring Data's <code>RepositoryFactorySupport</code>, which decides how to handle the invocation:
+  </p>
+  <ul>
+    <li><strong>Predefined CRUD methods</strong> (e.g., <code>save()</code>, <code>findById()</code>, <code>delete()</code>)
+    are forwarded to the default implementation class: <code>SimpleJpaRepository</code>.</li>
+    <li><strong>Derived query methods</strong> (e.g., <code>findByEmail()</code>) are parsed by the
+    <code>PartTree</code> parser, which decomposes the method name into subject and predicate parts, then builds a
+    <code>CriteriaQuery</code> via the <code>QueryExecutorMethodInterceptor</code>.</li>
+    <li><strong>Methods annotated with <code>@Query</code></strong> have their JPQL or SQL string extracted and executed
+    through the <code>EntityManager</code> at invocation time.</li>
+  </ul>
+
+  <h3>Repository Hierarchy</h3>
+  <div class="code-block">
+    <span class="filename">Interface Hierarchy</span>
+    <code>
+      Repository&lt;T, ID&gt;                          <span class="cm">// Marker interface (no methods)</span>
+       └── CrudRepository&lt;T, ID&gt;                 <span class="cm">// CRUD: save, findById, findAll, delete, count...</span>
+            └── PagingAndSortingRepository&lt;T, ID&gt; <span class="cm">// findAll(Pageable/Sort)</span>
+                 └── JpaRepository&lt;T, ID&gt;        <span class="cm">// flush, saveAndFlush, deleteInBatch, findAll(Sort)</span>
+                      └── Our interfaces             <span class="cm">// UserRepository, ProductRepository, ...</span>
+    </code>
+  </div>
+
+  <table>
+    <tr><th>Interface</th><th>Key Methods Added</th><th>Purpose</th></tr>
+    <tr><td><code>Repository</code></td><td>(none)</td><td>Central marker; type-safe container</td></tr>
+    <tr><td><code>CrudRepository</code></td><td><code>save(S)</code>, <code>findById(ID)</code>, <code>findAll()</code>, <code>count()</code>, <code>delete(T)</code></td><td>Generic CRUD operations</td></tr>
+    <tr><td><code>PagingAndSortingRepository</code></td><td><code>findAll(Pageable)</code>, <code>findAll(Sort)</code></td><td>Pagination and sorting support</td></tr>
+    <tr><td><code>JpaRepository</code></td><td><code>flush()</code>, <code>saveAndFlush(S)</code>, <code>deleteAllInBatch()</code>, <code>findAll(Sort)</code></td><td>JPA-specific extensions, flush control, batch deletes</td></tr>
+  </table>
+
+  <p>
+    The default implementation for <code>JpaRepository</code> is <code>SimpleJpaRepository</code>
+    (in <code>org.springframework.data.jpa.repository.support</code>). It holds an <code>EntityManager</code>
+    injected via <code>@PersistenceContext</code> and a <code>JpaEntityInformation</code> for metadata reflection.
+  </p>
+
+  <!-- ===================== SECTION 2 ===================== -->
+  <h2 id="repositories">2. Repository by Repository</h2>
+
+  <!-- ---------- UserRepository ---------- -->
+  <h3>2.1 UserRepository</h3>
+  <div class="code-block">
+    <span class="filename">UserRepository.java</span>
+    <code>
+      <span class="kw">package</span> com.ecommerce.repository;
+
+      <span class="kw">import</span> com.ecommerce.enums.Role;
+      <span class="kw">import</span> com.ecommerce.model.User;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+
+      <span class="kw">import</span> java.util.List;
+      <span class="kw">import</span> java.util.Optional;
+
+      <span class="kw">public interface</span> <span class="type">UserRepository</span> <span class="kw">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">User</span>, <span class="type">Long</span>&gt; {
+
+          <span class="type">Optional</span>&lt;<span class="type">User</span>&gt; <span class="fn">findByEmail</span>(<span class="type">String</span> email);
+
+          <span class="type">boolean</span> <span class="fn">existsByEmail</span>(<span class="type">String</span> email);
+
+          <span class="type">List</span>&lt;<span class="type">User</span>&gt; <span class="fn">findByRole</span>(<span class="type">Role</span> role);
+      }
+    </code>
+  </div>
+
+  <div class="card">
+    <h4><code>Optional&lt;User&gt; findByEmail(String email)</code></h4>
+    <p><strong>Derived query.</strong> Spring Data parses <code>findByEmail</code> as: "find entities WHERE email = ?1".
+    The parser splits on the <code>findBy</code> prefix, extracts <code>Email</code> as the property name, and builds
+    <code>SELECT u FROM User u WHERE u.email = ?1</code>. Returns <code>Optional</code> to force the caller to handle
+    the absent case explicitly rather than risking <code>null</code> dereferences.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>boolean existsByEmail(String email)</code></h4>
+    <p><strong>Exists derived query.</strong> The <code>existsBy</code> subject keyword tells Spring Data to generate
+    <code>SELECT COUNT(1) FROM User u WHERE u.email = ?1</code> and return <code>true</code> if the count &gt; 0.
+    This is more efficient than <code>findByEmail</code> because it only fetches a scalar count, not the full entity graph.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>List&lt;User&gt; findByRole(Role role)</code></h4>
+    <p><strong>Derived query with enum parameter.</strong> Translates to
+    <code>SELECT u FROM User u WHERE u.role = ?1</code>. Since <code>Role</code> is an <code>@Enumerated(EnumType.STRING)</code>,
+    Hibernate binds the enum's <code>name()</code> string value. Multiple results return a <code>List</code>.</p>
+  </div>
+
+  <!-- ---------- ProductRepository ---------- -->
+  <h3>2.2 ProductRepository</h3>
+  <div class="code-block">
+    <span class="filename">ProductRepository.java</span>
+    <code>
+      <span class="kw">package</span> com.ecommerce.repository;
+
+      <span class="kw">import</span> com.ecommerce.model.Product;
+      <span class="kw">import</span> org.springframework.data.domain.Page;
+      <span class="kw">import</span> org.springframework.data.domain.Pageable;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.Query;
+      <span class="kw">import</span> org.springframework.data.repository.query.Param;
+
+      <span class="kw">import</span> java.util.List;
+
+      <span class="kw">public interface</span> <span class="type">ProductRepository</span> <span class="kw">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">Product</span>, <span class="type">Long</span>&gt; {
+
+          <span class="type">Page</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByCategoryId</span>(<span class="type">Long</span> categoryId, <span class="type">Pageable</span> pageable);
+
+          <span class="type">Page</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findBySellerId</span>(<span class="type">Long</span> sellerId, <span class="type">Pageable</span> pageable);
+
+          <span class="type">Page</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByNameContainingIgnoreCase</span>(<span class="type">String</span> name, <span class="type">Pageable</span> pageable);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT p FROM Product p WHERE "</span> +
+                 <span class="str">"LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "</span> +
+                 <span class="str">"LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))"</span>)
+          <span class="type">Page</span>&lt;<span class="type">Product</span>&gt; <span class="fn">searchByKeyword</span>(<span class="ann">@Param</span>(<span class="str">"keyword"</span>) <span class="type">String</span> keyword, <span class="type">Pageable</span> pageable);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT p FROM Product p WHERE p.category.id IN :categoryIds"</span>)
+          <span class="type">Page</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByCategoryIds</span>(<span class="ann">@Param</span>(<span class="str">"categoryIds"</span>) <span class="type">List</span>&lt;<span class="type">Long</span>&gt; categoryIds, <span class="type">Pageable</span> pageable);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT p FROM Product p WHERE p.stock &lt; :threshold ORDER BY p.stock ASC"</span>)
+          <span class="type">List</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findLowStockProducts</span>(<span class="ann">@Param</span>(<span class="str">"threshold"</span>) <span class="type">int</span> threshold);
+
+          <span class="type">List</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByStockLessThanEqual</span>(<span class="type">int</span> stock);
+      }
+    </code>
+  </div>
+
+  <div class="card">
+    <h4><code>Page&lt;Product&gt; findByCategoryId(Long categoryId, Pageable pageable)</code></h4>
+    <p><strong>Derived pagination query.</strong> Translates to
+    <code>SELECT p FROM Product p WHERE p.category.id = ?1</code>. Because the return type is <code>Page</code>,
+    Spring Data automatically generates a <code>COUNT</code> query: <code>SELECT COUNT(p) FROM Product p WHERE p.category.id = ?1</code>.
+    The <code>Pageable</code> parameter controls offset (<code>page</code>), limit (<code>size</code>), and sort order.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>Page&lt;Product&gt; findBySellerId(Long sellerId, Pageable pageable)</code></h4>
+    <p>Same pattern as above. <code>Product.seller</code> is a <code>@ManyToOne(fetch = FetchType.LAZY)</code> to <code>User</code>.
+    The derived query navigates <code>seller.id</code> via dot notation in the path expression.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>Page&lt;Product&gt; findByNameContainingIgnoreCase(String name, Pageable pageable)</code></h4>
+    <p><strong>Derived query with multiple criteria keywords.</strong> <code>Containing</code> translates to
+    <code>LIKE %:name%</code> (wrapping the parameter in <code>%</code>). <code>IgnoreCase</code> applies
+    <code>LOWER()</code> to both the column and the parameter. Resulting JPQL:
+    <code>SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', ?1, '%'))</code>.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))") Page&lt;Product&gt; searchByKeyword(@Param("keyword") String keyword, Pageable pageable)</code></h4>
+    <p><strong>Custom JPQL query with <code>@Query</code>.</strong> A derived method cannot express <code>OR</code> across
+    two different columns, so we write JPQL explicitly. <code>@Param("keyword")</code> binds the named parameter
+    <code>:keyword</code>. The <code>CONCAT('%', :keyword, '%')</code> builds the LIKE pattern in JPQL.
+    The <code>Pageable</code> parameter is intercepted by Spring Data, which wraps the JPQL in a count query
+    (<code>SELECT COUNT(p) FROM Product p WHERE ...</code>) and applies <code>ORDER BY</code> and <code>OFFSET/LIMIT</code>
+    based on the <code>Pageable</code> values. This is <strong>JPQL</strong> (database-agnostic, validated at boot time),
+    not native SQL.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT p FROM Product p WHERE p.category.id IN :categoryIds") Page&lt;Product&gt; findByCategoryIds(@Param("categoryIds") List&lt;Long&gt; categoryIds, Pageable pageable)</code></h4>
+    <p>Demonstrates the <code>IN</code> clause with a <code>List</code> parameter. Spring Data expands the collection
+    into a comma-separated parameter list. Again, JPQL with pagination. A derived method would need
+    <code>findByCategoryIdIn(List&lt;Long&gt; ids, Pageable pageable)</code> &mdash; both are valid; the <code>@Query</code>
+    version makes the SQL explicit for readability.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT p FROM Product p WHERE p.stock &lt; :threshold ORDER BY p.stock ASC") List&lt;Product&gt; findLowStockProducts(@Param("threshold") int threshold)</code></h4>
+    <p>Custom JPQL returning <code>List</code> (no pagination). Explicit <code>ORDER BY</code> inside JPQL.
+    The equivalent derived method would be <code>findByStockLessThan(int stock, Sort sort)</code> but the
+    <code>@Query</code> annotation makes the ordering self-documenting and guarantees it regardless of caller.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>List&lt;Product&gt; findByStockLessThanEqual(int stock)</code></h4>
+    <p><strong>Derived query with <code>LessThanEqual</code>.</strong> Translates to
+    <code>SELECT p FROM Product p WHERE p.stock &lt;= ?1</code>. The criteria keyword <code>LessThanEqual</code> is
+    mapped to the JPQL <code>&lt;=</code> operator.</p>
+  </div>
+
+  <!-- ---------- CategoryRepository ---------- -->
+  <h3>2.3 CategoryRepository</h3>
+  <div class="code-block">
+    <span class="filename">CategoryRepository.java</span>
+    <code>
+      <span class="kw">package</span> com.ecommerce.repository;
+
+      <span class="kw">import</span> com.ecommerce.model.Category;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+
+      <span class="kw">import</span> java.util.List;
+      <span class="kw">import</span> java.util.Optional;
+
+      <span class="kw">public interface</span> <span class="type">CategoryRepository</span> <span class="kw">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">Category</span>, <span class="type">Long</span>&gt; {
+
+          <span class="type">Optional</span>&lt;<span class="type">Category</span>&gt; <span class="fn">findByName</span>(<span class="type">String</span> name);
+
+          <span class="type">List</span>&lt;<span class="type">Category</span>&gt; <span class="fn">findByParentIsNull</span>();
+
+          <span class="type">List</span>&lt;<span class="type">Category</span>&gt; <span class="fn">findByParentId</span>(<span class="type">Long</span> parentId);
+
+          <span class="type">boolean</span> <span class="fn">existsByName</span>(<span class="type">String</span> name);
+      }
+    </code>
+  </div>
+
+  <div class="card">
+    <h4><code>Optional&lt;Category&gt; findByName(String name)</code></h4>
+    <p>Simple derived query: <code>WHERE name = ?1</code>. <code>Optional</code> return because name has
+    <code>unique = true</code> constraint &mdash; at most one result.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>List&lt;Category&gt; findByParentIsNull()</code></h4>
+    <p><strong>Derived query with <code>IsNull</code> keyword.</strong> Translates to
+    <code>SELECT c FROM Category c WHERE c.parent IS NULL</code>. Returns root-level categories (those without a parent).
+    No parameters needed.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>List&lt;Category&gt; findByParentId(Long parentId)</code></h4>
+    <p>Derived query: <code>WHERE c.parent.id = ?1</code>. Returns immediate child categories of a given parent.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>boolean existsByName(String name)</code></h4>
+    <p>Optimized existence check using <code>COUNT</code>, avoiding full entity loading. Used before creating
+    a category to enforce uniqueness at the application level.</p>
+  </div>
+
+  <!-- ---------- CartRepository ---------- -->
+  <h3>2.4 CartRepository</h3>
+  <div class="code-block">
+    <span class="filename">CartRepository.java</span>
+    <code>
+      <span class="kw">package</span> com.ecommerce.repository;
+
+      <span class="kw">import</span> com.ecommerce.model.Cart;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.Query;
+      <span class="kw">import</span> org.springframework.data.repository.query.Param;
+
+      <span class="kw">import</span> java.util.Optional;
+
+      <span class="kw">public interface</span> <span class="type">CartRepository</span> <span class="kw">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">Cart</span>, <span class="type">Long</span>&gt; {
+
+          <span class="type">Optional</span>&lt;<span class="type">Cart</span>&gt; <span class="fn">findByUserId</span>(<span class="type">Long</span> userId);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT c FROM Cart c JOIN FETCH c.items WHERE c.user.id = :userId"</span>)
+          <span class="type">Optional</span>&lt;<span class="type">Cart</span>&gt; <span class="fn">findWithItemsByUserId</span>(<span class="ann">@Param</span>(<span class="str">"userId"</span>) <span class="type">Long</span> userId);
+
+          <span class="type">void</span> <span class="fn">deleteByUserId</span>(<span class="type">Long</span> userId);
+      }
+    </code>
+  </div>
+
+  <div class="card">
+    <h4><code>Optional&lt;Cart&gt; findByUserId(Long userId)</code></h4>
+    <p>Derived query: <code>WHERE c.user.id = ?1</code>. Returns the user's cart without the items collection loaded
+    (lazy). The <code>Cart.items</code> list is <code>@OneToMany(fetch = FetchType.LAZY)</code>, so accessing items
+    outside a transaction would throw <code>LazyInitializationException</code>.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT c FROM Cart c JOIN FETCH c.items WHERE c.user.id = :userId") Optional&lt;Cart&gt; findWithItemsByUserId(@Param("userId") Long userId)</code></h4>
+    <p><strong>JOIN FETCH for eager loading in a single query.</strong> <code>JOIN FETCH</code> is a JPA/JPQL construct
+    that instructs the persistence provider to <strong>eagerly fetch the associated collection</strong> in the same
+    <code>SELECT</code> statement using a SQL <code>LEFT OUTER JOIN</code> (or <code>INNER JOIN</code> for non-optional
+    associations). Without <code>JOIN FETCH</code>, accessing <code>cart.getItems()</code> would trigger a separate SQL
+    query for each cart (the N+1 problem). With it, a single SQL query fetches both the cart and all its items:
+    <code>SELECT c.*, ci.* FROM carts c LEFT JOIN cart_items ci ON ci.cart_id = c.id WHERE c.user_id = ?</code>.
+    This is the go-to solution for the N+1 problem in read operations.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>void deleteByUserId(Long userId)</code></h4>
+    <p><strong>Derived delete query.</strong> The <code>deleteBy</code> prefix triggers a <strong>derived delete</strong>,
+    which Spring Data translates to a <code>DELETE FROM cart WHERE user_id = ?</code> JPQL bulk delete.
+    By default, derived delete methods are <code>@Transactional</code> and require <code>@Modifying</code> semantics
+    internally. Notice: no <code>@Modifying</code> annotation is present &mdash; Spring Data automatically applies it
+    for derived <code>deleteBy</code> methods (it detects the <code>deleteBy</code> prefix and wraps the execution
+    in a modifying query).</p>
+  </div>
+
+  <!-- ---------- OrderRepository ---------- -->
+  <h3>2.5 OrderRepository</h3>
+  <div class="code-block">
+    <span class="filename">OrderRepository.java</span>
+    <code>
+      <span class="kw">package</span> com.ecommerce.repository;
+
+      <span class="kw">import</span> com.ecommerce.enums.OrderStatus;
+      <span class="kw">import</span> com.ecommerce.model.Order;
+      <span class="kw">import</span> org.springframework.data.domain.Page;
+      <span class="kw">import</span> org.springframework.data.domain.Pageable;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+      <span class="kw">import</span> org.springframework.data.jpa.repository.Query;
+      <span class="kw">import</span> org.springframework.data.repository.query.Param;
+
+      <span class="kw">import</span> java.time.LocalDateTime;
+      <span class="kw">import</span> java.util.List;
+
+      <span class="kw">public interface</span> <span class="type">OrderRepository</span> <span class="kw">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">Order</span>, <span class="type">Long</span>&gt; {
+
+          <span class="type">Page</span>&lt;<span class="type">Order</span>&gt; <span class="fn">findByUserId</span>(<span class="type">Long</span> userId, <span class="type">Pageable</span> pageable);
+
+          <span class="type">Page</span>&lt;<span class="type">Order</span>&gt; <span class="fn">findByOrderStatus</span>(<span class="type">OrderStatus</span> status, <span class="type">Pageable</span> pageable);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT o FROM Order o WHERE o.orderStatus = :status AND o.createdAt &lt; :since"</span>)
+          <span class="type">List</span>&lt;<span class="type">Order</span>&gt; <span class="fn">findStaleOrders</span>(<span class="ann">@Param</span>(<span class="str">"status"</span>) <span class="type">OrderStatus</span> status,
+                                          <span class="ann">@Param</span>(<span class="str">"since"</span>) <span class="type">LocalDateTime</span> since);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.orderStatus = :status"</span>)
+          <span class="type">long</span> <span class="fn">countByUserAndStatus</span>(<span class="ann">@Param</span>(<span class="str">"userId"</span>) <span class="type">Long</span> userId,
+                                    <span class="ann">@Param</span>(<span class="str">"status"</span>) <span class="type">OrderStatus</span> status);
+
+          <span class="ann">@Query</span>(<span class="str">"SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE "</span> +
+                 <span class="str">"o.orderStatus = :status AND o.createdAt BETWEEN :start AND :end"</span>)
+          <span class="type">Double</span> <span class="fn">getTotalRevenueBetween</span>(<span class="ann">@Param</span>(<span class="str">"status"</span>) <span class="type">OrderStatus</span> status,
+                                        <span class="ann">@Param</span>(<span class="str">"start"</span>) <span class="type">LocalDateTime</span> start,
+                                        <span class="ann">@Param</span>(<span class="str">"end"</span>) <span class="type">LocalDateTime</span> end);
+      }
+    </code>
+  </div>
+
+  <div class="card">
+    <h4><code>Page&lt;Order&gt; findByUserId(Long userId, Pageable pageable)</code></h4>
+    <p>Derived pagination for user's order history. Translates to
+    <code>SELECT o FROM Order o WHERE o.user.id = ?1</code>. Spring Data appends <code>ORDER BY</code> and pagination
+    from the <code>Pageable</code> parameter, and generates a count query automatically.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>Page&lt;Order&gt; findByOrderStatus(OrderStatus status, Pageable pageable)</code></h4>
+    <p>Same pagination pattern filtering by <code>OrderStatus</code> enum. Used by admin dashboards to page through
+    orders in a given state (e.g., PENDING, SHIPPED).</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT o FROM Order o WHERE o.orderStatus = :status AND o.createdAt &lt; :since") List&lt;Order&gt; findStaleOrders(@Param("status") OrderStatus status, @Param("since") LocalDateTime since)</code></h4>
+    <p>Custom JPQL with two named parameters. Finds orders that have been in a given status longer than a threshold.
+    Used by a scheduled job to auto-cancel pending orders after 24 hours. Returns <code>List</code> (no pagination).</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.orderStatus = :status") long countByUserAndStatus(...)</code></h4>
+    <p><strong>Aggregate query returning a scalar.</strong> <code>COUNT(o)</code> returns a <code>Long</code>.
+    The equivalent derived method would be <code>long countByUserIdAndOrderStatus(Long userId, OrderStatus status)</code>
+    &mdash; but the <code>@Query</code> version makes the intent explicit and consistent with the other custom queries.</p>
+  </div>
+
+  <div class="card">
+    <h4><code>@Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.orderStatus = :status AND o.createdAt BETWEEN :start AND :end") Double getTotalRevenueBetween(...)</code></h4>
+    <p><strong>Aggregate with SUM and COALESCE.</strong> <code>SUM(o.totalAmount)</code> aggregates a <code>BigDecimal</code>
+    column. <code>COALESCE(..., 0)</code> ensures the query returns <code>0.0</code> instead of <code>null</code> when
+    no matching orders exist. <code>BETWEEN :start AND :end</code> is inclusive on both bounds.
+    This query cannot be expressed as a derived method and is a canonical example of when <code>@Query</code> is required.</p>
+  </div>
+
+  <!-- ===================== SECTION 3 ===================== -->
+  <h2 id="derived">3. Derived Query Methods Deep Dive</h2>
+
+  <p>
+    Spring Data JPA parses repository method names into JPQL queries at startup using the
+    <code>PartTree</code> parser (<code>org.springframework.data.repository.query.parser.PartTree</code>).
+    The algorithm:
+  </p>
+  <ol>
+    <li>Strip the <strong>subject keyword</strong> (e.g., <code>findBy</code>, <code>existsBy</code>, <code>countBy</code>)</li>
+    <li>Parse the remainder into <strong>predicate parts</strong> separated by <code>And</code> / <code>Or</code></li>
+    <li>Each part is split into a <strong>property path</strong> and optional <strong>criteria keywords</strong></li>
+    <li>Build a <code>CriteriaQuery</code> using JPA Criteria API internally</li>
+  </ol>
+
+  <h3>Subject Keywords</h3>
+  <table>
+    <tr><th>Keyword</th><th>Generated JPQL Pattern</th><th>Example</th></tr>
+    <tr><td><code>findBy</code>, <code>find...By</code></td><td><code>SELECT ... WHERE ...</code></td><td><code>findByEmail</code></td></tr>
+    <tr><td><code>existsBy</code></td><td><code>SELECT COUNT(1) ... WHERE ...</code> &rarr; <code>boolean</code></td><td><code>existsByEmail</code></td></tr>
+    <tr><td><code>countBy</code></td><td><code>SELECT COUNT(...) ... WHERE ...</code> &rarr; <code>long</code></td><td><code>countByUserIdAndOrderStatus</code></td></tr>
+    <tr><td><code>deleteBy</code>, <code>removeBy</code></td><td><code>DELETE FROM ... WHERE ...</code></td><td><code>deleteByUserId</code></td></tr>
+    <tr><td><code>getBy</code></td><td>Same as <code>findBy</code></td><td><code>getByEmail</code></td></tr>
+    <tr><td><code>queryBy</code></td><td>Same as <code>findBy</code></td><td><code>queryByName</code></td></tr>
+    <tr><td><code>streamBy</code></td><td><code>Stream&lt;Entity&gt; ... WHERE ...</code></td><td><code>streamByRole</code></td></tr>
+  </table>
+
+  <h3>Criteria Keywords</h3>
+  <table>
+    <tr><th>Keyword</th><th>JPQL Operator</th><th>Example Method</th></tr>
+    <tr><td><code>And</code></td><td><code>AND</code></td><td><code>findByNameAndPrice</code></td></tr>
+    <tr><td><code>Or</code></td><td><code>OR</code></td><td><code>findByNameOrDescription</code></td></tr>
+    <tr><td><code>Between</code></td><td><code>BETWEEN ?1 AND ?2</code></td><td><code>findByPriceBetween</code></td></tr>
+    <tr><td><code>LessThan</code></td><td><code>&lt;</code></td><td><code>findByStockLessThan</code></td></tr>
+    <tr><td><code>LessThanEqual</code></td><td><code>&lt;=</code></td><td><code>findByStockLessThanEqual</code></td></tr>
+    <tr><td><code>GreaterThan</code></td><td><code>&gt;</code></td><td><code>findByPriceGreaterThan</code></td></tr>
+    <tr><td><code>GreaterThanEqual</code></td><td><code>&gt;=</code></td><td><code>findByPriceGreaterThanEqual</code></td></tr>
+    <tr><td><code>After</code></td><td><code>&gt;</code> (date)</td><td><code>findByCreatedAtAfter</code></td></tr>
+    <tr><td><code>Before</code></td><td><code>&lt;</code> (date)</td><td><code>findByCreatedAtBefore</code></td></tr>
+    <tr><td><code>IsNull</code>, <code>Null</code></td><td><code>IS NULL</code></td><td><code>findByParentIsNull</code></td></tr>
+    <tr><td><code>IsNotNull</code>, <code>NotNull</code></td><td><code>IS NOT NULL</code></td><td><code>findByParentIsNotNull</code></td></tr>
+    <tr><td><code>Like</code></td><td><code>LIKE ?1</code></td><td><code>findByNameLike</code></td></tr>
+    <tr><td><code>NotLike</code></td><td><code>NOT LIKE ?1</code></td><td><code>findByNameNotLike</code></td></tr>
+    <tr><td><code>Containing</code></td><td><code>LIKE %?1%</code></td><td><code>findByNameContaining</code></td></tr>
+    <tr><td><code>StartingWith</code></td><td><code>LIKE ?1%</code></td><td><code>findByNameStartingWith</code></td></tr>
+    <tr><td><code>EndingWith</code></td><td><code>LIKE %?1</code></td><td><code>findByNameEndingWith</code></td></tr>
+    <tr><td><code>IgnoreCase</code></td><td><code>LOWER(...) LOWER(...)</code></td><td><code>findByNameContainingIgnoreCase</code></td></tr>
+    <tr><td><code>OrderBy</code></td><td><code>ORDER BY ... ASC/DESC</code></td><td><code>findByStockLessThanOrderByStockAsc</code></td></tr>
+    <tr><td><code>In</code></td><td><code>IN (...)</code></td><td><code>findByCategoryIdIn</code></td></tr>
+    <tr><td><code>NotIn</code></td><td><code>NOT IN (...)</code></td><td><code>findByCategoryIdNotIn</code></td></tr>
+    <tr><td><code>True</code></td><td><code>IS TRUE</code></td><td><code>findByActiveTrue</code></td></tr>
+    <tr><td><code>False</code></td><td><code>IS FALSE</code></td><td><code>findByActiveFalse</code></td></tr>
+  </table>
+
+  <p>
+    <strong>How parsing works internally:</strong> At application startup,
+    <code>JpaQueryLookupStrategy</code> resolves each method. For derived methods,
+    <code>PartTreeJpaQuery</code> is created, which uses <code>PartTree</code> to decompose the name.
+    Each <code>Part</code> contains a <code>PropertyPath</code> (resolved against the entity's metamodel)
+    and a <code>Type</code> (the operator, e.g., LESS_THAN, CONTAINING, IS_NULL).
+    The tree is then rendered into JPQL via <code>CriteriaQuery</code>.
+  </p>
+
+  <!-- ===================== SECTION 4 ===================== -->
+  <h2 id="query">4. @Query Annotations</h2>
+
+  <p>
+    The <code>@Query</code> annotation allows you to define the JPQL (or native SQL) directly on the method.
+    It is resolved at startup &mdash; invalid JPQL causes an <code>ApplicationContext</code> failure.
+  </p>
+
+  <table>
+    <tr><th>Aspect</th><th>Derived Methods</th><th><code>@Query</code></th></tr>
+    <tr><td>Complexity ceiling</td><td>Simple predicates (no OR across columns, no JOIN FETCH, no aggregation)</td><td>Unlimited (JOIN FETCH, subqueries, aggregate functions, UNION)</td></tr>
+    <tr><td>Validation</td><td>Property paths validated against entity metadata</td><td>JPQL validated at startup (native SQL is not)</td></tr>
+    <tr><td>Readability</td><td>Concise for simple cases</td><td>Explicit SQL/JPQL; self-documenting</td></tr>
+    <tr><td>BOOT time overhead</td><td>PPS: PartTree parsing for each method</td><td>JPQL string stored as-is; lower parsing cost</td></tr>
+    <tr><td>Pagination + Count</td><td>Automatic count query generation</td><td>Automatic if return type is <code>Page</code>; override with <code>@Query(countQuery = "...")</code></td></tr>
+    <tr><td>Modifying operations</td><td>Only <code>deleteBy</code></td><td>Any DML with <code>@Modifying</code></td></tr>
+  </table>
+
+  <h3>JPQL vs Native SQL</h3>
+  <div class="code-block">
+    <code>
+      <span class="cm">// JPQL (database-agnostic, entity-based)</span>
+      <span class="ann">@Query</span>(<span class="str">"SELECT p FROM Product p WHERE p.price &gt; :minPrice"</span>)
+      <span class="type">List</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByMinPrice</span>(<span class="ann">@Param</span>(<span class="str">"minPrice"</span>) <span class="type">BigDecimal</span> minPrice);
+
+      <span class="cm">// Native SQL (database-specific, table-based)</span>
+      <span class="ann">@Query</span>(<span class="str">value = "SELECT * FROM products p WHERE p.price &gt; :minPrice"</span>, <span class="kw">nativeQuery</span> = <span class="kw">true</span>)
+      <span class="type">List</span>&lt;<span class="type">Product</span>&gt; <span class="fn">findByMinPriceNative</span>(<span class="ann">@Param</span>(<span class="str">"minPrice"</span>) <span class="type">BigDecimal</span> minPrice);
+    </code>
+  </div>
+
+  <p>
+    This project uses <strong>JPQL exclusively</strong>. Reasons: database portability (H2 for tests, PostgreSQL for prod),
+    compile-time validation by Hibernate, and automatic entity graph management (dirty checking, cascading).
+  </p>
+
+  <h3>Named Parameters with @Param</h3>
+  <p>
+    <code>@Param("name")</code> binds the method parameter to the JPQL named parameter <code>:name</code>.
+    Spring Data also supports <strong>positional parameters</strong> (<code>?1</code>, <code>?2</code>), but
+    named parameters are preferred because:
+  </p>
+  <ul>
+    <li>Explicit binding &mdash; order-independent</li>
+    <li>Self-documenting &mdash; the parameter name in JPQL matches the business concept</li>
+    <li>Safe under refactoring &mdash; reordering method parameters doesn't break queries</li>
+  </ul>
+
+  <h3>Alternatives to @Query</h3>
+  <table>
+    <tr><th>Alternative</th><th>When to Use</th></tr>
+    <tr><td><code>@NamedQuery</code> (on entity)</td><td>Reusable named JPQL defined once on the entity class; invoked by <code>entityManager.createNamedQuery()</code>. Less common in modern Spring Data.</td></tr>
+    <tr><td><code>Specification</code> + <code>JpaSpecificationExecutor</code></td><td>Dynamic, type-safe, composable WHERE clauses built programmatically. Best for multi-filter search UIs with optional, combinable criteria.</td></tr>
+    <tr><td>QueryDSL</td><td>Fluent, compile-time-safe query builder. Requires annotation processing. Powerful but adds build complexity.</td></tr>
+    <tr><td><code>@EntityGraph</code></td><td>Declarative fetch strategy to solve N+1 without writing JOIN FETCH in JPQL. Define named entity graphs on the entity, reference them in the repository.</td></tr>
+  </table>
+
+  <!-- ===================== SECTION 5 ===================== -->
+  <h2 id="pagination">5. Pagination &amp; Sorting</h2>
+
+  <h3>How Pageable Works</h3>
+  <p>
+    <code>org.springframework.data.domain.Pageable</code> is an interface that bundles pagination parameters:
+    <strong>page number</strong> (0-indexed), <strong>page size</strong>, and <strong>sort</strong>.
+    Created via the <code>PageRequest</code> factory:
+  </p>
+
+  <div class="code-block">
+    <code>
+      <span class="type">Pageable</span> pageable = <span class="type">PageRequest</span>.<span class="fn">of</span>(0, 20, <span class="type">Sort</span>.<span class="fn">by</span>(<span class="str">"createdAt"</span>).<span class="fn">descending</span>());
+      <span class="cm">// page 0 (first page), 20 items per page, newest first</span>
+    </code>
+  </div>
+
+  <p>
+    When a repository method accepts <code>Pageable</code> and returns <code>Page</code>, Spring Data:
+  </p>
+  <ol>
+    <li>Applies <code>ORDER BY</code> from <code>Pageable.getSort()</code> to the query</li>
+    <li>Applies database-level pagination (e.g., <code>LIMIT ? OFFSET ?</code> for PostgreSQL)</li>
+    <li>Generates and executes a <strong>count query</strong> to determine total elements</li>
+    <li>Wraps results in a <code>PageImpl</code> with content, total count, page metadata</li>
+  </ol>
+
+  <h3>What Page&lt;T&gt; Contains</h3>
+  <table>
+    <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+    <tr><td><code>getContent()</code></td><td><code>List&lt;T&gt;</code></td><td>Entities for this page</td></tr>
+    <tr><td><code>getTotalElements()</code></td><td><code>long</code></td><td>Total matching records across all pages</td></tr>
+    <tr><td><code>getTotalPages()</code></td><td><code>int</code></td><td>Total number of pages (ceiling of totalElements / size)</td></tr>
+    <tr><td><code>getNumber()</code></td><td><code>int</code></td><td>Current page number (0-indexed)</td></tr>
+    <tr><td><code>getSize()</code></td><td><code>int</code></td><td>Number of items per page</td></tr>
+    <tr><td><code>getNumberOfElements()</code></td><td><code>int</code></td><td>Actual items on this page (may be less than size on last page)</td></tr>
+    <tr><td><code>hasNext()</code></td><td><code>boolean</code></td><td>Whether a next page exists</td></tr>
+    <tr><td><code>hasPrevious()</code></td><td><code>boolean</code></td><td>Whether a previous page exists</td></tr>
+    <tr><td><code>getSort()</code></td><td><code>Sort</code></td><td>Sort specification used</td></tr>
+  </table>
+
+  <h3>Page vs List</h3>
+  <p>
+    Returning <code>List</code> from a paginated repository method still applies pagination (LIMIT/OFFSET) to the
+    data query, but <strong>skips the count query</strong>. Use <code>List</code> when you don't need total count
+    (e.g., "fetch 5 most recent orders" with <code>PageRequest.of(0, 5)</code>). Use <code>Page</code> when building
+    UI pagination controls that need total pages.
+  </p>
+
+  <!-- ===================== SECTION 6 ===================== -->
+  <h2 id="transactions">6. Transaction Management</h2>
+
+  <h3>@Transactional with Repositories</h3>
+  <p>
+    By default, <code>SimpleJpaRepository</code> marks <strong>all CRUD methods</strong> with
+    <code>@Transactional</code>:
+  </p>
+  <ul>
+    <li><code>findById()</code>, <code>findAll()</code>, <code>count()</code> &rarr; <code>@Transactional(readOnly = true)</code></li>
+    <li><code>save()</code>, <code>delete()</code>, <code>saveAll()</code> &rarr; <code>@Transactional</code></li>
+  </ul>
+
+  <p>
+    Custom query methods in your interfaces <strong>inherit</strong> transactional behavior from the caller (typically
+    the service layer). If no <code>@Transactional</code> is present on the calling service method:
+  </p>
+  <ul>
+    <li><strong>Derived find queries</strong>: executed within a read-only transaction opened automatically (Spring Data wraps them)</li>
+    <li><strong><code>@Query</code> with <code>@Modifying</code></strong>: <strong>must</strong> be invoked within a transaction, otherwise <code>javax.persistence.TransactionRequiredException</code></li>
+  </ul>
+
+  <h3>Read-Only Transactions</h3>
+  <div class="code-block">
+    <code>
+      <span class="ann">@Transactional</span>(<span class="kw">readOnly</span> = <span class="kw">true</span>)
+      <span class="kw">public</span> <span class="type">List</span>&lt;<span class="type">Product</span>&gt; <span class="fn">getLowStockProducts</span>(<span class="type">int</span> threshold) {
+          <span class="kw">return</span> productRepository.findLowStockProducts(threshold);
+      }
+    </code>
+  </div>
+  <p>
+    <code>readOnly = true</code> is an <strong>optimization hint</strong> to Hibernate:
+  </p>
+  <ul>
+    <li>Disables <strong>dirty checking</strong> (no snapshot comparison for managed entities)</li>
+    <li>Disables <strong>auto-flush</strong> before query execution (avoids unnecessary writes)</li>
+    <li>Allows the JDBC driver to potentially use read-only connections (if supported)</li>
+    <li>Does <strong>not</strong> prevent writes programmatically (use a DB user with read-only grants for enforcement)</li>
+  </ul>
+
+  <h3>Transaction Propagation</h3>
+  <table>
+    <tr><th>Propagation</th><th>Behavior</th></tr>
+    <tr><td><code>REQUIRED</code> (default)</td><td>Join existing transaction or create a new one</td></tr>
+    <tr><td><code>REQUIRES_NEW</code></td><td>Suspend existing, create new independent transaction</td></tr>
+    <tr><td><code>SUPPORTS</code></td><td>Join if exists, execute non-transactional otherwise</td></tr>
+    <tr><td><code>NOT_SUPPORTED</code></td><td>Suspend existing, execute non-transactional</td></tr>
+    <tr><td><code>MANDATORY</code></td><td>Fail if no existing transaction</td></tr>
+    <tr><td><code>NEVER</code></td><td>Fail if an existing transaction exists</td></tr>
+    <tr><td><code>NESTED</code></td><td>Savepoint within existing transaction (JDBC driver dependent)</td></tr>
+  </table>
+
+  <h3>HikariCP Connection Pooling &amp; Transactions</h3>
+  <p>
+    HikariCP serves as the connection pool between the application and the database. Here is the transaction-connection lifecycle:
+  </p>
+  <ol>
+    <li>When <code>@Transactional</code> starts, Spring's <code>TransactionInterceptor</code> calls
+    <code>DataSourceUtils.getConnection()</code>, which retrieves a connection from HikariCP's pool.</li>
+    <li>The connection is bound to the current thread (via <code>TransactionSynchronizationManager</code>).</li>
+    <li>All JPA operations within the transaction reuse the same connection.</li>
+    <li>On commit/rollback, the connection is returned to the pool.</li>
+  </ol>
+  <p>
+    If the pool is exhausted, threads block on <code>connectionTimeout</code> (20,000 ms in our config).
+    After timeout, <code>SQLTransientConnectionException</code> is thrown.
+  </p>
+
+  <!-- ===================== SECTION 7 ===================== -->
+  <h2 id="performance">7. Performance &amp; Optimization</h2>
+
+  <h3>HikariCP Configuration</h3>
+  <div class="code-block">
+    <span class="filename">application.yml (HikariCP section)</span>
+    <code>
+      spring:
+        datasource:
+          hikari:
+            maximum-pool-size: 10
+            minimum-idle: 5
+            idle-timeout: 300000
+            connection-timeout: 20000
+    </code>
+  </div>
+
+  <table>
+    <tr><th>Setting</th><th>Value</th><th>Rationale</th></tr>
+    <tr><td><code>maximum-pool-size: 10</code></td><td>10</td><td>Rule of thumb: <code>maxPoolSize = T * (C - 1) + 1</code> where T = number of application threads, C = max connections per thread. For a Spring Boot app with default Tomcat thread pool (200), this seems low. However, with non-blocking I/O, reactive endpoints, and Redis caching, concurrent DB access is far lower than 200. Connection pooling beyond 10-15 adds overhead (context switching, PostgreSQL locking). <strong>Start small, measure, increase.</strong></td></tr>
+    <tr><td><code>minimum-idle: 5</code></td><td>5</td><td>Keeps 5 connections ready even during idle periods. Reduces latency spikes under low traffic. Tradeoff: holding idle connections consumes ~1-2 MB RAM each in PostgreSQL. Fine for this scale.</td></tr>
+    <tr><td><code>idle-timeout: 300000</code></td><td>5 minutes</td><td>Connections idle longer than 5 min are evicted down to <code>minimum-idle</code>. PostgreSQL's default <code>tcp_keepalives_idle</code> is 2 hours &mdash; this eviction is more aggressive, preventing stale connections.</td></tr>
+    <tr><td><code>connection-timeout: 20000</code></td><td>20 seconds</td><td>Maximum wait for a connection from the pool. If all 10 connections are busy for &gt; 20s, the request fails fast. 20s is generous &mdash; most queries execute in ms. A lower value (5s) may be more appropriate for user-facing endpoints.</td></tr>
+  </table>
+
+  <h3>The N+1 Problem</h3>
+  <p>
+    <strong>The problem:</strong> When you fetch a list of entities (e.g., 10 products) and then iterate over each
+    to access a lazy association (e.g., <code>product.getCategory().getName()</code>), Hibernate executes:
+  </p>
+  <pre style="background:#16162a;padding:10px;border-radius:6px;color:#98c379;">
+    1 query:  SELECT * FROM products
+    + 10 queries: SELECT * FROM categories WHERE id = ?  (one per product)
+    = 11 total queries (N+1)
+  </pre>
+
+  <p><strong>The solutions used in this project:</strong></p>
+  <table>
+    <tr><th>Solution</th><th>Example in Codebase</th><th>Mechanism</th></tr>
+    <tr><td><strong>JOIN FETCH</strong></td><td><code>CartRepository.findWithItemsByUserId</code><br><code>JOIN FETCH c.items</code></td><td>Adds a SQL JOIN that loads the association in the same query. The fetched collection is initialized before the <code>EntityManager</code> closes.</td></tr>
+    <tr><td><strong>@EntityGraph</strong></td><td>Not currently used, but the canonical alternative</td><td>Define a named entity graph on the entity (<code>@NamedEntityGraph</code>), then reference it in the repository:<br><code>@EntityGraph("Cart.withItems")<br>Optional&lt;Cart&gt; findByUserId(Long userId)</code></td></tr>
+    <tr><td><strong>Batch Fetching</strong></td><td>Could be configured via <code>@BatchSize(size = 10)</code></td><td>Hibernate loads lazy associations in batches: instead of N individual SELECTs, it issues <code>ceil(N / size)</code> queries with IN clauses. Not as efficient as JOIN FETCH but useful for root entities with many lazy references.</td></tr>
+  </table>
+
+  <h3>@EntityGraph Alternative</h3>
+  <div class="code-block">
+    <code>
+      <span class="cm">// On the Cart entity:</span>
+      <span class="ann">@NamedEntityGraph</span>(name = <span class="str">"Cart.withItems"</span>, attributeNodes = <span class="ann">@NamedAttributeNode</span>(<span class="str">"items"</span>))
+      <span class="kw">public class</span> <span class="type">Cart</span> { ... }
+
+      <span class="cm">// In the repository:</span>
+      <span class="ann">@EntityGraph</span>(<span class="str">"Cart.withItems"</span>)
+      <span class="type">Optional</span>&lt;<span class="type">Cart</span>&gt; <span class="fn">findByUserId</span>(<span class="type">Long</span> userId);
+
+      <span class="cm">// Achieves the same effect as JOIN FETCH without writing JPQL.</span>
+    </code>
+  </div>
+
+  <!-- ===================== SECTION 8 ===================== -->
+  <h2 id="qa">8. Interview Q&amp;A</h2>
+
+  <div class="qa-block">
+    <div class="q">Q1: How does Spring Data JPA create repository implementations without us writing any implementation class?</div>
+    <div class="a">
+      <strong>A:</strong> During context initialization, <code>@EnableJpaRepositories</code> triggers
+      <code>JpaRepositoryFactoryBean</code> to scan for interfaces extending <code>Repository</code>. For each interface,
+      a <strong>JDK dynamic proxy</strong> is created via <code>ProxyFactory</code>. The proxy's
+      <code>InvocationHandler</code> is <code>QueryExecutorMethodInterceptor</code>, which maintains a map of
+      method &rarr; <code>RepositoryQuery</code>. The query can be:
+      <ul>
+        <li>A <strong>CRUD method</strong> delegated to <code>SimpleJpaRepository</code> (the default implementation)</li>
+        <li>A <strong>derived query</strong> parsed by <code>PartTreeJpaQuery</code></li>
+        <li>A <strong>@Query method</strong> resolved by <code>SimpleJpaQuery</code></li>
+      </ul>
+      All this happens at startup, so there is zero runtime overhead for query resolution.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q2: What is the difference between JPQL and native SQL in @Query?</div>
+    <div class="a">
+      <strong>A:</strong> <strong>JPQL</strong> (Java Persistence Query Language) operates on the entity model &mdash;
+      it uses entity names and field names (e.g., <code>SELECT p FROM Product p WHERE p.price &gt; :min</code>).
+      It is database-agnostic and validated at startup by Hibernate. <strong>Native SQL</strong> operates on actual
+      table and column names (e.g., <code>SELECT * FROM products WHERE price &gt; :min</code>). It is
+      database-specific, not validated at startup, and results are mapped to entities only if the result columns
+      match entity mappings. Use JPQL by default; reserve native SQL for database-specific features (e.g., PostgreSQL
+      <code>JSONB</code> operators, <code>ON CONFLICT</code>, full-text search).
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q3: How does the @Query annotation work under the hood?</div>
+    <div class="a">
+      <strong>A:</strong> At startup, <code>JpaQueryLookupStrategy</code> detects the <code>@Query</code> annotation
+      and wraps it in a <code>SimpleJpaQuery</code> object. This object stores the JPQL string, the
+      <code>EntityManager</code>, and query metadata. At invocation time, it calls
+      <code>entityManager.createQuery(jpqlString)</code>, binds method arguments to named/positional parameters
+      via <code>Query.setParameter()</code>, executes the query, and maps the result set to entities.
+      For <code>Page</code> returns, it also creates and executes a count query (wrapping the JPQL in
+      <code>SELECT COUNT(*)</code> or using an explicit <code>countQuery</code> attribute).
+      For <code>@Modifying</code> queries, it calls <code>query.executeUpdate()</code> and clears the
+      persistence context if <code>clearAutomatically = true</code>.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q4: What is the N+1 problem and how do you solve it in Spring Data JPA?</div>
+    <div class="a">
+      <strong>A:</strong> The N+1 problem occurs when you fetch N entities and then access a lazy association on each
+      one, generating N additional SQL queries (total N+1). For example, fetching 100 products and iterating to print
+      <code>product.getCategory().getName()</code> generates 1 query for products + 100 queries for categories.
+      <strong>Solutions:</strong> <strong>(1) JOIN FETCH</strong> in JPQL &mdash; loads the association in the same
+      query via a SQL JOIN. <strong>(2) @EntityGraph</strong> &mdash; declarative fetch plan, equivalent to JOIN FETCH
+      without writing JPQL. <strong>(3) @BatchSize</strong> &mdash; reduces N+1 to ceil(N/batchSize)+1 queries.
+      <strong>(4) QueryDSL / Specs</strong> with explicit fetches. The best solution for read-heavy paths is
+      JOIN FETCH or @EntityGraph.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q5: How does Pageable work internally?</div>
+    <div class="a">
+      <strong>A:</strong> <code>Pageable</code> is an interface with <code>getPageNumber()</code>,
+      <code>getPageSize()</code>, and <code>getSort()</code>. <code>PageRequest</code> is the standard implementation.
+      When a repository method receives <code>Pageable</code>:
+      <ol>
+        <li>Spring Data applies <code>Sort</code> from <code>pageable.getSort()</code> to the query's ORDER BY clause</li>
+        <li>It applies database-specific pagination: PostgreSQL uses <code>LIMIT size OFFSET page * size</code></li>
+        <li>For <code>Page</code> return types, it generates a count query by wrapping the original JPQL in
+        <code>SELECT COUNT(entity)</code>, preserving WHERE clauses. The count query can be overridden with
+        <code>@Query(countQuery = "...")</code> if the auto-generated one is inefficient</li>
+        <li>Results are wrapped in <code>PageImpl(content, pageable, totalElements)</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q6: What is the difference between JOIN and JOIN FETCH in JPQL?</div>
+    <div class="a">
+      <strong>A:</strong> <strong>JOIN</strong> creates an inner join in SQL but does <strong>not</strong> guarantee
+      that the associated entity is loaded into the persistence context. The association remains lazy &mdash; accessing
+      it outside a transaction still causes <code>LazyInitializationException</code>. The JOIN only affects filtering.
+      <strong>JOIN FETCH</strong> does the same SQL join but also <strong>initializes the association</strong>,
+      loading the related data into the persistence context immediately. The fetched data is available even after the
+      EntityManager closes (for DTOs) or before proxy access. In short: JOIN = filter only; JOIN FETCH = filter + load.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q7: How does Spring Data derive queries from method names, and what are the limitations?</div>
+    <div class="a">
+      <strong>A:</strong> Spring Data uses the <code>PartTree</code> parser to decompose the method name.
+      It first extracts the <strong>subject keyword</strong> (findBy, existsBy, countBy, deleteBy, etc.) and then
+      parses the <strong>predicate</strong> split by <code>And</code>/<code>Or</code>. Each predicate part is
+      decomposed into a property path (e.g., <code>CategoryId</code> &rarr; <code>category.id</code>) and optional
+      criteria keywords (<code>Containing</code>, <code>LessThan</code>, <code>IgnoreCase</code>, etc.).
+      <strong>Limitations:</strong> Cannot express OR across different columns in a single derived method
+      (e.g., search by name OR description). Cannot use JOIN FETCH, subqueries, aggregate functions (SUM, AVG),
+      GROUP BY, HAVING, or UNION. For these, use <code>@Query</code>.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q8: Why does @Modifying require @Transactional, and what does clearAutomatically do?</div>
+    <div class="a">
+      <strong>A:</strong> <code>@Modifying</code> indicates that the query is a DML operation (INSERT, UPDATE, DELETE).
+      JPA requires that DML operations (<code>executeUpdate()</code>) are executed within a transaction.
+      Without <code>@Transactional</code>, <code>javax.persistence.TransactionRequiredException</code> is thrown.
+      <code>clearAutomatically = true</code> (default false) clears the persistence context after the query executes,
+      preventing stale entity state from being used later. For example, after a bulk UPDATE that modifies entities
+      already in the session, the cache should be cleared so subsequent reads fetch fresh data from the database.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q9: What is a JPA Specification and when would you use it over @Query?</div>
+    <div class="a">
+      <strong>A:</strong> A <code>Specification</code> is a functional interface from Spring Data JPA that wraps
+      JPA Criteria API predicates. Your repository extends <code>JpaSpecificationExecutor</code>, and you pass
+      <code>Specification</code> objects to query methods like <code>findAll(Specification, Pageable)</code>.
+      <strong>Use Specifications when:</strong> you need dynamic, composable WHERE clauses at runtime &mdash;
+      for example, a product search with optional filters (categories, price range, rating, seller). Each filter
+      is a <code>Specification</code>, and they are combined with <code>where()</code>, <code>and()</code>, <code>or()</code>.
+      <strong>Use @Query when:</strong> the query is static and known at compile time. Specifications avoid string
+      concatenation and are type-safe, but are more verbose for simple queries.
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="q">Q10: How does HikariCP connection pooling work, and how do the pool settings affect application behavior?</div>
+    <div class="a">
+      <strong>A:</strong> HikariCP maintains a pool of physical JDBC connections to the database.
+      <strong>Architecture:</strong> It uses a <code>ConcurrentBag</code> for lock-free connection borrowing,
+      a <code>FastList</code> for collection efficiency, and a custom <code>ThreadFactory</code> for pool management.
+      <strong>Behavior:</strong> When a thread requests a connection: (1) if idle connections exist, one is borrowed
+      from the bag; (2) if not, a new connection is created (up to <code>maximumPoolSize</code>); (3) if all are in
+      use, the thread waits up to <code>connectionTimeout</code> ms. Under load spikes, with <code>maximumPoolSize=10</code>,
+      threads will queue. If the queue exceeds 20s, the request fails. <strong>Key insight:</strong> Pool size should
+      NOT match application thread count. PostgreSQL is a process-per-connection database &mdash; too many connections
+      causes context switching overhead and memory pressure. The formula <code>poolSize = T * (C - 1) + 1</code>
+      (T = thread count, C = max connections per thread) from the HikariCP wiki suggests most applications are optimal
+      with <code>poolSize = 10 + (activeWorkers * 0.5)</code>. Our value of 10 is reasonable for a moderate-traffic
+      e-commerce backend.
+    </div>
+  </div>
+
+  <hr style="border:1px solid #2a2a45;margin:60px 0 20px;">
+  <p style="text-align:center;color:#555;font-size:0.85rem;">
+    Phase 4 &mdash; Repositories &amp; Data Access Interview Guide<br>
+    E-Commerce Backend Project &mdash; Generated from repository source code at <code>src/main/java/com/ecommerce/repository/</code>
+  </p>
+
+</div>
+
+</body>
+</html>

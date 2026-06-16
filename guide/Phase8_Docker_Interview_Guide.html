@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phase 8: Docker & Containerization — E-Commerce Backend Interview Guide</title>
+    <title>Docker & Containerization — Senior-Level Interview Guide</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -55,9 +55,15 @@
             color: #e0e0e0;
             margin: 20px 0 10px;
         }
+        section h4 {
+            font-size: 1rem;
+            color: #6C63FF;
+            margin: 16px 0 8px;
+        }
         section p { margin-bottom: 14px; color: #ccc; }
         ul, ol { padding-left: 24px; margin-bottom: 14px; }
         li { margin-bottom: 6px; color: #ccc; }
+        li strong { color: #e0e0e0; }
         code {
             background: #2a2a3e;
             color: #6C63FF;
@@ -74,13 +80,20 @@
             border: 1px solid #2a2a3e;
         }
         pre code { background: none; padding: 0; color: #f0f0f0; }
-        .qa { margin-bottom: 16px; }
+        .qa {
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #12122a;
+            border-radius: 8px;
+            border-left: 3px solid #6C63FF;
+        }
         .qa .q {
             font-weight: 600;
             color: #6C63FF;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
         }
-        .qa .a { color: #ccc; padding-left: 16px; border-left: 2px solid #6C63FF; }
+        .qa .a { color: #ccc; padding-left: 0; }
         .note {
             background: #1e2a3e;
             border-left: 4px solid #ffd700;
@@ -89,6 +102,14 @@
             margin: 14px 0;
         }
         .note strong { color: #ffd700; }
+        .tip {
+            background: #1a2e1a;
+            border-left: 4px solid #4caf50;
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin: 14px 0;
+        }
+        .tip strong { color: #4caf50; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -101,36 +122,45 @@
         }
         th { background: #6C63FF; color: #fff; }
         td { background: #12122a; color: #ccc; }
+        .highlight {
+            background: #6C63FF22;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
 
 <div class="header">
-    <h1>Phase 8: Docker &amp; Containerization</h1>
-    <div class="subtitle">E-Commerce Backend — Docker Interview Guide with Multi-Stage Builds &amp; Docker Compose</div>
-    <div class="badge">Phase 8 of 10</div>
+    <h1>Docker & Containerization</h1>
+    <div class="subtitle">E-Commerce Backend — Senior-Level Docker Interview Guide</div>
+    <div class="badge">Multi-Stage Builds &middot; Docker Compose &middot; Production Patterns</div>
 </div>
 
 <section>
-    <h2>1. Why Docker?</h2>
-    <p>Docker packages the application and its dependencies into a lightweight, portable container that runs identically across development, staging, and production environments.</p>
-    <h3>Benefits for This Project</h3>
+    <h2>1. Docker Basics</h2>
+
+    <h3>Image vs Container</h3>
+    <p>An <strong>image</strong> is a read-only, immutable template containing the application code, runtime, libraries, and configuration. A <strong>container</strong> is a runnable instance of that image — an isolated process with its own filesystem, network, and process space. The relationship mirrors classes to objects in OOP: one image can spawn many containers, each with its own writable layer.</p>
+
+    <h3>Dockerfile vs Docker Compose</h3>
+    <p>A <strong>Dockerfile</strong> is a recipe for building a single image — it defines the base OS, dependencies, build steps, and runtime command. <strong>Docker Compose</strong> orchestrates multi-container applications: it declares services, networks, volumes, environment variables, and startup ordering in a single <code>docker-compose.yml</code> file. Compose is declarative infrastructure-as-code for local development and staging environments.</p>
+
+    <h3>Why Docker for Development and Production</h3>
     <ul>
-        <li><strong>Consistency</strong> — the app runs the same on every machine</li>
-        <li><strong>Dependency isolation</strong> — PostgreSQL, Redis, and the app each run in their own container</li>
-        <li><strong>Simplified setup</strong> — one <code>docker-compose up</code> starts the entire stack</li>
-        <li><strong>CI/CD ready</strong> — containers are the standard deployment artifact for pipelines</li>
+        <li><strong>Environment parity:</strong> Eliminates "it works on my machine" — the same image runs identically on a developer's laptop, CI runner, and production server.</li>
+        <li><strong>Dependency isolation:</strong> Each service (PostgreSQL 15, Redis 7, Java 17) runs in its own container without conflicts. No need to install Postgres or Redis on the host machine.</li>
+        <li><strong>Fast onboarding:</strong> A new developer runs <code>docker compose up</code> and the entire stack — database, cache, and app — is ready in minutes.</li>
+        <li><strong>CI/CD standardization:</strong> Containers are the universal deployment artifact. Build once, deploy to any container runtime (Docker Engine, Kubernetes, ECS, Nomad).</li>
+        <li><strong>Immutable infrastructure:</strong> Updates are deployed by replacing the entire container, not patching a running system. Rollbacks are instant — just redeploy the previous image tag.</li>
     </ul>
 </section>
 
 <section>
     <h2>2. Dockerfile — Multi-Stage Build</h2>
-    <p>We use a <strong>multi-stage build</strong> to keep the final image small:</p>
-    <ul>
-        <li><strong>Stage 1 (build):</strong> Maven + JDK 17 compiles the JAR</li>
-        <li><strong>Stage 2 (runtime):</strong> JRE 17 runs the JAR — no Maven or source code included</li>
-    </ul>
+
+    <h3>Full Dockerfile</h3>
     <pre><code>FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 COPY pom.xml .
@@ -144,18 +174,105 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre>
 
-    <h3>Key Decisions</h3>
+    <h3>Line-by-Line Explanation</h3>
+
+    <h4>Stage 1: Build</h4>
+    <p><code>FROM maven:3.9.9-eclipse-temurin-17-alpine AS build</code></p>
     <ul>
-        <li><code>mvn dependency:go-offline</code> — downloads dependencies <em>before</em> copying source, so source changes don't re-download deps (layer caching)</li>
-        <li><code>-DskipTests</code> — tests run in CI, not during image build</li>
-        <li><code>eclipse-temurin</code> — official, well-maintained OpenJDK builds</li>
-        <li><code>-alpine</code> — minimal base image (~120 MB vs ~400 MB for full JDK)</li>
+        <li><strong>FROM</strong> initializes the build stage from a base image. Here we use <code>maven:3.9.9-eclipse-temurin-17-alpine</code>, which bundles Maven 3.9.9, Eclipse Temurin JDK 17, and Alpine Linux. The <code>AS build</code> names this stage so the runtime stage can copy artifacts from it.</li>
     </ul>
+    <p><code>WORKDIR /app</code></p>
+    <ul>
+        <li><strong>WORKDIR</strong> sets the working directory for all subsequent instructions. If it does not exist, Docker creates it. All relative paths (<code>COPY</code>, <code>RUN</code>) resolve from this directory. This is a best practice — avoids scattering files in the root filesystem and makes the build self-documenting.</li>
+    </ul>
+    <p><code>COPY pom.xml .</code></p>
+    <ul>
+        <li><strong>COPY</strong> copies files from the build context (the directory passed to <code>docker build</code>) into the image filesystem. We copy only <code>pom.xml</code> first — this is a deliberate <strong>layer caching optimization</strong> (see below).</li>
+    </ul>
+    <p><code>RUN mvn dependency:go-offline -B</code></p>
+    <ul>
+        <li><strong>RUN</strong> executes a command during the build and commits the result as a new layer. <code>mvn dependency:go-offline -B</code> downloads all Maven dependencies (from <code>pom.xml</code>) and stores them in the local Maven repository <em>inside</em> the image. The <code>-B</code> flag runs Maven in batch mode (no progress bars, cleaner logs).</li>
+        <li><strong>Layer caching optimization:</strong> Docker caches each layer. If <code>pom.xml</code> has not changed between builds, Docker reuses the cached layer from <code>COPY pom.xml</code> and the entire <code>RUN mvn dependency:go-offline</code> layer. This means dependency downloads happen <em>only when the POM changes</em>. If we had copied <code>src</code> first, even a single Java file change would invalidate the cache and force a full re-download of all dependencies — a 5-10 minute penalty on every rebuild.</li>
+    </ul>
+    <p><code>COPY src ./src</code></p>
+    <ul>
+        <li><strong>COPY</strong> copies the source code into the image. This layer changes whenever any source file changes, which is expected — only the compile and package steps will re-run.</li>
+    </ul>
+    <p><code>RUN mvn package -DskipTests -B</code></p>
+    <ul>
+        <li>Compiles the source and packages it into a fat JAR. <code>-DskipTests</code> skips test execution (tests run in CI, not during the image build — this keeps builds fast and avoids flaky test failures blocking deployments). The resulting JAR is written to <code>/app/target/</code>.</li>
+    </ul>
+
+    <h4>Stage 2: Runtime</h4>
+    <p><code>FROM eclipse-temurin:17-jre-alpine</code></p>
+    <ul>
+        <li>A <strong>new, clean stage</strong> starting from a minimal JRE image. This stage has no Maven, no JDK, no source code — only what we explicitly copy in. This is the core benefit of multi-stage builds.</li>
+        <li><strong>Why eclipse-temurin:</strong> Eclipse Temurin (formerly AdoptOpenJDK) is the official OpenJDK build from the Eclipse Foundation. It is TCK-tested (Java Specification compliant), free for all uses, and has a strong security patch cadence. It is the recommended JDK distribution in the Java community.</li>
+        <li><strong>Why Alpine:</strong> Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and BusyBox. The JRE Alpine image is approximately 120 MB compared to ~300 MB for a full Ubuntu-based JRE image. Minimal size means faster pulls, less disk usage, and a smaller attack surface.</li>
+    </ul>
+    <p><code>WORKDIR /app</code></p>
+    <ul>
+        <li>Sets the runtime working directory.</li>
+    </ul>
+    <p><code>COPY --from=build /app/target/*.jar app.jar</code></p>
+    <ul>
+        <li>Copies the JAR from the <code>build</code> stage into this runtime stage. The <code>--from=build</code> flag references the named stage. Only the final JAR is copied — no intermediate artifacts, no Maven cache, no source code.</li>
+    </ul>
+    <p><code>EXPOSE 8080</code></p>
+    <ul>
+        <li><strong>EXPOSE</strong> is documentation — it informs Docker that the container listens on port 8080 at runtime. It does <em>not</em> publish the port; <code>-p 8080:8080</code> in <code>docker run</code> or <code>docker-compose.yml</code> does that. Some container runtimes and orchestrators use <code>EXPOSE</code> for automatic port mapping.</li>
+    </ul>
+    <p><code>ENTRYPOINT ["java", "-jar", "app.jar"]</code></p>
+    <ul>
+        <li><strong>ENTRYPOINT</strong> configures the container's main process. The exec form (<code>["java", "-jar", "app.jar"]</code>) is preferred over the shell form (<code>java -jar app.jar</code>) because it runs the process directly as PID 1, receives Unix signals (SIGTERM), and avoids shell string splitting issues.</li>
+    </ul>
+
+    <h3>Why Multi-Stage?</h3>
+    <ul>
+        <li><strong>Image size reduction:</strong> The build stage (Maven + JDK + dependencies) is approximately 600 MB. The runtime stage (JRE + JAR) is approximately 180 MB. A 70% reduction means faster registry pushes, quicker deployment pulls, and less storage cost.</li>
+        <li><strong>Security:</strong> No build tools (Maven, compiler, debug symbols) or source code exist in the runtime image. If an attacker gains access to a running container, they cannot recompile code, run Maven plugins, or access source files.</li>
+        <li><strong>Single Dockerfile:</strong> No need for separate build and runtime Dockerfiles or external build scripts. Everything is self-contained and versioned together.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Pro tip:</strong> You can verify the size savings with <code>docker history &lt;image&gt;</code> to see each layer's size, or <code>docker image inspect</code> for the total.
+    </div>
 </section>
 
 <section>
-    <h2>3. Docker Compose — Full Stack Orchestration</h2>
+    <h2>3. .dockerignore</h2>
+    <p>The <code>.dockerignore</code> file excludes files and directories from the Docker build context. A smaller build context means faster builds (especially over slow network connections) and ensures no unintended files leak into the image.</p>
+
+    <pre><code>target/
+.git/
+.gitignore
+*.md
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+node_modules/</code></pre>
+
+    <ul>
+        <li><strong><code>target/</code></strong> — Maven build output. Including it would cause dirty builds and balloon the context size with compiled classes and JARs that the Dockerfile re-creates anyway.</li>
+        <li><strong><code>.git/</code></strong> — The entire git history (often hundreds of MB). Not needed at build time. Including it is a common source of slow builds.</li>
+        <li><strong><code>.gitignore</code></strong> and <strong><code>*.md</code></strong> — Project metadata and documentation. Unnecessary in the image.</li>
+        <li><strong><code>.idea/</code>, <code>*.iml</code>, <code>.settings/</code>, <code>.project</code>, <code>.classpath</code></strong> — IDE configuration files (IntelliJ IDEA, Eclipse). Every developer's IDE settings are different and irrelevant to the build.</li>
+        <li><strong><code>node_modules/</code></strong> — If present, this can be huge. Excluded because the backend Java build does not need it.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Key insight:</strong> Even though <code>COPY src ./src</code> in the Dockerfile only copies <code>src/</code>, the entire build context is sent to the Docker daemon before any instruction runs. <code>.dockerignore</code> filters at the client side before the context is tarred and sent. This makes builds faster and prevents Docker cache invalidation caused by irrelevant file changes.
+    </div>
+</section>
+
+<section>
+    <h2>4. Docker Compose — Full Stack Orchestration</h2>
+
+    <h3>Full docker-compose.yml</h3>
     <pre><code>services:
+
   postgres:
     image: postgres:15-alpine
     container_name: ecommerce-postgres
@@ -195,7 +312,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre>
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      JWT_SECRET: my-super-secret-key...
+      JWT_SECRET: my-super-secret-key-that-is-at-least-32-chars-long-for-hs256
       JWT_ACCESS_TOKEN_EXPIRATION: 900000
       JWT_REFRESH_TOKEN_EXPIRATION: 604800000
       RAZORPAY_KEY_ID: rzp_test_xxxxxxxxxxxx
@@ -209,126 +326,301 @@ ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre>
 volumes:
   postgres-data:</code></pre>
 
-    <h3>How Spring Boot Env Var Override Works</h3>
-    <p>Spring Boot automatically maps environment variables to properties using relaxed binding:</p>
+    <h3>Service-by-Service Breakdown</h3>
+
+    <h4>postgres</h4>
+    <ul>
+        <li><strong><code>image: postgres:15-alpine</code></strong> — Uses the official PostgreSQL 15 image on Alpine Linux. Lightweight and well-maintained by the Docker community.</li>
+        <li><strong><code>environment</code></strong> — Sets the database name, user, and password. These are consumed by the PostgreSQL Docker entrypoint script, which creates the database and user on first startup.</li>
+        <li><strong><code>ports: "5432:5432"</code></strong> — Maps host port 5432 to container port 5432. This allows connecting from the host using tools like pgAdmin, <code>psql</code>, or IntelliJ database viewer. Without this, Postgres would still be accessible internally to other containers but not from the host.</li>
+        <li><strong><code>volumes: - postgres-data:/var/lib/postgresql/data</code></strong> — A named volume mounted to the Postgres data directory. This ensures database files persist across container restarts and rebuilds. Named volumes are managed by Docker and stored under <code>/var/lib/docker/volumes/</code> (Linux) or the Docker VM (macOS/Windows).</li>
+        <li><strong><code>healthcheck</code></strong> — Runs <code>pg_isready -U postgres</code> every 5 seconds. The check passes when PostgreSQL accepts connections. This is critical for the <code>depends_on</code> condition (see below).</li>
+    </ul>
+
+    <h4>redis</h4>
+    <ul>
+        <li><strong><code>image: redis:7-alpine</code></strong> — Official Redis 7 image on Alpine.</li>
+        <li><strong><code>ports: "6379:6379"</code></strong> — Exposes Redis on the host for debugging or external tools.</li>
+        <li><strong><code>healthcheck</code></strong> — Runs <code>redis-cli ping</code>. Redis replies with <code>PONG</code> when healthy.</li>
+    </ul>
+
+    <h4>app</h4>
+    <ul>
+        <li><strong><code>build: .</code></strong> — Builds the image from the Dockerfile in the project root. Docker Compose will run <code>docker build</code> automatically when you run <code>docker compose up --build</code>.</li>
+        <li><strong><code>container_name: ecommerce-app</code></strong> — Gives the container a fixed name instead of a randomly generated one. Useful for log identification and <code>docker exec</code> commands.</li>
+        <li><strong><code>environment</code></strong> — All Spring Boot properties and application secrets are injected as environment variables. Spring Boot's relaxed binding maps these to <code>application.yml</code> properties (see section 5).</li>
+        <li><strong><code>depends_on</code> with <code>condition: service_healthy</code></strong> — Docker Compose will not start the app until the <code>postgres</code> and <code>redis</code> healthchecks return success. This prevents a crash-loop where the app starts, tries to connect to unavailable databases, fails, and restarts repeatedly.</li>
+    </ul>
+
+    <h4>volumes</h4>
+    <p><code>postgres-data</code> is a <strong>named volume</strong> declared at the top level. Named volumes survive <code>docker compose down</code> but are removed with <code>docker compose down -v</code>. This gives explicit control over data lifecycle.</p>
+
+    <h3>Why Healthchecks Matter</h3>
+    <p>Without healthchecks, <code>depends_on</code> only ensures the target container's process is running — not that the service inside is ready. PostgreSQL may be starting, running recovery, or accepting connections only after a few seconds. The app container would start immediately, fail to connect, and exit. Docker Compose would restart it (depending on <code>restart</code> policy), creating a crash-loop. A healthcheck with <code>depends_on: condition: service_healthy</code> solves this cleanly.</p>
+
+    <h3>Docker Networking — How Services Communicate</h3>
+    <p>Docker Compose creates a <strong>default bridge network</strong> for the project. Every service is reachable by its <strong>service name</strong> (which acts as a DNS hostname). The app connects to PostgreSQL using <code>jdbc:postgresql://postgres:5432/ecommerce</code> — <code>postgres</code> resolves to the container's internal IP. The <code>ports</code> directive maps internal ports to the host, but inter-service communication uses the internal network and the service name, never the host mapping.</p>
+
+    <ul>
+        <li><strong>Internal communication:</strong> <code>postgres:5432</code> — works within the Docker network.</li>
+        <li><strong>Host access:</strong> <code>localhost:5432</code> — works from the host machine because of <code>ports: "5432:5432"</code>.</li>
+        <li><strong>No port conflict:</strong> You can run multiple Compose projects simultaneously; each gets its own network. Port conflicts only matter for host-mapped ports.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Pro tip:</strong> You can inspect the default network with <code>docker network ls</code> and <code>docker network inspect &lt;name&gt;</code>. Compose names it <code>&lt;project&gt;_default</code>.
+    </div>
+</section>
+
+<section>
+    <h2>5. How Spring Boot Integrates with Docker</h2>
+
+    <p>Spring Boot's <strong>relaxed binding</strong> (also called "relaxed property resolution") automatically maps environment variables to <code>application.yml</code> properties. The mapping follows a convention: uppercase names, underscores instead of dots, and dashes/camelCase are all normalized.</p>
+
+    <p><code>SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ecommerce</code> in the Docker environment overrides <code>spring.datasource.url</code> in <code>application.yml</code> without modifying the file. This is a clean separation of code and environment — the same JAR can run against local Postgres (<code>localhost:5432</code>) or containerized Postgres (<code>postgres:5432</code>) depending on which environment variables are set.</p>
+
+    <p>Environment variables take priority over <code>application.yml</code>, which takes priority over <code>application.properties</code>. Spring Boot's property resolution order is:</p>
+    <ol>
+        <li>Command line arguments (<code>--spring.datasource.url=...</code>)</li>
+        <li>Environment variables (<code>SPRING_DATASOURCE_URL</code>)</li>
+        <li><code>application-{profile}.yml</code></li>
+        <li><code>application.yml</code></li>
+        <li>Defaults</li>
+    </ol>
+
+    <h3>Environment Variable to Spring Property Mapping</h3>
     <table>
-        <tr><th>Environment Variable</th><th>Spring Property</th></tr>
-        <tr><td><code>SPRING_DATASOURCE_URL</code></td><td><code>spring.datasource.url</code></td></tr>
-        <tr><td><code>SPRING_DATASOURCE_USERNAME</code></td><td><code>spring.datasource.username</code></td></tr>
-        <tr><td><code>SPRING_REDIS_HOST</code></td><td><code>spring.redis.host</code></td></tr>
-        <tr><td><code>JWT_SECRET</code></td><td><code>jwt.secret</code></td></tr>
-        <tr><td><code>RAZORPAY_KEY_ID</code></td><td><code>razorpay.key-id</code></td></tr>
+        <tr><th>Environment Variable</th><th>Spring Property</th><th>Description</th></tr>
+        <tr><td><code>SPRING_DATASOURCE_URL</code></td><td><code>spring.datasource.url</code></td><td>JDBC URL using <code>postgres</code> service name</td></tr>
+        <tr><td><code>SPRING_DATASOURCE_USERNAME</code></td><td><code>spring.datasource.username</code></td><td>Database user</td></tr>
+        <tr><td><code>SPRING_DATASOURCE_PASSWORD</code></td><td><code>spring.datasource.password</code></td><td>Database password</td></tr>
+        <tr><td><code>SPRING_REDIS_HOST</code></td><td><code>spring.redis.host</code></td><td>Redis hostname (<code>redis</code> service name)</td></tr>
+        <tr><td><code>SPRING_REDIS_PORT</code></td><td><code>spring.redis.port</code></td><td>Redis port</td></tr>
+        <tr><td><code>JWT_SECRET</code></td><td><code>jwt.secret</code></td><td>HMAC-SHA256 signing key</td></tr>
+        <tr><td><code>JWT_ACCESS_TOKEN_EXPIRATION</code></td><td><code>jwt.access-token-expiration</code></td><td>Access token TTL in ms</td></tr>
+        <tr><td><code>JWT_REFRESH_TOKEN_EXPIRATION</code></td><td><code>jwt.refresh-token-expiration</code></td><td>Refresh token TTL in ms</td></tr>
+        <tr><td><code>RAZORPAY_KEY_ID</code></td><td><code>razorpay.key-id</code></td><td>Razorpay API key ID</td></tr>
+        <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td><code>razorpay.key-secret</code></td><td>Razorpay API secret</td></tr>
     </table>
-    <p>This lets us keep <code>application.yml</code> unchanged — the Docker environment overrides <code>localhost</code> references to service names (<code>postgres</code>, <code>redis</code>).</p>
 
-    <h3>Healthchecks &amp; depends_on</h3>
-    <p>The app container waits until both PostgreSQL and Redis pass their health checks before starting. Without this, the app would crash-loop trying to connect to unavailable services.</p>
-</section>
-
-<section>
-    <h2>4. .dockerignore</h2>
-    <p>Prevents unnecessary files from being copied into the Docker build context, speeding up builds and reducing image size:</p>
-    <pre><code>target/
-.git/
-.gitignore
-*.md
-.idea/
-*.iml
-.settings/
-.project
-.classpath
-node_modules/</code></pre>
-</section>
-
-<section>
-    <h2>5. Running the Stack</h2>
-    <pre><code># Build and start all services
-docker compose up --build -d
-
-# View logs
-docker compose logs -f app
-
-# Stop everything
-docker compose down
-
-# Remove volumes too (resets database)
-docker compose down -v</code></pre>
-</section>
-
-<section>
-    <h2>6. Interview Questions &amp; Answers</h2>
-
-    <div class="qa">
-        <div class="q">Q: Why multi-stage builds?</div>
-        <div class="a">Multi-stage builds produce smaller, more secure runtime images. The build stage has Maven + JDK (hundreds of MB), but the runtime stage only contains the JRE and the JAR. No build tools, source code, or intermediate artifacts leak into the final image.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: Why <code>mvn dependency:go-offline</code> before copying source?</div>
-        <div class="a">Docker builds cache layers. If we copy <code>pom.xml</code> first and run <code>go-offline</code>, the dependency layer only changes when the POM changes. Source code changes re-trigger only the compile + package steps, not dependency downloads. This dramatically speeds up rebuilds.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: How does the app connect to PostgreSQL and Redis in Docker?</div>
-        <div class="a">Docker Compose creates an internal network. Services reach each other by container name (<code>postgres</code>, <code>redis</code>). Environment variables in the <code>app</code> service override the <code>localhost</code> values in <code>application.yml</code>, pointing to the container names instead.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: What's the difference between <code>depends_on</code> with and without <code>condition</code>?</div>
-        <div class="a">Basic <code>depends_on</code> only waits for the container process to start, not for the service to be ready. With <code>condition: service_healthy</code>, it waits until the healthcheck passes (e.g., PostgreSQL accepting queries), preventing the app from crashing on startup.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: Why use a named volume for PostgreSQL data?</div>
-        <div class="a">Containers are ephemeral — removing them deletes all data. A named volume (<code>postgres-data</code>) persists database files on the host, surviving container restarts and rebuilds. Without it, every <code>docker compose down</code> would wipe the database.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: How would you deploy this to production?</div>
-        <div class="a">Options include (a) running <code>docker compose</code> on a VPS with environment variables provided via a <code>.env</code> file, (b) using Kubernetes with Helm charts for orchestration, or (c) using a container platform like AWS ECS/EKS, GCP Cloud Run, or Azure Container Apps. A CI/CD pipeline builds the image, pushes to a registry, and deploys the new image.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: How do you handle secrets in Docker?</div>
-        <div class="a">For development, environment variables in <code>docker-compose.yml</code> suffice. For production, use Docker secrets (swarm mode), a <code>.env</code> file (gitignored), or external secret managers like HashiCorp Vault, AWS Secrets Manager, or sealed secrets in Kubernetes.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: What's the difference between an image and a container?</div>
-        <div class="a">An image is a read-only template with the application code, runtime, and dependencies. A container is a running instance of an image. You can start, stop, restart, and delete containers without affecting the image. Similar to how a class is a blueprint and an object is an instance.</div>
-    </div>
-
-    <div class="qa">
-        <div class="q">Q: What is layer caching and why does it matter?</div>
-        <div class="a">Each Dockerfile instruction creates a layer. Docker caches layers so unchanged steps reuse the cache. We structure the build so that rarely-changing steps (dependency downloads) come before frequently-changing steps (source code). This way, changing one Java file doesn't re-download all Maven dependencies.</div>
+    <div class="note">
+        <strong>Important:</strong> The <code>RAZORPAY_KEY_ID</code> is case-sensitive in some languages, but Spring Boot's relaxed binding normalizes it. The YAML property <code>razorpay.key-id</code> maps to <code>RAZORPAY_KEY_ID</code> (underscores map to dots and dashes). Always use uppercase with underscores for environment variables for maximum compatibility.
     </div>
 </section>
 
 <section>
-    <h2>7. Common Commands Quick Reference</h2>
+    <h2>6. Docker Networking in Depth</h2>
+
+    <h3>Default Network Created by Docker Compose</h3>
+    <p>When you run <code>docker compose up</code>, Compose automatically creates a <strong>bridge network</strong> named <code>&lt;project-dir&gt;_default</code>. All services defined in the Compose file are attached to this network. Containers on the same bridge network can communicate freely; containers not on the network cannot reach them.</p>
+
+    <h3>Service Discovery by Container Name</h3>
+    <p>Docker's embedded DNS server resolves service names to container IPs. When the app container connects to <code>jdbc:postgresql://postgres:5432/ecommerce</code>, the hostname <code>postgres</code> is resolved to the Postgres container's internal IP (e.g., <code>172.18.0.2</code>). This is transparent — no need for service registries, hardcoded IPs, or host file modifications.</p>
+
+    <h3>Port Mapping: Host vs Internal Ports</h3>
+    <p>The <code>ports</code> directive maps <code>HOST:CONTAINER</code>. For example, <code>"5432:5432"</code> means port 5432 on the host is forwarded to port 5432 inside the container. Key points:</p>
+    <ul>
+        <li><strong>Internal ports</strong> (the container side) are used for inter-service communication. Containers talk to each other on the internal network using the service name and the container port (e.g., <code>postgres:5432</code>).</li>
+        <li><strong>External (host) ports</strong> allow connections from outside Docker — your local machine, a load balancer, or another service not on the Docker network.</li>
+        <li>You can remap ports if needed: <code>"5433:5432"</code> would expose Postgres on host port 5433 while the internal port remains 5432. Internal communication is unaffected.</li>
+    </ul>
+
+    <h3>DNS Resolution Details</h3>
+    <p>Docker Compose configures <code>/etc/resolv.conf</code> in each container to point to the built-in DNS resolver at <code>127.0.0.11</code>. This resolver knows the service names defined in the Compose file. It does not require a separate DNS service or Consul — everything is automatic.</p>
+
+    <div class="tip">
+        <strong>Debugging tip:</strong> Run <code>docker compose exec app ping postgres</code> to verify connectivity. Run <code>docker compose exec app cat /etc/resolv.conf</code> to see the DNS configuration. Use <code>docker compose exec app nslookup postgres</code> (if <code>nslookup</code> is available) to see the resolved IP.
+    </div>
+</section>
+
+<section>
+    <h2>7. Running the Stack</h2>
+
     <table>
-        <tr><th>Command</th><th>Purpose</th></tr>
-        <tr><td><code>docker compose up -d</code></td><td>Start all services in background</td></tr>
-        <tr><td><code>docker compose build</code></td><td>Rebuild app image without starting</td></tr>
-        <tr><td><code>docker compose logs -f</code></td><td>Tail logs from all services</td></tr>
-        <tr><td><code>docker compose ps</code></td><td>Show container status</td></tr>
-        <tr><td><code>docker compose exec app sh</code></td><td>Open a shell inside the app container</td></tr>
-        <tr><td><code>docker image prune -a</code></td><td>Clean up unused images</td></tr>
-        <tr><td><code>docker system df</code></td><td>Show disk usage by Docker objects</td></tr>
-        <tr><td><code>docker compose down -v</code></td><td>Stop and remove volumes</td></tr>
-        <tr><td><code>docker history &lt;image&gt;</code></td><td>Show layers of an image</td></tr>
+        <tr><th>Command</th><th>Description</th><th>When to Use</th></tr>
+        <tr>
+            <td><code>docker compose up -d</code></td>
+            <td>Creates and starts all services in detached (background) mode. Builds images if they do not exist.</td>
+            <td>Normal startup after initial build or when images are up to date.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose build</code></td>
+            <td>Builds (or rebuilds) the app image without starting containers. Does not affect running services.</td>
+            <td>After changing the Dockerfile or source code when you want to rebuild before starting.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose up --build -d</code></td>
+            <td>Forces a rebuild of all images before starting. Combines <code>build</code> and <code>up -d</code> in one step.</td>
+            <td>Best for development — ensures the image is fresh every time you start.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose logs -f</code></td>
+            <td>Streams logs from all services. Append a service name (e.g., <code>docker compose logs -f app</code>) to filter.</td>
+            <td>Debugging startup issues or monitoring real-time output.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose down</code></td>
+            <td>Stops and removes containers, networks, and any <code>tmpfs</code> volumes. Does <em>not</em> remove named volumes by default.</td>
+            <td>Clean shutdown. Data persists in named volumes.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose down -v</code></td>
+            <td>Same as <code>down</code> but also removes named volumes (including <code>postgres-data</code>).</td>
+            <td>Full reset — wipes the database. Use sparingly, ideally in development only.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose ps</code></td>
+            <td>Lists all containers managed by the Compose file with their status and ports.</td>
+            <td>Quick health check for the entire stack.</td>
+        </tr>
+        <tr>
+            <td><code>docker compose exec app sh</code></td>
+            <td>Opens an interactive shell inside the <code>app</code> container. Useful for debugging.</td>
+            <td>Inspecting files, running ad-hoc commands, or verifying environment variables with <code>env</code>.</td>
+        </tr>
     </table>
+
+    <div class="note">
+        <strong>Important:</strong> Use <code>docker compose</code> (with a space) — the hyphenated form <code>docker-compose</code> is the legacy Python version. Modern Docker Engine includes Compose as a plugin.
+    </div>
 </section>
 
 <section>
-    <h2>8. Image Size Breakdown</h2>
-    <table>
-        <tr><th>Stage</th><th>Size (approx)</th><th>Contents</th></tr>
-        <tr><td>Build stage</td><td>~600 MB</td><td>Alpine + Maven + JDK 17 + all dependencies</td></tr>
-        <tr><td>Runtime stage</td><td>~180 MB</td><td>Alpine + JRE 17 + app JAR only</td></tr>
-        <tr><td>Saved</td><td>~420 MB</td><td>Build tools and source excluded</td></tr>
-    </table>
-    <p>A ~180 MB image is fast to pull and deploy.</p>
+    <h2>8. Production Considerations</h2>
+
+    <h3>Secrets Management</h3>
+    <p>The <code>docker-compose.yml</code> currently hardcodes secrets (JWT secret, Razorpay keys) in plaintext. This is acceptable for local development but <strong>never</strong> for production.</p>
+    <ul>
+        <li><strong><code>.env</code> file:</strong> Store sensitive values in a <code>.env</code> file (added to <code>.gitignore</code>) and reference them with <code>${VARIABLE}</code> syntax in <code>docker-compose.yml</code>. Example: <code>JWT_SECRET: ${JWT_SECRET}</code></li>
+        <li><strong>Docker Secrets (Swarm):</strong> For Docker Swarm deployments, use <code>secrets</code> with files mounted at <code>/run/secrets/</code>. The application reads them at runtime.</li>
+        <li><strong>External secret stores:</strong> HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault. The application fetches secrets on startup via SDK calls, keeping them out of Compose files entirely.</li>
+        <li><strong>Kubernetes:</strong> Use <code>Secrets</code> objects (base64-encoded) or external secrets operators (e.g., External Secrets Operator).</li>
+    </ul>
+
+    <h3>Resource Limits</h3>
+    <p>Without limits, a single container can consume all host memory and starve other containers. In production, add resource constraints:</p>
+    <pre><code>services:
+  app:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'</code></pre>
+    <p>For <code>docker compose</code> (not swarm), use the <code>--compatibility</code> flag or specify limits per-service with the v3 format.</p>
+
+    <h3>Logging Driver</h3>
+    <p>The default <code>json-file</code> logging driver can grow unbounded. Configure log rotation or use a centralized logging driver:</p>
+    <pre><code>services:
+  app:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"</code></pre>
+    <p>For production, consider <code>awslogs</code> (CloudWatch), <code>gcplogs</code>, or <code>fluentd</code> / <code>syslog</code> for centralized log aggregation.</p>
+
+    <h3>Image Tagging Strategy</h3>
+    <p>Never tag production images as <code>latest</code>. Use a deterministic, immutable tag strategy:</p>
+    <ul>
+        <li><strong>Git SHA:</strong> <code>registry.example.com/app:abc123</code> — traceable to the exact commit.</li>
+        <li><strong>Semantic version:</strong> <code>registry.example.com/app:1.4.2</code> — for release branches.</li>
+        <li><strong>CI build number:</strong> <code>registry.example.com/app:build-1423</code> — sequential, easy to identify.</li>
+        <li><strong>Combined:</strong> <code>registry.example.com/app:v1.4.2-abc123</code> — both human-readable and traceable.</li>
+    </ul>
+    <p>Set the tag in your CI/CD pipeline and pass it to <code>docker build -t</code>. Never hardcode a tag in the Compose file for production.</p>
+
+    <h3>Additional Production Patterns</h3>
+    <ul>
+        <li><strong>Healthcheck endpoints:</strong> Add a Spring Boot Actuator <code>/actuator/health</code> endpoint and use it as the container healthcheck instead of relying on process-level checks.</li>
+        <li><strong>Graceful shutdown:</strong> Spring Boot handles <code>SIGTERM</code> gracefully, but set <code>spring.lifecycle.timeout-per-shutdown-phase: "30s"</code> to allow in-flight requests to complete.</li>
+        <li><strong>Security scanning:</strong> Scan images with Trivy, Snyk, or Docker Scout before pushing to a registry.</li>
+        <li><strong>Read-only root filesystem:</strong> Where possible, set <code>read_only: true</code> on containers that do not need to write to the filesystem.</li>
+        <li><strong>Non-root user:</strong> Add a <code>USER</code> instruction in the Dockerfile to run the application as a non-root user, reducing the blast radius of container escape vulnerabilities.</li>
+    </ul>
+</section>
+
+<section>
+    <h2>9. Interview Q&A</h2>
+
+    <div class="qa">
+        <div class="q">Q1: What are the benefits of multi-stage builds, and when would you avoid them?</div>
+        <div class="a">
+            <p><strong>Benefits:</strong> Smaller final images (build tools excluded), improved security (no compilers or debug symbols in runtime), and a single Dockerfile that documents the full build pipeline. Image size drops from ~600 MB to ~180 MB in this project.</p>
+            <p><strong>When to avoid:</strong> Simple applications with no build step (e.g., a Python script that runs directly from the base image) do not benefit from multi-stage builds. Also, if your build tools are already minimal (e.g., a Go binary compiled with <code>go build</code> produces a static binary — a single <code>FROM scratch</code> or <code>FROM alpine</code> with just the binary is already optimal).</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q2: Explain layer caching. Why do we run <code>mvn dependency:go-offline</code> before copying source code?</div>
+        <div class="a">
+            <p><strong>Layer caching:</strong> Each Dockerfile instruction produces a layer. Docker caches layers and reuses them on subsequent builds if the instruction and its context (files, command text) have not changed. This is the primary mechanism for fast incremental builds.</p>
+            <p>By copying <code>pom.xml</code> first and running <code>dependency:go-offline</code>, we create a layer containing all Maven dependencies. This layer is cached and reused as long as <code>pom.xml</code> does not change. If we copied <code>src</code> first, any source file change would invalidate the cache for everything after it — including the dependency download, which takes 5-10 minutes. The ordering makes frequent source changes cheap (only compile + package re-run) and infrequent dependency changes expensive (full download), which is the correct trade-off.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q3: Why use Alpine-based images? What are the trade-offs?</div>
+        <div class="a">
+            <p><strong>Pros:</strong> Minimal size (~5 MB base, ~120 MB with JRE), smaller attack surface (fewer installed packages), fast pulls.</p>
+            <p><strong>Cons:</strong> Uses musl libc instead of glibc. Some native libraries (e.g., JDBC drivers with native components, certain JNI libraries) may have compatibility issues. DNS resolution and networking behave slightly differently. Build toolchains may require additional dependencies. For pure Java applications (no native code), Alpine is safe and recommended.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q4: What is the difference between <code>COPY</code> and <code>ADD</code> in a Dockerfile?</div>
+        <div class="a">
+            <p><strong>COPY</strong> copies files/directories from the build context into the image. It is simple, predictable, and the preferred choice for all file copying.</p>
+            <p><strong>ADD</strong> does everything COPY does, plus two additional features: (1) automatically extracts local <code>.tar</code> archives into the image, and (2) supports remote URLs as sources (fetches the file during build). These extras make <code>ADD</code> opaque — the build behavior depends on the source file type. Docker's documentation recommends using <code>COPY</code> unless you specifically need tar extraction or URL fetching. Using <code>ADD</code> for plain files can cause unexpected extraction behavior if someone adds a tar archive to the build context.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q5: What is the difference between <code>depends_on</code> with and without <code>condition: service_healthy</code>?</div>
+        <div class="a">
+            <p>Basic <code>depends_on</code> (<code>depends_on: - postgres</code>) only waits for the PostgreSQL container to be running — i.e., the Docker engine has started the process. It does not wait for PostgreSQL to be ready to accept connections. The app container could start, attempt to connect, fail, and restart (often in a crash-loop).</p>
+            <p>With <code>condition: service_healthy</code>, Compose waits until the healthcheck command (<code>pg_isready</code>) returns a zero exit code — meaning the database is actively accepting connections. This is a proper readiness check, not just a liveness check. The app starts only when its dependencies are genuinely ready.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q6: Compare bridge network mode vs host network mode. Which do you use and why?</div>
+        <div class="a">
+            <p><strong>Bridge (default):</strong> Containers run in an isolated network namespace with their own IP. Port mapping (<code>-p</code>) exposes specific ports to the host. Containers communicate via the bridge network. This is the standard for development and production — it provides network isolation, prevents port conflicts, and works with Docker Compose service discovery.</p>
+            <p><strong>Host:</strong> The container uses the host's network stack directly — no network isolation, no separate IP. Port mapping is ignored; the container listens on the host's IP. This offers better performance (no NAT overhead) and is sometimes used for high-throughput applications. However, it breaks Docker Compose networking (service names do not resolve), prevents running multiple container instances on the same port, and is a security concern (the container has full access to the host's network interfaces).</p>
+            <p><strong>Verdict:</strong> Use bridge (default) for almost everything. Reserve host mode for specialized use cases like network performance benchmarks or applications that need to bind to specific host IPs directly.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q7: What is the difference between a named volume and a bind mount? When would you use each?</div>
+        <div class="a">
+            <p><strong>Named volume:</strong> Docker manages the storage location (<code>/var/lib/docker/volumes/</code>). Created with <code>docker volume create</code> or declared in <code>docker-compose.yml</code> under <code>volumes:</code>. Platform-independent, portable, and the recommended way to persist data in production.</p>
+            <p><strong>Bind mount:</strong> You specify an explicit host path (e.g., <code>./data:/var/lib/postgresql/data</code>). The container can read and write any file on the host at that path. Useful for development (live-reload source code) but less portable and a security risk in production.</p>
+            <p><strong>Use cases:</strong> Named volumes for database data, cache directories, and any persisted production data. Bind mounts for development-time hot-reloading, configuration injection, or sharing Unix sockets.</p>
+            <p>In this project, <code>postgres-data</code> is a named volume — correct for database persistence. A bind mount would be appropriate for mounting <code>./src</code> into a dev container for live reload with tools like <code>spring-boot-devtools</code>.</p>
+        </div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q8: How does Spring Boot resolve environment variables from Docker Compose to override <code>application.yml</code>? Explain the mechanics.</div>
+        <div class="a">
+            <p>Spring Boot implements the <strong>Environment</strong> abstraction backed by a chain of <strong>PropertySource</strong> objects. When the application starts, Spring Boot registers multiple property sources in order of priority:</p>
+            <ol>
+                <li>Command-line arguments (highest priority)</li>
+                <li>JNDI attributes</li>
+                <li>System properties (<code>-Dkey=value</code>)</li>
+                <li>OS environment variables</li>
+                <li><code>application-{profile}.yml</code></li>
+                <li><code>application.yml</code></li>
+                <li>Default values (<code>@Value</code> defaults)</li>
+            </ol>
+            <p>Environment variables are in position 4 — higher than <code>application.yml</code>. When the app reads <code>spring.datasource.url</code>, Spring Boot searches property sources in order and finds <code>SPRING_DATASOURCE_URL</code> from the OS environment before reaching <code>application.yml</code>.</p>
+            <p>The <strong>relaxed binding</strong> mechanism normalizes the variable name: <code>SPRING_DATASOURCE_URL</code> is converted to <code>spring.datasource.url</code> by splitting on underscores and lowercasing. This supports multiple naming conventions: <code>spring.datasource.url</code>, <code>spring.datasource.URL</code>, <code>SPRING_DATASOURCE_URL</code>, and <code>spring_datasource_url</code> all resolve to the same property.</p>
+        </div>
+    </div>
 </section>
 
 </div>

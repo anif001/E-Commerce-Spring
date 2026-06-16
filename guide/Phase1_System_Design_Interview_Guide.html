@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1: System Design & Architecture — E-Commerce Backend Interview Guide</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 40px 20px;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+.header {
+    text-align: center;
+    padding: 40px 0 30px;
+    border-bottom: 2px solid #6C63FF;
+    margin-bottom: 40px;
+}
+.header h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #6C63FF, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header .subtitle { color: #888; font-size: 1rem; margin-top: 10px; }
+.header .badge {
+    display: inline-block;
+    background: #6C63FF;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 12px;
+}
+section {
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-left: 4px solid #6C63FF;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+section h2 {
+    font-size: 1.5rem;
+    color: #6C63FF;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+section h2 .num {
+    background: #6C63FF;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+section h3 { color: #ff6b6b; margin: 20px 0 10px; font-size: 1.1rem; }
+section h4 { color: #4ecdc4; margin: 15px 0 8px; }
+p { margin-bottom: 12px; }
+ul, ol { margin: 10px 0 15px 25px; }
+li { margin-bottom: 6px; }
+code {
+    background: #2d2d44;
+    color: #f8c555;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+}
+pre {
+    background: #0d0d1a;
+    color: #a8e6cf;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 15px 0;
+    border: 1px solid #2d2d44;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.9rem;
+}
+th, td {
+    border: 1px solid #2d2d44;
+    padding: 10px 14px;
+    text-align: left;
+}
+th { background: #6C63FF; color: #fff; font-weight: 600; }
+td { background: #12122a; }
+.highlight {
+    background: #2d2d44;
+    border-left: 4px solid #f8c555;
+    padding: 15px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 15px 0;
+}
+.highlight strong { color: #f8c555; }
+.qa-box {
+    background: #0f0f1a;
+    border: 1px solid #6C63FF;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+}
+.qa-box .q { color: #ff6b6b; font-weight: bold; }
+.qa-box .a { color: #4ecdc4; margin-top: 5px; }
+.architecture {
+    background: #0d0d1a;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 15px 0;
+    color: #a8e6cf;
+}
+.tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-right: 5px;
+}
+.tag.purple { background: #6C63FF; color:#fff; }
+.tag.green { background: #4ecdc4; color:#000; }
+.tag.red { background: #ff6b6b; color:#fff; }
+.footer {
+    text-align: center;
+    padding: 30px 0;
+    color: #555;
+    font-size: 0.85rem;
+}
+.toc {
+    background: #12122a;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    border: 1px solid #2d2d44;
+}
+.toc h3 { color: #6C63FF; margin-bottom: 12px; }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 5px; }
+.toc a { color: #a8e6cf; text-decoration: none; }
+.toc a:hover { color: #6C63FF; text-decoration: underline; }
+@media (max-width: 768px) {
+    body { padding: 20px 10px; }
+    section { padding: 20px; }
+    .header h1 { font-size: 1.5rem; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 6px 8px; }
+}
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Phase 1: System Design &amp; Architecture</h1>
+        <div class="subtitle">E-Commerce Backend — Architecture, Tech Stack Decisions &amp; Request Flow | Java 17, Spring Boot 3.4.1</div>
+        <span class="badge">Interview Edition — Senior Java Developer / Architect Perspective</span>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+            <li><a href="#s1">High-Level Architecture</a></li>
+            <li><a href="#s2">Tech Stack Decisions</a></li>
+            <li><a href="#s3">System Design Concepts</a></li>
+            <li><a href="#s4">Complete Request Flow — Place Order</a></li>
+            <li><a href="#s5">Project Package Structure</a></li>
+            <li><a href="#s6">Interview Q&amp;A</a></li>
+        </ol>
+    </div>
+
+    <!-- 1. HIGH-LEVEL ARCHITECTURE -->
+    <section id="s1">
+        <h2><span class="num">1</span> High-Level Architecture</h2>
+        <p>This project follows a <strong>4-layer monolith architecture</strong> with strict layer separation. Each layer has a single responsibility and communicates only with the layer directly below it. This enforces <strong>Separation of Concerns</strong> and makes the codebase testable, maintainable, and ready for future microservice extraction.</p>
+
+        <h3>The 4-Layer Architecture</h3>
+        <div class="architecture">
+                                HTTP/HTTPS
+                                   |
+  +-------------------------------v-------------------------------+
+  |                   CONTROLLER LAYER (REST)                     |
+  |   @RestController, @RequestMapping, @Valid, @PreAuthorize    |
+  |   AuthController | ProductController | OrderController        |
+  |   CartController | PaymentController | CategoryController     |
+  |   Responsibilities: HTTP mapping, validation, response shape  |
+  +-------------------------------+-------------------------------+
+                                  |  calls
+                                  v
+  +-------------------------------+-------------------------------+
+  |                     SERVICE LAYER (Business Logic)            |
+  |   @Service, @Transactional                                   |
+  |   AuthService | ProductService | CartService | OrderService   |
+  |   PaymentService | EmailService                               |
+  |   Responsibilities: Business rules, orchestration, DTO map    |
+  +-------------------------------+-------------------------------+
+                                  |  calls
+                                  v
+  +-------------------------------+-------------------------------+
+  |                    REPOSITORY LAYER (Data Access)              |
+  |   @Repository, Spring Data JPA                                 |
+  |   UserRepository | ProductRepository | CartRepository          |
+  |   OrderRepository | CategoryRepository | PaymentRepository     |
+  |   Responsibilities: SQL queries, pagination, sorting           |
+  +---------------+---------------+-------------------------------+
+                  |               |
+                  v               v
+  +-----------------------------+  +-----------------------------+
+  |       PostgreSQL            |  |        Redis                |
+  |   ACID-compliant primary DB  |  |  In-memory cache layer      |
+  |   Users, Products, Orders,   |  |  Product cache,              |
+  |   Cart Items, Categories     |  |  Refresh tokens,             |
+  |   Payments                   |  |  Rate limiting counters      |
+  +-----------------------------+  +-----------------------------+
+        </div>
+
+        <h3>Layer Responsibilities (Top to Bottom)</h3>
+        <table>
+            <thead>
+                <tr><th>Layer</th><th>Annotation / Class</th><th>Responsibility</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Controller</td>
+                    <td><code>@RestController</code></td>
+                    <td>Receives HTTP requests, validates input (<code>@Valid</code>), enforces security (<code>@PreAuthorize</code>), delegates to service, returns shaped response (DTO). Never contains business logic.</td>
+                </tr>
+                <tr>
+                    <td>Service</td>
+                    <td><code>@Service</code></td>
+                    <td>Contains all business rules, orchestrates calls to repositories and external services (Razorpay, Email). Manages transactions via <code>@Transactional</code>. Maps entities to DTOs and vice versa.</td>
+                </tr>
+                <tr>
+                    <td>Repository</td>
+                    <td><code>@Repository</code></td>
+                    <td>Spring Data JPA interface. Defines derived query methods, custom <code>@Query</code> JPQL/SQL, pagination (<code>Pageable</code>), sorting, and locking (<code>@Lock</code>). Never contains business logic.</td>
+                </tr>
+                <tr>
+                    <td>Entity / Model</td>
+                    <td><code>@Entity</code></td>
+                    <td>JPA entity mapping to database tables. Defines relationships (<code>@ManyToOne</code>, <code>@OneToMany</code>), column mappings, validation constraints, lifecycle callbacks (<code>@PrePersist</code>).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>Key Rule:</strong> Controller never accesses Repository directly. Service never handles HttpServletRequest. This strict layering means each layer can be tested in isolation and replaced independently.
+        </div>
+    </section>
+
+    <!-- 2. TECH STACK DECISIONS -->
+    <section id="s2">
+        <h2><span class="num">2</span> Tech Stack Decisions</h2>
+        <p>Every technology in this stack was chosen deliberately over alternatives. Here is the reasoning a senior architect would provide in an interview.</p>
+
+        <h3>2.1 Why Spring Boot (Not Node.js / Django)</h3>
+        <table>
+            <thead>
+                <tr><th>Feature</th><th>How Spring Boot Delivers</th><th>Why It Matters</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Auto-Configuration</td>
+                    <td><code>@SpringBootApplication</code> triggers classpath-scanning auto-config. Spring detects H2, PostgreSQL, Redis on classpath and configures beans automatically. <code>spring-boot-starter-data-jpa</code> auto-configures <code>DataSource</code>, <code>EntityManagerFactory</code>, <code>TransactionManager</code>.</td>
+                    <td>Zero boilerplate configuration. Focus on business code, not infrastructure wiring.</td>
+                </tr>
+                <tr>
+                    <td>Dependency Injection</td>
+                    <td><code>@Autowired</code>, <code>@Inject</code>, constructor injection. Spring container manages bean lifecycle, scopes (singleton, prototype, request), and proxy creation for <code>@Transactional</code> and <code>@Cacheable</code>.</td>
+                    <td>Loose coupling. Services depend on abstractions (interfaces), not concretions. Swap implementations without changing callers.</td>
+                </tr>
+                <tr>
+                    <td>Declarative Transactions</td>
+                    <td><code>@Transactional</code> on service methods creates a proxy that wraps the method in a JDBC transaction. Supports propagation (<code>REQUIRED</code>, <code>REQUIRES_NEW</code>), isolation levels, rollback rules.</td>
+                    <td>Critical for e-commerce: deduct inventory + create order + clear cart must be atomic. Without <code>@Transactional</code>, partial failures corrupt data.</td>
+                </tr>
+                <tr>
+                    <td>Spring Security</td>
+                    <td>Filter chain architecture. <code>SecurityFilterChain</code> bean configures which URLs are public, which require auth, which roles are permitted. JWT authentication via custom <code>OncePerRequestFilter</code>.</td>
+                    <td>Comprehensive, battle-tested security. Method-level <code>@PreAuthorize("hasRole('ADMIN')")</code> for fine-grained access control.</td>
+                </tr>
+                <tr>
+                    <td>Testing</td>
+                    <td><code>@SpringBootTest</code>, <code>@WebMvcTest</code>, <code>@DataJpaTest</code> — slice tests load only relevant beans. <code>MockMvc</code> for controller testing, <code>TestContainers</code> for integration.</td>
+                    <td>Fast, focused tests. Unit test services in milliseconds, integration test against real PostgreSQL.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>Interview Answer:</strong> "Spring Boot for e-commerce because of auto-configuration that reduces boilerplate, declarative <code>@Transactional</code> that ensures data consistency for financial operations, Spring Security's comprehensive filter chain for JWT auth, and slice-testing support that makes tests fast and reliable."
+        </div>
+
+        <h3>2.2 Why PostgreSQL (Not MySQL / MongoDB)</h3>
+        <table>
+            <thead>
+                <tr><th>Feature</th><th>PostgreSQL</th><th>Why It Wins</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ACID Compliance</td>
+                    <td>Full ACID out of the box — every operation is transactional. No engine switching.</td>
+                    <td>MySQL requires InnoDB for ACID; MyISAM (default in older versions) does not support transactions or foreign keys. PostgreSQL is always ACID.</td>
+                </tr>
+                <tr>
+                    <td>JSONB</td>
+                    <td>Binary JSON with full indexing via GIN indexes. Query with <code>@> (contains)</code>, <code>? (exists)</code>, <code>#>> (path)</code> operators.</td>
+                    <td>Product attributes vary by category (phone has RAM, clothing has size). JSONB stores this flexibly while remaining queryable and indexable — no need for EAV pattern.</td>
+                </tr>
+                <tr>
+                    <td>Full-Text Search</td>
+                    <td><code>tsvector</code> / <code>tsquery</code> with GIN indexes. Weighted search (name=A weight, description=D weight), stemming, ranking.</td>
+                    <td>Built-in search for product catalog up to ~100K products. No need for Elasticsearch initially. <code>SELECT * FROM products WHERE to_tsvector('english', name) @@ to_tsquery('english', 'iphone')</code>.</td>
+                </tr>
+                <tr>
+                    <td>MVCC</td>
+                    <td>Multi-Version Concurrency Control. Readers never block writers and vice versa. Each transaction sees a snapshot of data as of its start time.</td>
+                    <td>Critical for e-commerce: 1000 concurrent users browsing products while 10 are placing orders. No read locks, no deadlocks between reads and writes.</td>
+                </tr>
+                <tr>
+                    <td>Partial / Expression Indexes</td>
+                    <td><code>CREATE INDEX ON products (stock) WHERE active = true</code>. <code>CREATE INDEX ON products (LOWER(name))</code>.</td>
+                    <td>Index only active products (smaller index). Case-insensitive search without function overhead.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2.3 Why Redis (Not Memcached)</h3>
+        <table>
+            <thead>
+                <tr><th>Feature</th><th>Redis</th><th>Memcached</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Data Structures</td><td>String, List, Set, SortedSet, Hash, Bitmap, HyperLogLog, Streams, Geospatial</td><td>String only</td></tr>
+                <tr><td>Persistence</td><td>RDB (point-in-time snapshots) + AOF (append-only log, every write)</td><td>None — pure cache, data lost on restart</td></tr>
+                <tr><td>Pub/Sub</td><td>Native publish/subscribe for real-time notifications</td><td>Not supported</td></tr>
+                <tr><td>Transactions</td><td><code>MULTI</code>/<code>EXEC</code> + Lua scripting for atomic operations</td><td>Not supported</td></tr>
+                <tr><td>TTL</td><td>Per-key expiry with <code>EXPIRE</code> / <code>TTL</code> commands</td><td>Per-key expiry</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Why Redis wins:</strong> We use SortedSets for product rating leaderboards, Hashes for product cache (fields: name, price, stock), Pub/Sub for cache invalidation events, and persistence to survive restarts without cache cold-start. Memcached is a simpler cache; Redis is a data structure server with cache capabilities.</p>
+
+        <h3>2.4 Why JWT (Not Sessions)</h3>
+        <table>
+            <thead>
+                <tr><th>Aspect</th><th>JWT (Stateless)</th><th>Sessions (Stateful)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Horizontal Scaling</td><td>Any server validates token independently — no shared state needed. Add instances freely.</td><td>Requires sticky sessions (load balancer affinity) or centralized session store (Redis). Both add complexity.</td></tr>
+                <tr><td>Mobile Support</td><td>Token stored in secure storage (Keychain/Keystore), sent in <code>Authorization: Bearer &lt;token&gt;</code> header. Works natively.</td><td>Cookies are designed for browsers. Mobile apps need cookie management libraries, interceptors, and CSRF handling.</td></tr>
+                <tr><td>Microservices</td><td>Pass JWT between services. Each service verifies signature independently using the shared secret or public key. No session store call.</td><td>Each service must call the central session store on every request — latency adds up, session store becomes a bottleneck.</td></tr>
+                <tr><td>Performance</td><td>Signature verification is ~1ms HMAC-SHA256. No network call.</td><td>Session lookup to Redis/DB adds 3-5ms per request across all services.</td></tr>
+                <tr><td>Revocation</td><td>Harder — token valid until expiry. Mitigated with short-lived access tokens (15min) + refresh tokens (7 days) + Redis blacklist.</td><td>Trivial — delete session from store.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>2.5 Why Docker</h3>
+        <ul>
+            <li><strong>Consistency Across Environments:</strong> The same Docker image runs on every developer's machine, in CI, staging, and production. Eliminates "works on my machine" bugs caused by Java version differences, OS differences, or dependency version mismatches.</li>
+            <li><strong>CI/CD Pipeline:</strong> <code>docker build</code> produces a single immutable artifact. GitHub Actions builds, tests, then builds the Docker image. The same image is promoted through environments: CI test → staging → production. No rebuilds between stages.</li>
+            <li><strong>Dependency Isolation:</strong> PostgreSQL 15, Redis 7, and the Spring Boot app each run in their own container. No port conflicts (each uses its own port namespace), no version conflicts (Java 17 in app container, no dependency on host Java).</li>
+            <li><strong>Team Onboarding:</strong> New developer runs <code>docker compose up</code> — the entire stack (PostgreSQL + Redis + app) starts in 30 seconds. No manual installation of databases, no environment setup scripts.</li>
+        </ul>
+    </section>
+
+    <!-- 3. SYSTEM DESIGN CONCEPTS -->
+    <section id="s3">
+        <h2><span class="num">3</span> System Design Concepts</h2>
+
+        <h3>3.1 Monolith vs Microservices Tradeoffs</h3>
+        <table>
+            <thead>
+                <tr><th>Dimension</th><th>Monolith (Our Choice)</th><th>Microservices</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Development Speed</td><td>Fast for teams of 1-10. Single codebase, single build, single deploy.</td><td>Slow initial velocity. Multiple repos, CI/CD pipelines, coordination overhead.</td></tr>
+                <tr><td>Testing</td><td>Simple end-to-end tests. Start one JAR, test against real DB. No service mocking needed.</td><td>Complex. Each service needs contract tests, integration tests with mocked downstream services, and end-to-end tests across all services.</td></tr>
+                <tr><td>Deployment</td><td>One WAR/JAR. Rollback is a single command.</td><td>Multiple services to coordinate. Canary deployments, blue-green, or rolling updates needed.</td></tr>
+                <tr><td>Scaling</td><td>Scale the entire application. Cannot scale only the order-processing component.</td><td>Scale each service independently. Order service can have 10 instances while Auth service has 2.</td></tr>
+                <tr><td>Team Autonomy</td><td>Shared codebase requires coordination, merge conflicts, aligned release cadence.</td><td>Each team owns their service independently. API contracts are the only coordination point.</td></tr>
+                <tr><td>Operational Overhead</td><td>Low. One app to monitor, one set of logs, one JVM tuning.</td><td>High. Service mesh, distributed tracing (Jaeger), centralized logging (ELK), container orchestration (Kubernetes).</td></tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>Decision: Start monolith, organize for microservices.</strong> Use feature-based packages, no circular dependencies, interface-based service boundaries. When the team grows to 3+ teams or a domain requires independent scaling, extract that bounded context into a service using the Strangler Fig pattern.
+        </div>
+
+        <h3>3.2 Caching Strategies — Cache-Aside with TTL</h3>
+        <p>This project uses <strong>Cache-Aside (Lazy Loading)</strong> as the primary caching pattern:</p>
+        <pre>
+// Cache-Aside Pattern (pseudocode)
+Product getProduct(Long id) {
+    String cacheKey = "product:" + id;
+
+    // 1. Check Redis cache
+    Product cached = redisTemplate.opsForValue().get(cacheKey);
+    if (cached != null) return cached;  // Cache HIT
+
+    // 2. Cache MISS → query database
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+    // 3. Populate cache with TTL
+    redisTemplate.opsForValue().set(cacheKey, product, 30, TimeUnit.MINUTES);
+
+    return product;
+}
+        </pre>
+        <table>
+            <thead>
+                <tr><th>Cache Strategy</th><th>Use Case</th><th>Pros</th><th>Cons</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Cache-Aside (this project)</td><td>Product details, categories, search results</td><td>Only caches what is requested. Simple to implement. TTL handles staleness.</td><td>First request always slow (cache miss). Stale data until TTL expires.</td></tr>
+                <tr><td>Write-Through</td><td>Inventory counts (consistency critical)</td><td>Cache always up-to-date. No stale data served.</td><td>Slower writes. Caches data that may never be read.</td></tr>
+                <tr><td>Write-Behind</td><td>Page view counters, analytics events</td><td>Extremely fast writes. Batched DB persistence.</td><td>Risk of data loss if cache crashes before persistence.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>3.3 Horizontal Scaling</h3>
+        <p>Three design decisions enable horizontal scaling:</p>
+        <ol>
+            <li><strong>Stateless JWT Authentication:</strong> No session state on servers. Any instance can handle any request. Add instances behind a load balancer with zero configuration.</li>
+            <li><strong>Stateless Spring Boot Application:</strong> No local file storage (images go to S3/CDN). No in-memory session storage. Application state lives only in PostgreSQL and Redis — both external and independently scalable.</li>
+            <li><strong>Docker Containerization:</strong> Each instance runs in an identical container. Orchestration (Docker Compose for dev, Kubernetes for production) manages scaling: <code>kubectl scale deployment ecommerce-app --replicas=10</code>.</li>
+        </ol>
+
+        <h3>3.4 Performance Optimization</h3>
+        <table>
+            <thead>
+                <tr><th>Technique</th><th>Implementation</th><th>Impact</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Connection Pooling</td><td>HikariCP (default in Spring Boot 3.x). Configured in <code>application.yml</code> with <code>maximum-pool-size: 10</code>, <code>minimum-idle: 5</code>, <code>connection-timeout: 30000</code>.</td><td>Reuses database connections instead of opening a new TCP connection per request. Reduces DB connection latency from ~20ms to ~1ms.</td></tr>
+                <tr><td>Pagination</td><td>Spring Data <code>Pageable</code> interface. All list endpoints accept <code>?page=0&size=20&sort=name,asc</code>. SQL translates to <code>LIMIT 20 OFFSET 0</code>.</td><td>Prevents loading thousands of records into memory. A product catalog of 100K items returns 20 at a time — response size is ~2KB instead of ~20MB.</td></tr>
+                <tr><td>Database Indexing</td><td>Indexes on <code>product(name)</code>, <code>product(category_id)</code>, <code>order(user_id)</code>, <code>order_item(order_id)</code>. Composite indexes for common query patterns.</td><td>Turns full table scans into index seeks. A query on 1M products without index takes ~500ms; with B-tree index, ~2ms.</td></tr>
+                <tr><td>Redis Caching</td><td>Product details cached with 30-min TTL. Category tree cached with 1-hour TTL.</td><td>Reads that hit Redis return in ~5ms instead of ~200ms from PostgreSQL. Reduces DB load by 90%+ for read-heavy workloads.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>3.5 Security Architecture</h3>
+        <pre>
+// Security Configuration (SecurityConfig.java)
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity  // Enables @PreAuthorize on controller methods
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())  // Stateless JWT — no CSRF needed
+            .sessionManagement(sm -> sm.sessionCreationPolicy(STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()           // Register, Login — public
+                .requestMatchers("/api/products/**").permitAll()       // Product listing — public
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")    // Admin only
+                .anyRequest().authenticated()                         // Everything else needs auth
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+}
+        </pre>
+        <table>
+            <thead>
+                <tr><th>Security Layer</th><th>Implementation</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>JWT Filter Chain</td><td><code>JwtAuthenticationFilter extends OncePerRequestFilter</code>. Extracts token from <code>Authorization: Bearer &lt;jwt&gt;</code>, validates signature + expiry, sets <code>SecurityContextHolder</code>.</td><td>Every authenticated request passes through this filter. No session lookup needed — token is self-validating.</td></tr>
+                <tr><td>Role-Based Access</td><td><code>@PreAuthorize("hasRole('ADMIN')")</code> on controller methods. Three roles: <code>CUSTOMER</code>, <code>SELLER</code>, <code>ADMIN</code>.</td><td>Method-level security at the controller layer. Guards against calling admin endpoints from customer accounts even if JWT is valid.</td></tr>
+                <tr><td>Password Hashing</td><td><code>BCryptPasswordEncoder</code> with strength=10. Salt is automatically generated and embedded in the hash.</td><td>BCrypt is deliberately slow (~50ms per hash) to resist brute-force attacks. Spring Security's <code>PasswordEncoder</code> interface allows switching to SCrypt or Argon2 without changing service code.</td></tr>
+                <tr><td>CORS</td><td><code>@CrossOrigin</code> or <code>CorsConfigurationSource</code> bean. Allows requests from known frontend origins.</td><td>Prevents unauthorized domains from accessing APIs via browser CORS policy.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 4. COMPLETE REQUEST FLOW -->
+    <section id="s4">
+        <h2><span class="num">4</span> Complete Request Flow — Place Order</h2>
+        <p>Tracing a single request through every layer demonstrates deep understanding of the architecture. This is a <strong>favorite interview question</strong>.</p>
+
+        <div class="architecture">
+ Client (React / Postman / Mobile App)
+    |
+    |  POST /api/orders  Authorization: Bearer &lt;JWT&gt;
+    |  Body: { "shippingAddress": "123 Main St" }
+    v
+ +-- DNS --+  Resolves domain to Load Balancer IP
+    |
+    v
+ +-- Load Balancer (AWS ALB / Nginx) --+
+    Distributes traffic across app instances
+    Health checks: GET /actuator/health
+    |
+    v
+ +-- Spring Security Filter Chain (SecurityConfig) --+
+    |
+    |-- 1. SecurityContextHolderFilter  (clear context from previous request)
+    |-- 2. JwtAuthenticationFilter      (extract JWT, validate, set auth)
+    |      |-- Parse "Bearer &lt;token&gt;" from Authorization header
+    |      |-- Verify HMAC-SHA256 signature with secret key
+    |      |-- Check expiry (exp claim) — reject if expired
+    |      |-- Extract userId, roles from claims
+    |      |-- Create UsernamePasswordAuthenticationToken
+    |      |-- Set SecurityContextHolder.getContext().setAuthentication(auth)
+    |      |-- If invalid/expired/missing token: return 401 Unauthorized
+    |
+    |-- 3. ExceptionTranslationFilter  (handle AuthenticationException)
+    |-- 4. FilterSecurityInterceptor   (check URL + method-level security)
+    |
+    v
+ +-- DispatcherServlet (Spring MVC Front Controller) --+
+    |
+    |-- HandlerMapping maps POST /api/orders to OrderController.placeOrder()
+    |-- HandlerAdapter invokes the controller method
+    |
+    v
+ +-- OrderController (@RestController) --+
+    |
+    |-- @PreAuthorize("hasRole('CUSTOMER')") — method-level guard
+    |-- @Valid validates request body (shippingAddress not blank)
+    |-- Calls orderService.placeOrder(userId, request)  // userId from SecurityContext
+    |
+    v
+ +-- OrderService (@Service, @Transactional) --+
+    |
+    |  1. Fetch user's cart with items: cartRepository.findByUserIdWithItems(userId)
+    |  2. Validate cart exists and is not empty
+    |  3. For each cart item:
+    |       a. Validate product stock >= requested quantity
+    |       b. Deduct stock: productRepository.deductStock(productId, quantity)
+    |          (uses @Lock(PESSIMISTIC_WRITE) to prevent race conditions)
+    |  4. Calculate total: sum(cartItem.unitPrice * cartItem.quantity)
+    |  5. Create Order entity (status = PENDING)
+    |  6. Create OrderItem entities for each cart item
+    |  7. Save Order + OrderItems: orderRepository.save(order)
+    |  8. Clear cart: cartItemRepository.deleteAll(cart.getCartItems())
+    |  9. Call PaymentService.createRazorpayOrder(amount, orderId)
+    |      |-- Returns Razorpay order ID
+    |      |-- Order gets razorpayOrderId assigned
+    | 10. Trigger async email: emailService.sendOrderConfirmation(order)
+    |      |-- @Async — fires and returns immediately
+    |
+    v
+ +-- OrderRepository (Spring Data JPA) --+
+    |
+    |-- Derived query: findByUserIdWithItems(userId)
+    |-- @Modifying @Query for stock deduction
+    |-- Executes SQL against PostgreSQL via Hibernate
+    |
+    v
+ +-- PostgreSQL (ACID Transaction) --+
+    |
+    |-- @Transactional ensures all-or-nothing:
+    |    BEGIN TRANSACTION
+    |    UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?
+    |    INSERT INTO orders (user_id, total, status, ...) VALUES (...)
+    |    INSERT INTO order_items (order_id, product_id, qty, price) VALUES (...)
+    |    DELETE FROM cart_items WHERE cart_id = ?
+    |    COMMIT  -- or ROLLBACK on any exception
+    |
+    v
+ +-- Response --+
+    HTTP 201 Created
+    {
+      "orderId": 42,
+      "status": "PENDING",
+      "totalAmount": 199998.00,
+      "razorpayOrderId": "order_MTIzNDU2Nzg5"
+    }
+        </div>
+
+        <div class="highlight">
+            <strong>Key Insight:</strong> The <code>@Transactional</code> annotation on OrderService.placeOrder() ensures that if payment fails (step 9), all previous database operations (stock deduction, order creation, cart clear) are rolled back. The database is never left in an inconsistent state.
+        </div>
+
+        <h3>Annotations Used in the Flow</h3>
+        <table>
+            <thead>
+                <tr><th>Annotation</th><th>Location</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>@RestController</code></td><td>OrderController</td><td>Combines <code>@Controller</code> + <code>@ResponseBody</code>. Marks class as a REST handler; return values are serialized directly to JSON (not resolved to view names).</td></tr>
+                <tr><td><code>@PostMapping("/api/orders")</code></td><td>OrderController.placeOrder()</td><td>Maps HTTP POST requests to this method. Spring MVC extracts path, HTTP method, and parameters from the annotation.</td></tr>
+                <tr><td><code>@Valid</code></td><td>Controller method parameter</td><td>Triggers Bean Validation (JSR-380) on the request DTO. If validation fails, Spring throws <code>MethodArgumentNotValidException</code> and returns 400 Bad Request automatically.</td></tr>
+                <tr><td><code>@PreAuthorize("hasRole('CUSTOMER')")</code></td><td>Controller method</td><td>Spring Security method-level interceptor. Checks <code>SecurityContextHolder</code> for a GrantedAuthority matching "ROLE_CUSTOMER". Returns 403 Forbidden if unauthorized.</td></tr>
+                <tr><td><code>@Service</code></td><td>OrderService</td><td>Marks class as a Spring-managed service bean. Enables exception translation from data access exceptions to Spring's <code>DataAccessException</code> hierarchy.</td></tr>
+                <tr><td><code>@Transactional</code></td><td>Service method</td><td>Wraps method in a JDBC transaction. Creates a proxy that calls <code>connection.setAutoCommit(false)</code>, executes method, then <code>commit()</code> or <code>rollback()</code>.</td></tr>
+                <tr><td><code>@Lock(PESSIMISTIC_WRITE)</code></td><td>Repository method</td><td>Acquires a database row-level lock (<code>SELECT ... FOR UPDATE</code>). Prevents two concurrent orders from deducting the same inventory simultaneously.</td></tr>
+                <tr><td><code>@Async</code></td><td>EmailService method</td><td>Executes method in a separate thread via Spring's <code>TaskExecutor</code>. The caller (order service) does not wait for email to be sent — reduces response time.</td></tr>
+                <tr><td><code>@Modifying</code></td><td>Repository stock deduction</td><td>Indicates a <code>@Query</code> is an UPDATE/DELETE, not a SELECT. Required for Spring Data JPA to execute write operations correctly.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 5. PROJECT PACKAGE STRUCTURE -->
+    <section id="s5">
+        <h2><span class="num">5</span> Project Package Structure</h2>
+
+        <div class="architecture">
+src/main/java/com/ecommerce/
+|
++-- EcommerceApplication.java          @SpringBootApplication — entry point, component scan root
+|
++-- config/                            Spring configuration classes (Java-based @Configuration)
+|   +-- SecurityConfig.java            SecurityFilterChain bean, CORS, CSRF, session management
+|   +-- RedisConfig.java               RedisTemplate bean, connection factory, serialization
+|   +-- RazorpayConfig.java            RazorpayClient bean, API key config
+|   +-- SwaggerConfig.java             OpenAPI 3.0 config (SpringDoc), API info metadata
+|   +-- WebConfig.java                 CORS mappings, static resource handlers
+|
++-- controller/                        REST endpoint layer — thin, delegates to services
+|   +-- AuthController.java            POST /api/auth/register, POST /api/auth/login, POST /api/auth/refresh
+|   +-- ProductController.java         CRUD + search + pagination for products
+|   +-- CategoryController.java        CRUD for product categories
+|   +-- CartController.java            Add/remove/update cart items, get cart
+|   +-- OrderController.java           Place order, cancel order, get order history
+|   +-- PaymentController.java         Payment webhook callback from Razorpay
+|   +-- AdminController.java           Admin operations: user management, dashboard
+|
++-- service/                           Business logic layer — all rules, orchestration
+|   +-- AuthService.java               Register (validate + hash + save), Login (verify + generate JWT)
+|   +-- ProductService.java            CRUD with validation, stock management, search
+|   +-- CategoryService.java           Category hierarchy management
+|   +-- CartService.java               Cart operations with stock validation
+|   +-- OrderService.java              Place order (transactional), cancel, status updates
+|   +-- PaymentService.java            Razorpay order creation, payment verification
+|   +-- EmailService.java              Async email sending (order confirmation, shipping update)
+|
++-- repository/                        Data access layer — Spring Data JPA interfaces
+|   +-- UserRepository.java            findByEmail, existsByEmail, findByRole
+|   +-- ProductRepository.java         search (full-text), findByCategoryId, findByActiveTrue
+|   +-- CategoryRepository.java        findByName, findByParentId
+|   +-- CartRepository.java            findByUserIdWithItems (custom @Query with JOIN FETCH)
+|   +-- CartItemRepository.java        findByCartIdAndProductId
+|   +-- OrderRepository.java           findByUserIdOrderByOrderDateDesc
+|   +-- OrderItemRepository.java       findByOrderId
+|   +-- PaymentRepository.java         findByRazorpayOrderId
+|
++-- model/entity/                      JPA entities — database table mappings
+|   +-- User.java                      @Entity — id, name, email, password, role, createdAt
+|   +-- Product.java                   @Entity — id, name, description, price, stock, attributes(JSONB)
+|   +-- Category.java                  @Entity — id, name, parent (self-referencing), imageUrl
+|   +-- Cart.java                      @Entity — id, user (@OneToOne), items (@OneToMany)
+|   +-- CartItem.java                  @Entity — id, cart, product, quantity, unitPrice
+|   +-- Order.java                     @Entity — id, user, orderDate, status, totalAmount, shippingAddress
+|   +-- OrderItem.java                 @Entity — id, order, product, quantity, unitPrice, subtotal
+|   +-- Payment.java                   @Entity — id, order, razorpayOrderId, status, amount
+|
++-- dto/                               Data Transfer Objects — never expose entities directly
+|   +-- request/                       Incoming request payloads
+|   |   +-- RegisterRequest.java       name, email, password, role
+|   |   +-- LoginRequest.java          email, password
+|   |   +-- ProductRequest.java        name, description, price, stock, categoryId, attributes
+|   |   +-- CartItemRequest.java       productId, quantity
+|   |   +-- OrderRequest.java          shippingAddress
+|   +-- response/                      Outgoing response payloads
+|       +-- AuthResponse.java          accessToken, refreshToken, userId, email, name, role
+|       +-- ProductResponse.java       id, name, description, price, stock, category, attributes
+|       +-- CartResponse.java          cartId, items (list), totalAmount
+|       +-- OrderResponse.java         orderId, status, totalAmount, orderDate, razorpayOrderId
+|       +-- PaymentResponse.java       razorpayOrderId, amount, status
+|
++-- security/                          JWT authentication infrastructure
+|   +-- JwtTokenProvider.java          generateAccessToken(), generateRefreshToken(), validateToken(), parseClaims()
+|   +-- JwtAuthenticationFilter.java   OncePerRequestFilter — intercept every request, extract + validate JWT
+|   +-- CustomUserDetailsService.java  Loads User from DB, builds UserDetails for Spring Security
+|   +-- UserPrincipal.java             Implements UserDetails — wraps our User entity for SecurityContext
+|
++-- exception/                         Global exception handling
+|   +-- GlobalExceptionHandler.java    @ControllerAdvice — maps exceptions to HTTP status codes + JSON body
+|   +-- ResourceNotFoundException.java    404 — product/user/order not found
+|   +-- BadRequestException.java          400 — validation failure, insufficient stock
+|   +-- UnauthorizedException.java        401 — invalid credentials, expired token
+|   +-- DuplicateResourceException.java   409 — email already registered, product name exists
+|
++-- enums/                             Application enumerations
+|   +-- Role.java                      CUSTOMER, SELLER, ADMIN
+|   +-- OrderStatus.java               PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+|   +-- PaymentStatus.java             PENDING, PAID, FAILED, REFUNDED
+|
++-- util/                              Utility/helper classes
+    +-- AppConstants.java              Static constants: API base paths, date formats, regex patterns
+        </div>
+
+        <h3>Package Design Principles</h3>
+        <table>
+            <thead>
+                <tr><th>Principle</th><th>How It Is Enforced</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Separation of Concerns</td><td>Each package has a single responsibility. Controllers only handle HTTP. Services only contain business logic. Repositories only access data. DTOs never leak into entities or vice versa.</td></tr>
+                <tr><td>Dependency Rule (Clean Architecture)</td><td>Controller depends on Service (interface). Service depends on Repository (interface). Repository depends on Entity. Outer layers depend on inner layers — never the reverse.</td></tr>
+                <tr><td>No Circular Dependencies</td><td>Service A never imports Service B if Service B imports Service A. Enforced via architecture tests (<code>@ArchTest</code> with ArchUnit).</td></tr>
+                <tr><td>DTO Mapping at Service Boundary</td><td>Services convert entities to DTOs and vice versa. Controllers never see entities. This decouples API contract from database schema.</td></tr>
+                <tr><td>Interface-Based Service Access</td><td>Services implement interfaces. Controllers depend on interfaces, not concrete classes. This enables mocking in tests and alternative implementations.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="highlight">
+            <strong>Interview Tip:</strong> "The package structure follows Clean Architecture principles. The controller layer adapts HTTP to the application. The service layer contains use cases. The repository layer handles persistence. This structure makes the codebase testable, maintainable, and ready for microservice extraction — each bounded context is already isolated in its own packages."
+        </div>
+    </section>
+
+    <!-- 6. INTERVIEW Q&A -->
+    <section id="s6">
+        <h2><span class="num">6</span> Interview Q&amp;A</h2>
+
+        <div class="qa-box">
+            <div class="q">Q1: Why did you choose a monolith architecture for this e-commerce project? When would you switch to microservices?</div>
+            <div class="a">
+                <strong>Answer:</strong> We start with a monolith because our team is small (2-5 developers), we need to ship an MVP quickly, and the operational overhead of microservices (distributed transactions, service discovery, API gateways, distributed tracing) would slow us down without providing measurable benefit.<br><br>
+                We would extract to microservices when:
+                <ul>
+                    <li>The team grows to 3+ independent feature teams</li>
+                    <li>A specific bounded context requires independent scaling (e.g., Product Service gets 10x more traffic than User Service)</li>
+                    <li>Deployment velocity differs (Order Service needs to deploy daily, Auth Service deploys weekly)</li>
+                </ul>
+                Crucially, we organize the monolith <em>as if it will become microservices</em> — feature-based packages, no shared databases between domains, interface-based service boundaries. This makes the eventual extraction a mechanical exercise, not a rewrite.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q2: Explain the caching strategy used in this project. Why cache-aside instead of write-through?</div>
+            <div class="a">
+                <strong>Answer:</strong> We use <strong>cache-aside with TTL</strong>. The application code explicitly checks Redis before querying PostgreSQL. On cache miss, it queries the database, populates Redis, and returns the result. A TTL of 10-30 minutes for product data handles staleness automatically.<br><br>
+                <strong>Why not write-through?</strong> Write-through updates the cache on every database write. For product data that is read 1000x more often than written, write-through wastes cache writes on data that may not be read again before the next update. Additionally, write-through makes writes slower (must wait for both DB + Redis).<br><br>
+                <strong>Exception:</strong> Inventory counts use a write-through-like pattern with Redis <code>DECR</code> for atomic stock deduction, because serving stale inventory (saying "in stock" when it is not) causes overselling — a direct revenue loss.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q3: JWT vs Sessions — you chose JWT. What specific problems does JWT solve for e-commerce, and how do you handle its revocation weakness?</div>
+            <div class="a">
+                <strong>Answer:</strong> JWT solves three specific problems for e-commerce:
+                <ol>
+                    <li><strong>Horizontal scaling:</strong> During flash sales, we auto-scale from 3 to 30 app instances. With JWT, adding instances requires zero configuration — every instance validates tokens independently. With sessions, we would need sticky sessions (load balancer affinity) or a centralized Redis session store, both adding complexity and latency.</li>
+                    <li><strong>Mobile clients:</strong> 60%+ of e-commerce traffic comes from mobile apps. JWT works natively with mobile (store token in Keychain/Keystore, send in Authorization header). Sessions rely on cookies which are awkward on mobile.</li>
+                    <li><strong>Microservices-ready:</strong> When we eventually extract services, JWT passes between them. Each service validates the signature independently without calling a shared session store.</li>
+                </ol>
+                <strong>Revocation strategy:</strong> Access tokens expire in 15 minutes (short window of vulnerability). Refresh tokens expire in 7 days and are stored in Redis — on logout, we delete the refresh token, preventing new access tokens from being issued. For immediate blacklisting, we maintain a short-lived Redis blacklist of revoked token IDs (JTI claim).
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q4: Walk me through the complete request flow when a customer places an order. What happens at each layer?</div>
+            <div class="a">
+                <strong>Answer:</strong> The flow spans 7 layers:
+                <ol>
+                    <li><strong>Client</strong> sends <code>POST /api/orders</code> with JWT in Authorization header and shipping address in body.</li>
+                    <li><strong>Load Balancer</strong> receives request, checks health endpoint (<code>/actuator/health</code>), forwards to an available app instance.</li>
+                    <li><strong>Spring Security Filter Chain</strong>: <code>JwtAuthenticationFilter</code> extracts JWT from the Bearer header, verifies HMAC-SHA256 signature, checks expiry, parses userId and roles from claims, sets <code>SecurityContextHolder</code>. Invalid JWT returns 401.</li>
+                    <li><strong>DispatcherServlet</strong> maps <code>POST /api/orders</code> to <code>OrderController.placeOrder()</code></li>
+                    <li><strong>OrderController</strong>: <code>@PreAuthorize("hasRole('CUSTOMER')")</code> checks authorization, <code>@Valid</code> validates request body, then calls <code>orderService.placeOrder(userId, request)</code></li>
+                    <li><strong>OrderService</strong> (inside <code>@Transactional</code>): fetches cart with items, validates stock for each item, deducts inventory with <code>@Lock(PESSIMISTIC_WRITE)</code>, creates Order + OrderItem entities, clears cart, calls Razorpay for payment, triggers async email.</li>
+                    <li><strong>PostgreSQL</strong> executes all writes in a single database transaction. If any step fails, everything rolls back — no partial orders, no phantom inventory deductions.</li>
+                </ol>
+                Response: HTTP 201 with order ID, status, total, and Razorpay order ID for payment on the client side.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q5: Explain how Spring Boot auto-configuration works. How does <code>@SpringBootApplication</code> know to configure a DataSource for PostgreSQL without explicit configuration?</div>
+            <div class="a">
+                <strong>Answer:</strong> <code>@SpringBootApplication</code> is a composed annotation: <code>@SpringBootConfiguration</code> + <code>@EnableAutoConfiguration</code> + <code>@ComponentScan</code>.<br><br>
+                <strong>Auto-configuration mechanism:</strong>
+                <ol>
+                    <li>Spring Boot scans the classpath for <code>spring.factories</code> files in every JAR under <code>META-INF/spring/</code>. These files list auto-configuration classes.</li>
+                    <li>Each auto-configuration class is annotated with <code>@ConditionalOnClass</code>, <code>@ConditionalOnMissingBean</code>, <code>@ConditionalOnProperty</code> etc. These conditions determine whether the configuration is applied.</li>
+                    <li>For PostgreSQL: When <code>spring-boot-starter-data-jpa</code> and <code>postgresql</code> driver are on the classpath, <code>DataSourceAutoConfiguration</code> checks for <code>javax.sql.DataSource</code> on classpath. If no <code>DataSource</code> bean is defined, it reads <code>spring.datasource.*</code> properties from <code>application.yml</code> and creates a <code>HikariDataSource</code> with those properties.</li>
+                    <li>Similarly, <code>JpaRepositoriesAutoConfiguration</code> detects Spring Data JPA on classpath, looks for <code>@EnableJpaRepositories</code> (which <code>@SpringBootApplication</code> implicitly enables), and creates <code>EntityManagerFactory</code> and <code>PlatformTransactionManager</code> beans.</li>
+                </ol>
+                <strong>In short:</strong> Auto-configuration uses conditional bean registration based on classpath dependencies and property values. You get a fully configured PostgreSQL + Hibernate stack from just a starter dependency and connection properties in <code>application.yml</code>.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q6: How does <code>@Transactional</code> work internally in Spring? What happens if a nested method call within the same class is also <code>@Transactional</code>?</div>
+            <div class="a">
+                <strong>Answer:</strong> <code>@Transactional</code> works through <strong>AOP proxies</strong>:
+                <ol>
+                    <li>When Spring detects <code>@Transactional</code> on a bean, it creates a JDK dynamic proxy (or CGLIB proxy if the class does not implement an interface) wrapping the bean.</li>
+                    <li>When a method on the bean is called through the proxy, the proxy intercepts the call, checks if the method has <code>@Transactional</code>, and if so:</li>
+                    <li>Retrieves the transaction manager (e.g., <code>JpaTransactionManager</code>)</li>
+                    <li>Calls <code>transactionManager.getTransaction()</code> — starts a JDBC connection, sets <code>autoCommit=false</code>, begins transaction</li>
+                    <li>Invokes the actual target method</li>
+                    <li>On success: <code>transactionManager.commit()</code> — calls <code>connection.commit()</code>, closes connection</li>
+                    <li>On exception (matching <code>rollbackFor</code>): <code>transactionManager.rollback()</code> — calls <code>connection.rollback()</code></li>
+                </ol>
+                <strong>Self-invocation problem:</strong> If method A (transactional) in the same class calls method B (also <code>@Transactional</code>), method B's <code>@Transactional</code> is <strong>ignored</strong>. This is because the call goes through <code>this.methodB()</code> — directly on the target object, not through the proxy. The proxy is only used when the method is called from outside the class.<br><br>
+                <strong>Solutions:</strong> (a) Inject the bean into itself with <code>@Autowired</code> and call through that reference, (b) use <code>AopContext.currentProxy()</code>, or (c) extract method B into a separate <code>@Service</code> bean. The cleanest approach is (c) — keep transaction boundaries at the service layer, each service calling other services that have their own transactions.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q7: What is connection pooling and why is HikariCP the default? How do you configure it for an e-commerce workload?</div>
+            <div class="a">
+                <strong>Answer:</strong> Connection pooling reuses database connections instead of opening a new TCP connection (handshake + auth) for every request. Opening a connection takes 15-30ms; reusing a pooled connection takes <1ms.<br><br>
+                <strong>Why HikariCP:</strong> It is the fastest pool available — benchmarks show it is 2-3x faster than Tomcat JDBC pool and C3P0. Optimizations include: (a) use of <code>FastList</code> instead of <code>ArrayList</code> for statement cleanup, (b) optimized proxy classes that minimize bytecode size, (c) no synchronized blocks in the hot path.<br><br>
+                <strong>Configuration for e-commerce:</strong>
+                <pre>
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20        # Max connections in pool
+      minimum-idle: 5              # Keep 5 ready
+      idle-timeout: 300000         # 5 minutes idle before eviction
+      connection-timeout: 30000    # Wait 30s for a connection before throwing
+      max-lifetime: 1800000        # 30 minutes max connection lifetime
+      pool-name: EcommercePool
+                </pre>
+                <strong>Sizing rule:</strong> A good starting point is <code>pool_size = ((core_count * 2) + effective_spindle_count)</code>. For a typical 4-core, 1-disk server: pool of 9-10. We set 20 conservatively because we also have Redis cache reducing DB load by 90%+. Each connection uses ~1MB RAM, so 20 connections = ~20MB overhead — negligible.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q8: Why PostgreSQL over MongoDB for an e-commerce platform? When would MongoDB be a better choice?</div>
+            <div class="a">
+                <strong>Answer:</strong> PostgreSQL is the right choice for an e-commerce backend because:
+                <ul>
+                    <li><strong>ACID transactions</strong> are non-negotiable for order + payment processing. MongoDB added multi-document transactions in v4.0 (2018), but they have higher overhead and limited throughput compared to PostgreSQL's MVCC-based transactions.</li>
+                    <li><strong>Relational integrity</strong>: Orders reference users, order_items reference products and orders. Foreign keys ensure referential integrity — no orphan records. MongoDB has no foreign keys; application-level referential integrity is error-prone.</li>
+                    <li><strong>JSONB</strong>: PostgreSQL provides the flexibility of NoSQL (store variable product attributes as JSON) while keeping relational query power (JOIN, GROUP BY, aggregation). Best of both worlds.</li>
+                    <li><strong>Full-text search</strong>: Built-in tsvector/tsquery with ranking, stemming, and phrase search. Sufficient for 100K products without adding Elasticsearch.</li>
+                </ul>
+                <strong>When to choose MongoDB:</strong> (a) Product catalog with highly variable, deeply nested attributes that are rarely joined, (b) Session storage / logging (write-heavy, no joins), (c) When schema flexibility is more important than relational integrity. For our core transactional data, PostgreSQL is the clear winner.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q9: How do you handle concurrent inventory deduction during a flash sale? Explain pessimistic vs optimistic locking.</div>
+            <div class="a">
+                <strong>Answer:</strong> For our scale, we use <strong>pessimistic locking</strong> with <code>@Lock(PESSIMISTIC_WRITE)</code> on the inventory query. This executes <code>SELECT ... FOR UPDATE</code> which acquires an exclusive row-level lock — other transactions wait their turn to read/update the same row.<br><br>
+                <strong>Pessimistic Locking:</strong>
+                <pre>
+@Lock(PESSIMISTIC_WRITE)
+@Query("SELECT p FROM Product p WHERE p.id = :id")
+Optional&lt;Product&gt; findByIdWithLock(@Param("id") Long id);
+                </pre>
+                <em>Pros:</em> Guarantees no overselling. Simple to implement.<br>
+                <em>Cons:</em> All concurrent buyers queue up sequentially. If 1000 people buy the same item, they wait in line. Slow throughput.<br><br>
+                <strong>Optimistic Locking:</strong>
+                <pre>
+// Add @Version column to Product entity
+@Version
+private Long version;
+
+// Update checks version
+UPDATE product SET stock = stock - ?, version = version + 1
+WHERE id = ? AND version = :expectedVersion
+                </pre>
+                <em>Pros:</em> No locks. Higher throughput. Retry on version conflict.<br>
+                <em>Cons:</em> High retry rate (many users see "in stock" but fail at order).<br><br>
+                <strong>Recommended for flash sales:</strong> Use Redis <code>DECR</code> for atomic counting (microseconds, no DB locks). Only the first N successful <code>DECR</code> calls get queued for order processing. This combines the atomicity of pessimistic locking with the speed of in-memory operations.
+            </div>
+        </div>
+
+        <div class="qa-box">
+            <div class="q">Q10: Why start with a monolith when most companies use microservices? Isn't a monolith considered outdated?</div>
+            <div class="a">
+                <strong>Answer:</strong> Starting with a monolith is not outdated — it is the <strong>recommended approach</strong> by industry leaders (Martin Fowler, Sam Newman, and the teams at Amazon, Netflix, and Shopify who actually migrated <em>from</em> monoliths <em>to</em> microservices).<br><br>
+                The key insight: <strong>Microservices are an operational pattern, not an architectural one.</strong> They solve organizational problems (team autonomy, independent scaling, independent deployment) — not technical problems. A 5-person startup with a monolith is more productive than a 5-person startup with 10 microservices, because:<br><br>
+                <ul>
+                    <li>One deployment instead of ten</li>
+                    <li>One codebase to search and refactor</li>
+                    <li>No network calls between services (local method calls are 1000x faster)</li>
+                    <li>Simple transactions instead of Saga orchestration</li>
+                    <li>Simple debugging instead of distributed tracing setup</li>
+                </ul>
+                The problem with monoliths is not the architecture itself — it is <strong>unstructured monoliths</strong> with circular dependencies, shared mutable state, and no clear boundaries. We avoid this by organizing our monolith as a <strong>modular monolith</strong>: each bounded context (auth, product, cart, order, payment) has clear interfaces, its own data access, and no cross-domain dependencies. When the time comes to extract a service, it is a matter of copying a package into a new project and adding a REST API on top — not a rewrite.
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>Phase 1 Complete — System Design &amp; Architecture</p>
+        <p>Built for Interview Preparation | Java 17 + Spring Boot 3.4.1 | E-Commerce Backend</p>
+        <p style="margin-top:10px;">"A monolith well-organized is preferable to microservices done poorly."</p>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5: Services & Business Logic — Interview Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.7; padding: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  h1 { color: #6C63FF; font-size: 2.4rem; margin-bottom: .3rem; letter-spacing: -.5px; }
+  h1 span { color: #888; font-weight: 400; font-size: 1rem; display: block; margin-top: .2rem; letter-spacing: 0; }
+  h2 { color: #6C63FF; font-size: 1.6rem; margin: 2.5rem 0 1rem; padding-bottom: .5rem; border-bottom: 2px solid #2a2a40; }
+  h3 { color: #c0bfff; font-size: 1.2rem; margin: 1.8rem 0 .8rem; }
+  h4 { color: #b0b0d0; font-size: 1rem; margin: 1.2rem 0 .5rem; }
+  p { margin: .6rem 0; }
+  a { color: #6C63FF; }
+  ul, ol { margin: .6rem 0 .6rem 1.5rem; }
+  li { margin: .3rem 0; }
+  .code-block { background: #16162a; border-left: 4px solid #6C63FF; border-radius: 6px; margin: 1rem 0; overflow-x: auto; }
+  .code-block pre { padding: 1rem 1.2rem; font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: .82rem; line-height: 1.5; color: #d4d4f0; tab-size: 4; }
+  .code-block .filename { background: #1e1e35; color: #8888bb; font-size: .72rem; padding: .3rem 1.2rem; border-bottom: 1px solid #2a2a44; font-family: 'Segoe UI', sans-serif; letter-spacing: .3px; }
+  .tag { display: inline-block; background: #2a2a50; color: #6C63FF; font-size: .7rem; padding: .1rem .6rem; border-radius: 3px; margin-right: .3rem; font-weight: 600; letter-spacing: .3px; }
+  .callout { background: #1a1a30; border-left: 4px solid #6C63FF; border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; }
+  .callout strong { color: #6C63FF; }
+  .callout.warn { border-left-color: #ffa726; }
+  .callout.warn strong { color: #ffa726; }
+  .callout.err { border-left-color: #ef5350; }
+  .callout.err strong { color: #ef5350; }
+  .toc { background: #14142a; border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1.5rem 0; }
+  .toc h3 { margin: 0 0 .8rem; color: #6C63FF; }
+  .toc a { display: block; padding: .2rem 0; color: #b0b0d0; text-decoration: none; }
+  .toc a:hover { color: #6C63FF; }
+  .toc .toc-l2 { padding-left: 1.2rem; font-size: .9rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .9rem; }
+  th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid #2a2a40; }
+  th { background: #1a1a30; color: #6C63FF; font-weight: 600; }
+  tr:hover { background: #1e1e35; }
+  hr { border: none; border-top: 1px solid #2a2a40; margin: 2rem 0; }
+  .qa { margin: 1rem 0; }
+  .qa-q { background: #1a1a30; padding: .8rem 1rem; border-radius: 6px 6px 0 0; font-weight: 600; color: #6C63FF; }
+  .qa-a { background: #16162a; padding: .8rem 1rem; border-radius: 0 0 6px 6px; border-left: 3px solid #6C63FF; }
+  @media (max-width: 768px) { .container { padding: 1rem; } h1 { font-size: 1.8rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Phase 5: Services & Business Logic<span>E-Commerce Backend — Senior-Level Interview Guide</span></h1>
+
+<!-- TOC -->
+<div class="toc">
+<h3>Contents</h3>
+<a href="#role">1. Service Layer Role</a>
+<a href="#s-auth" class="toc-l2">AuthService</a>
+<a href="#s-product" class="toc-l2">ProductService</a>
+<a href="#s-category" class="toc-l2">CategoryService</a>
+<a href="#s-cart" class="toc-l2">CartService</a>
+<a href="#s-order" class="toc-l2">OrderService</a>
+<a href="#s-payment" class="toc-l2">PaymentService</a>
+<a href="#s-email" class="toc-l2">EmailService</a>
+<a href="#deep-dives">2. Business Logic Deep Dives</a>
+<a href="#di">3. Dependency Injection Deep Dive</a>
+<a href="#async">4. Async Processing</a>
+<a href="#exceptions">5. Exception Handling Strategy</a>
+<a href="#dto">6. DTO Mapping Pattern</a>
+<a href="#qa">7. Interview Q&amp;A</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="role">1. Service Layer Role</h2>
+
+<p>The service layer is the heart of the application. It sits between controllers (HTTP) and repositories (data) and owns all business logic, transaction boundaries, and security checks.</p>
+
+<div class="code-block">
+<div class="filename">Architectural Pattern</div>
+<pre>Controller (HTTP)  ---&gt;  Service (Business Logic)  ---&gt;  Repository (Data Access)
+        |                         |                             |
+   @RestController           @Service                     @Repository
+   DTO in/out               @Transactional               Spring Data JPA
+   JSON serialization       Exception throwing            Entity mapping</pre>
+</div>
+
+<p>Why a separate service layer?</p>
+<ul>
+  <li><strong>Separation of concerns</strong> — controllers handle HTTP; services handle logic. Controllers stay thin.</li>
+  <li><strong>Transaction boundaries</strong> — <code>@Transactional</code> on service methods ensures atomicity across multiple repository calls.</li>
+  <li><strong>Reusability</strong> — services can be called from controllers, scheduled tasks, event listeners, or other services.</li>
+  <li><strong>Testability</strong> — business logic is testable without HTTP concerns. Mock repositories, test service methods in isolation.</li>
+  <li><strong>Security enforcement</strong> — ownership checks, role validation, and authorization logic live centrally in services.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-auth">Service by Service — AuthService</h2>
+
+<div class="code-block">
+<div class="filename">AuthService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.dto.request.LoginRequest;
+import com.ecommerce.dto.request.RegisterRequest;
+import com.ecommerce.dto.response.AuthResponse;
+import com.ecommerce.enums.Role;
+import com.ecommerce.exception.BadRequestException;
+import com.ecommerce.exception.UnauthorizedException;
+import com.ecommerce.model.User;
+import com.ecommerce.repository.UserRepository;
+import com.ecommerce.security.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email already registered");
+        }
+
+        Role role = Role.CUSTOMER;
+        if (request.getRole() != null) {
+            try {
+                role = Role.valueOf(request.getRole().toUpperCase());
+                if (role == Role.ADMIN) {
+                    throw new BadRequestException("Admin registration not allowed");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Invalid role: " + request.getRole());
+            }
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .build();
+
+        user = userRepository.save(user);
+
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getId(), user.getEmail(), user.getRole().name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        return buildAuthResponse(user, accessToken, refreshToken);
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(), request.getPassword()));
+        } catch (Exception e) {
+            throw new UnauthorizedException("Invalid email or password");
+        }
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getId(), user.getEmail(), user.getRole().name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        return buildAuthResponse(user, accessToken, refreshToken);
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new UnauthorizedException("Invalid or expired refresh token");
+        }
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        String newAccessToken = jwtTokenProvider.generateAccessToken(
+                user.getId(), user.getEmail(), user.getRole().name());
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        return buildAuthResponse(user, newAccessToken, newRefreshToken);
+    }
+
+    private AuthResponse buildAuthResponse(User user, String accessToken, String refreshToken) {
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
+                .build();
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Service</span> A Spring stereotype annotation derived from <code>@Component</code>. It marks the class as a Spring-managed bean eligible for component scanning. The difference from <code>@Component</code> is semantic: <code>@Service</code> indicates the class holds business logic, making the architecture explicit. <code>@Component</code> is a generic annotation for any bean. <code>@Service</code> also provides a better target for AOP pointcuts (e.g., <code>within(@org.springframework.stereotype.Service *)</code>).</p>
+
+<p><span class="tag">@RequiredArgsConstructor</span> A Lombok annotation that generates a constructor with one parameter for every <code>final</code> field. Since all dependencies are declared <code>private final</code>, Spring performs constructor injection automatically. Constructor injection is preferred over <code>@Autowired</code> field injection because:</p>
+<ul>
+  <li><strong>Immutability</strong> — fields can be <code>final</code>, ensuring they are set once during construction and never reassigned.</li>
+  <li><strong>Testability</strong> — no reflection needed; construct objects with <code>new AuthService(mockRepo, mockEncoder, ...)</code>.</li>
+  <li><strong>Circular dependency detection</strong> — Spring detects cycles at context startup, not at runtime.</li>
+  <li><strong>Null safety</strong> — the constructor enforces that all required dependencies are present.</li>
+  <li><strong>No reflection</strong> — field injection uses reflection to set private fields, which is slower and can be suppressed by security managers.</li>
+</ul>
+
+<p><span class="tag">@Transactional</span> On the <code>register()</code> method only (method-level). This creates a transaction that wraps the <code>userRepository.save()</code> call. If anything fails before the save completes — such as a uniqueness constraint violation — the transaction rolls back. Since <code>login()</code> and <code>refreshToken()</code> are read-only operations that do not modify data, they have no <code>@Transactional</code>; each repository call will auto-commit in its own transaction by default (JPA's <code>OPEN_IN_VIEW</code> aside).</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>Password encoding:</strong> <code>passwordEncoder.encode(request.getPassword())</code> hashes the password before persisting. Never store plaintext passwords. Spring Security's <code>PasswordEncoder</code> (typically <code>BCryptPasswordEncoder</code>) uses a salt + adaptive one-way hashing algorithm. An attacker who gains database access still cannot reverse passwords.</p>
+
+<p><strong>AuthenticationManager in login:</strong> <code>authenticationManager.authenticate(...)</code> delegates to Spring Security's <code>ProviderManager</code>, which iterates over configured <code>AuthenticationProvider</code>s. The <code>DaoAuthenticationProvider</code> fetches the user by email, verifies the password via <code>PasswordEncoder.matches()</code>, and returns a fully populated <code>Authentication</code> token. By using the framework's mechanism, the application gets consistent credential validation, account locking, and event publishing without custom code.</p>
+
+<p><strong>Two DB calls in login:</strong> The authentication manager internally loads the user. After successful authentication, a second <code>findByEmail()</code> call fetches the user again to build the response. This is a known pattern where the authenticated principal (a <code>UserDetails</code> object) may not carry all entity fields. The second call is intentional to retrieve the full entity for token generation. In production, this can be optimized by caching or extracting the principal's fields, but the cost is negligible compared to the token generation time.</p>
+
+<p><strong>Refresh token rotation:</strong> Every call to <code>refreshToken()</code> issues a completely new access token and a new refresh token. The old refresh token is not invalidated (no blacklist), but since JWT is stateless, the rotation limits the window of exposure: if a refresh token is stolen, it can only be used once before a new one is issued. A production system would add a refresh token blacklist or version counter.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>BadRequestException</code> — email already exists, invalid role string, admin self-registration attempt.</li>
+  <li><code>UnauthorizedException</code> — invalid credentials on login, invalid/expired refresh token, user not found during login/token refresh.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-product">ProductService</h2>
+
+<div class="code-block">
+<div class="filename">ProductService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.dto.request.ProductRequest;
+import com.ecommerce.dto.response.ProductResponse;
+import com.ecommerce.exception.BadRequestException;
+import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.model.Category;
+import com.ecommerce.model.Product;
+import com.ecommerce.model.User;
+import com.ecommerce.repository.CategoryRepository;
+import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public ProductResponse createProduct(ProductRequest request, Long sellerId) {
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category not found: " + request.getCategoryId()));
+
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Seller not found: " + sellerId));
+
+        Product product = Product.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .stock(request.getStock())
+                .imageUrl(request.getImageUrl())
+                .category(category)
+                .seller(seller)
+                .build();
+
+        product = productRepository.save(product);
+        return toProductResponse(product);
+    }
+
+    public ProductResponse getProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found: " + id));
+        return toProductResponse(product);
+    }
+
+    public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
+        return productRepository.findByCategoryId(categoryId, pageable)
+                .map(this::toProductResponse);
+    }
+
+    public Page<ProductResponse> searchProducts(String keyword, Pageable pageable) {
+        return productRepository.searchByKeyword(keyword, pageable)
+                .map(this::toProductResponse);
+    }
+
+    public Page<ProductResponse> getSellerProducts(Long sellerId, Pageable pageable) {
+        return productRepository.findBySellerId(sellerId, pageable)
+                .map(this::toProductResponse);
+    }
+
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductRequest request, Long userId) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found: " + id));
+
+        if (!product.getSeller().getId().equals(userId)) {
+            throw new BadRequestException("Not authorized to update this product");
+        }
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Category not found: " + request.getCategoryId()));
+            product.setCategory(category);
+        }
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setImageUrl(request.getImageUrl());
+
+        product = productRepository.save(product);
+        return toProductResponse(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id, Long userId) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found: " + id));
+
+        if (!product.getSeller().getId().equals(userId)) {
+            throw new BadRequestException("Not authorized to delete this product");
+        }
+
+        productRepository.delete(product);
+    }
+
+    private ProductResponse toProductResponse(Product product) {
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .imageUrl(product.getImageUrl())
+                .categoryName(product.getCategory().getName())
+                .categoryId(product.getCategory().getId())
+                .sellerName(product.getSeller().getName())
+                .createdAt(product.getCreatedAt())
+                .build();
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Service</span> <span class="tag">@RequiredArgsConstructor</span> Same as AuthService above. Constructor injection for the three repositories.</p>
+
+<p><span class="tag">@Transactional</span> Applied at method level on <code>createProduct</code>, <code>updateProduct</code>, <code>deleteProduct</code>. Read-only methods (<code>getProductById</code>, <code>searchProducts</code>, etc.) do not have the annotation, so each query runs in its own implicit transaction.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>Seller ownership check:</strong> <code>updateProduct</code> and <code>deleteProduct</code> compare <code>product.getSeller().getId().equals(userId)</code> before allowing the operation. This is multi-tenant protection — a seller cannot modify or delete another seller's product. The check happens after the product is loaded, ensuring the product exists first.</p>
+
+<p><strong>Private <code>toProductResponse()</code>:</strong> Encapsulates the mapping from entity to DTO. It is private because it is an internal implementation detail. Keeping it private ensures all DTO conversion logic is centralized and not accidentally bypassed. The method uses the Builder pattern to construct the response, explicitly selecting only the fields needed by the API contract.</p>
+
+<p><strong>Category re-fetch:</strong> In <code>updateProduct</code>, the category is only re-fetched if <code>request.getCategoryId() != null</code>. This allows partial updates while still setting the category explicitly via a managed entity reference (avoiding a proxy ID set).</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>ResourceNotFoundException</code> — category not found, seller not found, product not found.</li>
+  <li><code>BadRequestException</code> — unauthorized seller attempting update/delete.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-category">CategoryService</h2>
+
+<div class="code-block">
+<div class="filename">CategoryService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.exception.BadRequestException;
+import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.model.Category;
+import com.ecommerce.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CategoryService {
+
+    private final CategoryRepository categoryRepository;
+
+    @Transactional
+    public Category createCategory(String name, String description, Long parentId) {
+        if (categoryRepository.existsByName(name)) {
+            throw new BadRequestException("Category already exists: " + name);
+        }
+
+        Category category = Category.builder()
+                .name(name)
+                .description(description)
+                .build();
+
+        if (parentId != null) {
+            Category parent = categoryRepository.findById(parentId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Parent category not found: " + parentId));
+            category.setParent(parent);
+        }
+
+        return categoryRepository.save(category);
+    }
+
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category not found: " + id));
+    }
+
+    public List<Category> getAllTopLevelCategories() {
+        return categoryRepository.findByParentIsNull();
+    }
+
+    public List<Category> getSubCategories(Long parentId) {
+        return categoryRepository.findByParentId(parentId);
+    }
+
+    @Transactional
+    public Category updateCategory(Long id, String name, String description) {
+        Category category = getCategoryById(id);
+
+        if (name != null && !name.equals(category.getName())) {
+            if (categoryRepository.existsByName(name)) {
+                throw new BadRequestException("Category name already taken: " + name);
+            }
+            category.setName(name);
+        }
+        if (description != null) {
+            category.setDescription(description);
+        }
+
+        return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = getCategoryById(id);
+        categoryRepository.delete(category);
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Transactional</span> On <code>createCategory</code>, <code>updateCategory</code>, <code>deleteCategory</code>. Notably, this class returns the entity <code>Category</code> directly rather than a DTO, because categories are simpler and the same entity is used in the admin API layer — the controller can further wrap it if needed. This is a pragmatic choice; for more complex domains, DTOs are always preferred.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>Category hierarchy:</strong> The <code>parentId</code> parameter supports a self-referencing parent-child relationship. When <code>parentId</code> is null, the category is top-level. The code explicitly fetches the parent entity to establish the relationship; this ensures referential integrity.</p>
+
+<p><strong>Uniqueness check:</strong> <code>existsByName()</code> is called before save to provide a clear error message. Since the database also has a unique constraint on <code>name</code>, this is a pre-validation to avoid a <code>DataIntegrityViolationException</code>.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>BadRequestException</code> — duplicate category name.</li>
+  <li><code>ResourceNotFoundException</code> — category not found by ID (get, update, delete) or parent category not found.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-cart">CartService</h2>
+
+<div class="code-block">
+<div class="filename">CartService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.dto.request.CartItemRequest;
+import com.ecommerce.dto.response.CartItemResponse;
+import com.ecommerce.dto.response.CartResponse;
+import com.ecommerce.exception.BadRequestException;
+import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.model.Cart;
+import com.ecommerce.model.CartItem;
+import com.ecommerce.model.Product;
+import com.ecommerce.model.User;
+import com.ecommerce.repository.CartRepository;
+import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CartService {
+
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public CartResponse addItemToCart(Long userId, CartItemRequest request) {
+        Cart cart = getOrCreateCart(userId);
+        final Cart finalCart = cart;
+
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found: " + request.getProductId()));
+
+        if (product.getStock() < request.getQuantity()) {
+            throw new BadRequestException("Insufficient stock. Available: " + product.getStock());
+        }
+
+        finalCart.getItems().stream()
+                .filter(item -> item.getProduct().getId().equals(request.getProductId()))
+                .findFirst()
+                .ifPresentOrElse(
+                        existing -> existing.setQuantity(
+                                existing.getQuantity() + request.getQuantity()),
+                        () -> {
+                            CartItem newItem = CartItem.builder()
+                                    .cart(finalCart)
+                                    .product(product)
+                                    .quantity(request.getQuantity())
+                                    .build();
+                            finalCart.getItems().add(newItem);
+                        });
+
+        cartRepository.save(finalCart);
+        return toCartResponse(finalCart);
+    }
+
+    @Transactional
+    public CartResponse updateItemQuantity(Long userId, Long productId, int quantity) {
+        Cart cart = getOrCreateCart(userId);
+
+        CartItem item = cart.getItems().stream()
+                .filter(ci -> ci.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found in cart"));
+
+        if (quantity <= 0) {
+            cart.getItems().remove(item);
+        } else {
+            Product product = item.getProduct();
+            if (product.getStock() < quantity) {
+                throw new BadRequestException(
+                        "Insufficient stock. Available: " + product.getStock());
+            }
+            item.setQuantity(quantity);
+        }
+
+        cart = cartRepository.save(cart);
+        return toCartResponse(cart);
+    }
+
+    @Transactional
+    public CartResponse removeItemFromCart(Long userId, Long productId) {
+        Cart cart = getOrCreateCart(userId);
+
+        cart.getItems().removeIf(item ->
+                item.getProduct().getId().equals(productId));
+
+        cart = cartRepository.save(cart);
+        return toCartResponse(cart);
+    }
+
+    public CartResponse getCart(Long userId) {
+        Cart cart = getOrCreateCart(userId);
+        return toCartResponse(cart);
+    }
+
+    @Transactional
+    public void clearCart(Long userId) {
+        Cart cart = getOrCreateCart(userId);
+        cart.getItems().clear();
+        cartRepository.save(cart);
+    }
+
+    public Cart getOrCreateCart(Long userId) {
+        return cartRepository.findWithItemsByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "User not found: " + userId));
+                    Cart newCart = Cart.builder().user(user).items(new ArrayList<>()).build();
+                    return cartRepository.save(newCart);
+                });
+    }
+
+    private CartResponse toCartResponse(Cart cart) {
+        List<CartItemResponse> itemResponses = cart.getItems().stream()
+                .map(item -> CartItemResponse.builder()
+                        .cartItemId(item.getId())
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .productImage(item.getProduct().getImageUrl())
+                        .unitPrice(item.getProduct().getPrice())
+                        .quantity(item.getQuantity())
+                        .subtotal(item.getSubtotal())
+                        .build())
+                .collect(Collectors.toList());
+
+        BigDecimal total = itemResponses.stream()
+                .map(CartItemResponse::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return CartResponse.builder()
+                .cartId(cart.getId())
+                .items(itemResponses)
+                .totalAmount(total)
+                .totalItems(itemResponses.size())
+                .build();
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Transactional</span> On all mutation methods (<code>addItemToCart</code>, <code>updateItemQuantity</code>, <code>removeItemFromCart</code>, <code>clearCart</code>). The <code>getCart</code> and <code>getOrCreateCart</code> methods are not transactional since they perform reads. Changing the cart always requires a transaction because it involves loading the cart, modifying its items collection, and saving — all within one atomic unit.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>getOrCreateCart pattern:</strong> This is the most important pattern in CartService. It first attempts to <code>findWithItemsByUserId()</code> (which joins items eagerly to avoid lazy loading in a non-transactional context). If no cart exists, it creates a new one with <code>orElseGet()</code>. This is a single-query-then-conditional-save pattern that avoids race conditions better than a separate exists-then-create approach.</p>
+
+<p><strong>Stream + filter for item operations:</strong> The code uses <code>cart.getItems().stream().filter(...).findFirst()</code> to locate a specific product in the cart. <code>ifPresentOrElse()</code> handles both cases: if the item exists, increment the quantity; otherwise, create a new <code>CartItem</code> and add it to the collection. This avoids multiple database queries and works on the in-memory collection after loading the cart.</p>
+
+<p><strong>Stock validation on add:</strong> Before adding, the service checks that the product's current stock can satisfy the requested quantity. This is a best-effort validation; the definitive stock check happens at order placement time.</p>
+
+<p><strong>Quantity <= 0 removal:</strong> In <code>updateItemQuantity</code>, if the quantity is zero or negative, the item is removed from the cart entirely. This is a UX convenience — clients can set quantity to 0 instead of calling a separate remove endpoint.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>ResourceNotFoundException</code> — product not found, user not found, product not in cart during update.</li>
+  <li><code>BadRequestException</code> — insufficient stock.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-order">OrderService</h2>
+
+<div class="code-block">
+<div class="filename">OrderService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.dto.response.OrderItemResponse;
+import com.ecommerce.dto.response.OrderResponse;
+import com.ecommerce.enums.OrderStatus;
+import com.ecommerce.enums.PaymentStatus;
+import com.ecommerce.exception.BadRequestException;
+import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.model.*;
+import com.ecommerce.repository.CartRepository;
+import com.ecommerce.repository.OrderRepository;
+import com.ecommerce.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+    private final CartService cartService;
+
+    @Transactional
+    public OrderResponse placeOrder(Long userId, String shippingAddress) {
+        Cart cart = cartService.getOrCreateCart(userId);
+
+        if (cart.getItems().isEmpty()) {
+            throw new BadRequestException("Cart is empty");
+        }
+
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .map(cartItem -> {
+                    Product product = cartItem.getProduct();
+
+                    if (product.getStock() < cartItem.getQuantity()) {
+                        throw new BadRequestException(
+                                "Insufficient stock for: " + product.getName());
+                    }
+
+                    product.setStock(product.getStock() - cartItem.getQuantity());
+                    productRepository.save(product);
+
+                    BigDecimal unitPrice = product.getPrice();
+                    BigDecimal subtotal = unitPrice.multiply(
+                            BigDecimal.valueOf(cartItem.getQuantity()));
+
+                    return OrderItem.builder()
+                            .product(product)
+                            .quantity(cartItem.getQuantity())
+                            .unitPrice(unitPrice)
+                            .subtotal(subtotal)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        BigDecimal totalAmount = orderItems.stream()
+                .map(OrderItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Order order = Order.builder()
+                .user(cart.getUser())
+                .orderStatus(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
+                .totalAmount(totalAmount)
+                .shippingAddress(shippingAddress)
+                .build();
+
+        orderItems.forEach(item -> item.setOrder(order));
+        order.setOrderItems(orderItems);
+
+        Order savedOrder = orderRepository.save(order);
+
+        cart.getItems().clear();
+        cartRepository.save(cart);
+
+        return toOrderResponse(savedOrder);
+    }
+
+    public OrderResponse getOrderById(Long orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found: " + orderId));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BadRequestException("Not authorized to view this order");
+        }
+
+        return toOrderResponse(order);
+    }
+
+    public Page<OrderResponse> getUserOrders(Long userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable)
+                .map(this::toOrderResponse);
+    }
+
+    @Transactional
+    public OrderResponse cancelOrder(Long orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found: " + orderId));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BadRequestException("Not authorized to cancel this order");
+        }
+
+        if (order.getOrderStatus() == OrderStatus.SHIPPED ||
+            order.getOrderStatus() == OrderStatus.DELIVERED) {
+            throw new BadRequestException("Cannot cancel order in " +
+                    order.getOrderStatus() + " status");
+        }
+
+        order.getOrderItems().forEach(item -> {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+        });
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        order = orderRepository.save(order);
+
+        return toOrderResponse(order);
+    }
+
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::toOrderResponse);
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found: " + orderId));
+        order.setOrderStatus(status);
+        order = orderRepository.save(order);
+        return toOrderResponse(order);
+    }
+
+    private OrderResponse toOrderResponse(Order order) {
+        List<OrderItemResponse> itemResponses = order.getOrderItems().stream()
+                .map(item -> OrderItemResponse.builder()
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .subtotal(item.getSubtotal())
+                        .build())
+                .collect(Collectors.toList());
+
+        return OrderResponse.builder()
+                .id(order.getId())
+                .orderStatus(order.getOrderStatus())
+                .paymentStatus(order.getPaymentStatus())
+                .totalAmount(order.getTotalAmount())
+                .shippingAddress(order.getShippingAddress())
+                .razorpayOrderId(order.getRazorpayOrderId())
+                .items(itemResponses)
+                .createdAt(order.getCreatedAt())
+                .build();
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Transactional</span> On <code>placeOrder</code>, <code>cancelOrder</code>, <code>updateOrderStatus</code>. The <code>placeOrder</code> method is the most critical transactional boundary in the system. It coordinates inventory deduction, order creation, and cart clearing — all must succeed or fail together.</p>
+
+<h3>The <code>@Transactional</code> Proxy Internals</h3>
+
+<p>When Spring sees <code>@Transactional</code> on a bean, it creates a <strong>JDK dynamic proxy</strong> (if the class implements an interface) or a <strong>CGLIB proxy</strong> (if it does not — the case here, since no interface). The proxy wraps every call to the method:</p>
+<ol>
+  <li>Before the method: the <code>TransactionInterceptor</code> checks the current transaction context. If none exists, it creates a new one using the configured <code>PlatformTransactionManager</code> (typically <code>DataSourceTransactionManager</code> or <code>JpaTransactionManager</code>).</li>
+  <li>The transaction is bound to the current thread via <code>TransactionSynchronizationManager</code>.</li>
+  <li>The method executes. If it returns normally, the interceptor commits the transaction.</li>
+  <li>If the method throws a <code>RuntimeException</code> (or checked exception configured in <code>rollbackFor</code>), the interceptor rolls back.</li>
+  <li>The underlying JDBC connection is thread-bound, meaning all repository calls inside the method participate in the same transaction.</li>
+</ol>
+
+<p>If <code>placeOrder</code> throws at step 2 (stock check), step 3 (product save), step 4 (order creation), or step 5 (cart clear), the entire transaction rolls back. Inventory is restored because no <code>save</code> was ever committed. The cart remains populated because the clear was never persisted.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>placeOrder atomicity:</strong> The flow is: (1) validate cart not empty, (2) for each cart item, check stock, deduct inventory, save product, build <code>OrderItem</code>, (3) calculate total, (4) create <code>Order</code> with <code>PENDING</code> status, (5) link order items to order, (6) save order, (7) clear cart items, (8) save cart. All inside one <code>@Transactional</code> method. If any step fails — e.g., a concurrent purchase exhausts stock between check and save — the JPA optimistic locking or database constraint will throw, causing a full rollback.</p>
+
+<p><strong>Cancel order inventory restoration:</strong> <code>cancelOrder</code> reverses the inventory deduction: it increments stock by the cancelled quantity for each item. It also validates that the order is in a cancellable state (<code>PENDING</code> or <code>CONFIRMED</code> — not <code>SHIPPED</code> or <code>DELIVERED</code>).</p>
+
+<p><strong>Authorization check:</strong> Both <code>getOrderById</code> and <code>cancelOrder</code> verify <code>order.getUser().getId().equals(userId)</code>. This ensures a user can only view or cancel their own orders. The <code>getAllOrders</code> method (intended for admin) has no such check.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>BadRequestException</code> — cart empty, insufficient stock, unauthorized order view/cancel, order in non-cancellable state.</li>
+  <li><code>ResourceNotFoundException</code> — order not found, product not found during stock check.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-payment">PaymentService</h2>
+
+<div class="code-block">
+<div class="filename">PaymentService.java</div>
+<pre>package com.ecommerce.service;
+
+import com.ecommerce.enums.PaymentStatus;
+import com.ecommerce.model.Order;
+import com.ecommerce.repository.OrderRepository;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentService {
+
+    @Value("${razorpay.key-id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key-secret}")
+    private String razorpayKeySecret;
+
+    private final OrderRepository orderRepository;
+    private RazorpayClient razorpayClient;
+
+    @PostConstruct
+    public void init() throws RazorpayException {
+        this.razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+    }
+
+    @Transactional
+    public String createRazorpayOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+        try {
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount", order.getTotalAmount()
+                    .multiply(BigDecimal.valueOf(100)).intValue());
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt", "order_" + orderId);
+            orderRequest.put("payment_capture", 1);
+
+            com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+
+            order.setRazorpayOrderId(razorpayOrder.get("id"));
+            orderRepository.save(order);
+
+            return razorpayOrder.get("id");
+
+        } catch (RazorpayException e) {
+            throw new RuntimeException("Failed to create Razorpay order", e);
+        }
+    }
+
+    @Transactional
+    public void verifyPayment(String razorpayOrderId,
+                              String razorpayPaymentId,
+                              String signature) {
+        String expectedSignature = HmacSHA256(
+                razorpayOrderId + "|" + razorpayPaymentId,
+                razorpayKeySecret);
+
+        if (!expectedSignature.equals(signature)) {
+            throw new RuntimeException("Invalid payment signature");
+        }
+
+        Order order = orderRepository.findAll().stream()
+                .filter(o -> razorpayOrderId.equals(o.getRazorpayOrderId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(
+                        "Order not found for Razorpay order: " + razorpayOrderId));
+
+        order.setRazorpayPaymentId(razorpayPaymentId);
+        order.setPaymentStatus(PaymentStatus.PAID);
+        orderRepository.save(order);
+    }
+
+    String HmacSHA256(String data, String secret) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec secretKeySpec =
+                    new javax.crypto.spec.SecretKeySpec(
+                            secret.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                            "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hmacBytes = mac.doFinal(
+                    data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hmacBytes) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate HMAC-SHA256", e);
+        }
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Service</span> <span class="tag">@RequiredArgsConstructor</span> Standard stereotype and constructor injection.</p>
+
+<p><span class="tag">@PostConstruct</span> A <code>jakarta.annotation</code> lifecycle callback. After Spring constructs the bean and injects dependencies, it calls <code>init()</code> to create the <code>RazorpayClient</code> instance. This is necessary because the Razorpay client cannot be injected — it must be constructed with runtime configuration properties (<code>razorpayKeyId</code>, <code>razorpayKeySecret</code>). The <code>@Value</code> fields are set before <code>@PostConstruct</code> runs.</p>
+
+<p><span class="tag">@Transactional</span> On <code>createRazorpayOrder</code> and <code>verifyPayment</code>. Both methods update the order entity and must be atomic.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>Razorpay integration:</strong> The service creates an order on Razorpay's server via REST API. The amount is in paise (multiply by 100). The <code>receipt</code> field links Razorpay's order to the internal order ID. After creation, the Razorpay order ID is saved on the local order entity.</p>
+
+<p><strong>Signature verification:</strong> <code>verifyPayment</code> computes HMAC-SHA256 of <code>razorpayOrderId + "|" + razorpayPaymentId</code> using the secret key, then compares it with the provided signature. This cryptographic verification ensures the payment was genuinely processed by Razorpay and not tampered with by a client. The order lookup uses <code>findAll().stream().filter()</code> because Razorpay order ID is not indexed. In production, this should be a dedicated repository query.</p>
+
+<p><strong>Exception handling:</strong> <code>RazorpayException</code> (a checked exception) is caught and wrapped in a <code>RuntimeException</code>. Since the <code>@Transactional</code> interceptor rolls back on <code>RuntimeException</code>, the transaction is rolled back if the Razorpay API call fails (e.g., network timeout, invalid key). The caller receives a runtime exception that the <code>GlobalExceptionHandler</code> maps to 500 Internal Server Error.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li><code>RuntimeException</code> — order not found, Razorpay API failure, invalid signature, order not found during verification. These are caught by <code>GlobalExceptionHandler.handleGeneral()</code> and return 500.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="s-email">EmailService</h2>
+
+<div class="code-block">
+<div class="filename">EmailService.java</div>
+<pre>package com.ecommerce.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+
+    @Async
+    public void sendOrderConfirmation(String to, String orderId, String status) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Order Confirmation - Order #" + orderId);
+            message.setText("Your order #" + orderId + " has been " + status + ".");
+
+            mailSender.send(message);
+            log.info("Order confirmation email sent to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send email to: {}", to, e);
+        }
+    }
+
+    @Async
+    public void sendPaymentConfirmation(String to, String orderId, String paymentId) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Payment Confirmed - Order #" + orderId);
+            message.setText("Payment " + paymentId + " confirmed for order #" + orderId + ".");
+
+            mailSender.send(message);
+            log.info("Payment confirmation email sent to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send payment email to: {}", to, e);
+        }
+    }
+
+    @Async
+    public void sendShippingUpdate(String to, String orderId, String status) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Shipping Update - Order #" + orderId);
+            message.setText("Your order #" + orderId + " is now " + status + ".");
+
+            mailSender.send(message);
+            log.info("Shipping update email sent to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send shipping email to: {}", to, e);
+        }
+    }
+}</pre>
+</div>
+
+<h3>Annotations Explained</h3>
+
+<p><span class="tag">@Service</span> <span class="tag">@RequiredArgsConstructor</span> <span class="tag">@Slf4j</span> Standard stereotype plus Lombok logger injection.</p>
+
+<p><span class="tag">@Async</span> Placed on each email method. When a caller invokes <code>emailService.sendOrderConfirmation(...)</code>, the call is intercepted by Spring's AOP async proxy. The proxy submits the method execution to a <code>ThreadPoolTaskExecutor</code> and returns immediately (<code>void</code> return type means the caller gets <code>CompletableFuture&lt;Void&gt;</code> behavior in practice, but since the return is <code>void</code>, the caller receives nothing — fire-and-forget). If the method had a return type, Spring would wrap it in a <code>Future</code> or <code>CompletableFuture</code>.</p>
+
+<h3>Key Methods — Reasoning</h3>
+
+<p><strong>Async fire-and-forget:</strong> Email sending is a side effect that should not block the primary request flow. The caller (e.g., <code>OrderService.placeOrder()</code> or a controller) can send the confirmation email without waiting for the SMTP round trip. If the email fails (e.g., SMTP server is down), the method catches the exception inside the async thread, logs the error, and continues. The original request is unaffected. This is a best-effort pattern — the system trades delivery guarantees for latency improvement.</p>
+
+<h3>Exceptions Thrown</h3>
+<ul>
+  <li>None — all exceptions are caught and logged internally. This is intentional: email failures are non-fatal and should not propagate to the caller.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="deep-dives">2. Business Logic Deep Dives</h2>
+
+<h3>Registration Flow</h3>
+
+<div class="callout">
+<strong>Step by step:</strong>
+<ol>
+  <li><strong>Uniqueness check</strong> — <code>userRepository.existsByEmail(request.getEmail())</code>. If true, throw <code>BadRequestException</code>. This is pre-validation; the database unique constraint is the definitive guard.</li>
+  <li><strong>Role determination</strong> — Default is <code>Role.CUSTOMER</code>. If a role is provided, validate it via <code>Role.valueOf()</code>. Admin role is explicitly blocked — only admin-creation endpoints (not shown here) can assign admin.</li>
+  <li><strong>Password encoding</strong> — <code>passwordEncoder.encode(request.getPassword())</code>. Never store raw passwords.</li>
+  <li><strong>User creation</strong> — Build a <code>User</code> entity via the Builder pattern, persist with <code>userRepository.save()</code>.</li>
+  <li><strong>Token generation</strong> — Generate access token (short-lived, contains userId, email, role) and refresh token (longer-lived, contains userId only).</li>
+  <li><strong>Response assembly</strong> — <code>buildAuthResponse()</code> constructs the <code>AuthResponse</code> DTO with tokens, user metadata, and expiration.</li>
+</ol>
+<strong>Transactional boundary:</strong> The entire method is <code>@Transactional</code>. If the save fails (e.g., database constraint), the method throws, and no partial state persists.
+</div>
+
+<h3>Login Flow</h3>
+
+<div class="callout">
+<strong>Step by step:</strong>
+<ol>
+  <li><strong>Authentication</strong> — <code>authenticationManager.authenticate()</code> delegates to Spring Security's <code>DaoAuthenticationProvider</code>, which loads <code>UserDetails</code> from the database and verifies the password.</li>
+  <li><strong>User fetch</strong> — After successful authentication, fetch the full <code>User</code> entity from the database by email. This is the "2 DB calls" pattern: auth internally loads UserDetails; the service then loads the entity again. This is acceptable because the second query is fast (indexed by email) and returns a managed entity with all fields.</li>
+  <li><strong>Token generation</strong> — Same as registration.</li>
+  <li><strong>Response assembly</strong> — Same <code>buildAuthResponse()</code>.</li>
+</ol>
+<strong>Why not @Transactional?</strong> Login performs no writes. It reads the user, validates credentials via Spring Security, and returns tokens. Transactions are unnecessary for read-only operations.
+</div>
+
+<h3>Place Order Flow (Most Complex)</h3>
+
+<div class="callout">
+<strong>Step by step:</strong>
+<ol>
+  <li><strong>Get or create cart</strong> — <code>cartService.getOrCreateCart(userId)</code> retrieves the cart with items eagerly loaded.</li>
+  <li><strong>Validate cart</strong> — If <code>cart.getItems().isEmpty()</code>, throw <code>BadRequestException</code>.</li>
+  <li><strong>For each cart item (stream):</strong>
+    <ol type="a">
+      <li><strong>Stock check</strong> — Compare <code>product.getStock()</code> vs <code>cartItem.getQuantity()</code>. If insufficient, throw <code>BadRequestException</code> with the product name.</li>
+      <li><strong>Inventory deduction</strong> — <code>product.setStock(product.getStock() - cartItem.getQuantity())</code> and persist.</li>
+      <li><strong>OrderItem creation</strong> — Build an <code>OrderItem</code> with product, quantity, unit price, and subtotal.</li>
+    </ol>
+  </li>
+  <li><strong>Total calculation</strong> — Sum all subtotals via <code>stream().map().reduce()</code>.</li>
+  <li><strong>Order creation</strong> — Build <code>Order</code> with user, status <code>PENDING</code>, payment <code>PENDING</code>, total, shipping address. Set order items on the order (bidirectional relationship).</li>
+  <li><strong>Save order</strong> — <code>orderRepository.save(order)</code> cascades to order items.</li>
+  <li><strong>Clear cart</strong> — <code>cart.getItems().clear()</code> and <code>cartRepository.save(cart)</code>.</li>
+  <li><strong>Return DTO</strong> — <code>toOrderResponse(savedOrder)</code> maps to <code>OrderResponse</code>.</li>
+</ol>
+<strong>Transactional atomicity:</strong> All steps execute in a single transaction. If inventory deduction succeeds but order creation fails (e.g., constraint violation), the inventory changes roll back. If the order saves but cart clearing fails, everything rolls back. The <code>@Transactional</code> proxy uses the JPA transaction manager which issues <code>rollback()</code> on any <code>RuntimeException</code>.
+</div>
+
+<h3>Cart Operations</h3>
+
+<div class="callout">
+<strong>getOrCreateCart pattern:</strong> This is the cornerstone of CartService.
+<ul>
+  <li><code>cartRepository.findWithItemsByUserId(userId)</code> — tries to find an existing cart with its items eagerly loaded. This is important because without <code>@Transactional</code> on <code>getCart()</code>, lazy loading would fail with <code>LazyInitializationException</code>.</li>
+  <li><code>.orElseGet(() -> {...})</code> — if no cart exists, creates a new one: validates the user exists, builds a cart with an empty items list, saves it, and returns it.</li>
+</ul>
+<strong>addItem flow:</strong>
+<ol>
+  <li>Call <code>getOrCreateCart(userId)</code>.</li>
+  <li>Load product; validate stock.</li>
+  <li>Stream through existing items, filter by product ID.</li>
+  <li><code>ifPresentOrElse</code>: if found, increment quantity. If not, create new <code>CartItem</code>.</li>
+  <li>Save cart; return DTO.</li>
+</ol>
+<strong>Stock validation:</strong> Two-tier — quick check on add, definitive check on order placement. This prevents customers from adding more items than available, but the real atomic check happens during <code>placeOrder</code> to handle concurrent purchases.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="di">3. Dependency Injection Deep Dive</h2>
+
+<h3>@Autowired vs Constructor Injection</h3>
+
+<table>
+  <tr><th>Aspect</th><th>@Autowired Field Injection</th><th>Constructor Injection</th></tr>
+  <tr><td>Immutability</td><td>Fields cannot be final</td><td>Fields are <code>final</code>, immutable</td></tr>
+  <tr><td>Testability</td><td>Requires reflection or setters to inject mocks</td><td>Instantiate with <code>new Service(mock)</code></td></tr>
+  <tr><td>Null safety</td><td>Possible null if Spring wiring fails at runtime</td><td>Constructor ensures all deps present at compile time</td></tr>
+  <tr><td>Circular deps</td><td>Can hide circular dependencies until runtime</td><td>Detected at startup (BeanCurrentlyInCreationException)</td></tr>
+  <tr><td>Framework coupling</td><td>Class is coupled to Spring annotation</td><td>Plain Java — no annotation needed on constructor</td></tr>
+  <tr><td>Reflection</td><td>Uses reflection to set private fields</td><td>No reflection; standard Java instantiation</td></tr>
+</table>
+
+<p>The project uses <code>@RequiredArgsConstructor</code> from Lombok, which generates a constructor accepting one parameter per <code>final</code> field. Spring auto-discovers this constructor and uses it for injection. This is the idiomatic Spring approach since Spring 4.3+ (single-constructor classes are auto-wired without any annotation).</p>
+
+<h3>Bean Lifecycle</h3>
+
+<ol>
+  <li><strong>Instantiation</strong> — Spring creates the bean instance via constructor injection. Dependencies are resolved and passed.</li>
+  <li><strong>Field injection</strong> — <code>@Autowired</code> fields (if any) and <code>@Value</code> fields are set via reflection.</li>
+  <li><strong>Post-initialization</strong> — Methods annotated with <code>@PostConstruct</code> are invoked (e.g., <code>PaymentService.init()</code> creates the Razorpay client).</li>
+  <li><strong>Ready</strong> — The bean is fully initialized and registered in the application context, ready to handle calls.</li>
+  <li><strong>Pre-destroy</strong> — <code>@PreDestroy</code> methods (if any) are called when the context shuts down.</li>
+</ol>
+
+<h3>Circular Dependencies</h3>
+
+<p>Circular dependencies occur when Bean A depends on Bean B, and Bean B depends on Bean A. With constructor injection, Spring throws <code>BeanCurrentlyInCreationException</code> at startup, clearly identifying the cycle. Fixes:</p>
+<ul>
+  <li><strong>Refactor</strong> — Extract the conflicting dependency into a third bean.</li>
+  <li><strong>@Lazy</strong> — Use <code>@Lazy</code> on one of the constructor parameters to create a proxy that is resolved on first use.</li>
+  <li><strong>Setter/field injection</strong> — As a last resort, switch one side to field injection (breaks immutability).</li>
+</ul>
+<p>In this project, <code>OrderService</code> depends on <code>CartService</code>. If <code>CartService</code> depended on <code>OrderService</code>, a cycle would exist. Currently, no cycle exists.</p>
+
+<h3>Proxy Mechanism for @Transactional and @Async</h3>
+
+<p>Spring creates a <strong>proxy</strong> wrapping the target bean. For <code>@Transactional</code>:</p>
+<ul>
+  <li>A <strong>CGLIB proxy</strong> is created (subclass of the service class) because no interface is implemented.</li>
+  <li>The proxy intercepts every method call. If the method has <code>@Transactional</code>, the <code>TransactionInterceptor</code> wraps the call in a transaction.</li>
+  <li><strong>Self-invocation problem:</strong> If a method in the same class calls another <code>@Transactional</code> method, the proxy is bypassed (the call goes to <code>this</code>, not the proxy), so the inner transaction is not applied. To fix, inject a self-reference or extract the transactional method into a separate service.</li>
+</ul>
+<p>For <code>@Async</code>:</p>
+<ul>
+  <li>Same proxying mechanism. The <code>AsyncInterceptor</code> submits the method to the <code>TaskExecutor</code>.</li>
+  <li><strong>Self-invocation problem</strong> applies identically: calling <code>this.sendOrderConfirmation(...)</code> from the same class will not execute asynchronously.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="async">4. Async Processing</h2>
+
+<div class="code-block">
+<div class="filename">AsyncConfig.java</div>
+<pre>package com.ecommerce.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+}</pre>
+</div>
+
+<p><span class="tag">@EnableAsync</span> on a <code>@Configuration</code> class activates Spring's async method execution capability. It registers an <code>AsyncAnnotationBeanPostProcessor</code> that scans for <code>@Async</code> annotations on beans and creates proxies to intercept those methods.</p>
+
+<h3>How ThreadPoolTaskExecutor is Configured</h3>
+
+<p>When no explicit <code>Executor</code> bean is defined (as in this config), Spring auto-configures a <code>SimpleAsyncTaskExecutor</code> by default. However, the actual runtime behavior depends on the boot autoconfiguration. A production setup would define:</p>
+
+<div class="code-block">
+<pre>@Bean(name = "taskExecutor")
+public Executor taskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5);
+    executor.setMaxPoolSize(10);
+    executor.setQueueCapacity(100);
+    executor.setThreadNamePrefix("async-");
+    executor.setRejectedExecutionHandler(
+            new ThreadPoolExecutor.CallerRunsPolicy());
+    executor.initialize();
+    return executor;
+}</pre>
+</div>
+
+<table>
+  <tr><th>Parameter</th><th>Description</th></tr>
+  <tr><td>corePoolSize</td><td>Number of threads kept alive even when idle (5).</td></tr>
+  <tr><td>maxPoolSize</td><td>Maximum number of threads (10). New threads are created only when the queue is full.</td></tr>
+  <tr><td>queueCapacity</td><td>Number of tasks that can be queued before new threads are spawned (100).</td></tr>
+  <tr><td>RejectedExecutionHandler</td><td>What happens when the pool and queue are full. <code>CallerRunsPolicy</code> runs the task in the caller's thread (backpressure). Other options: <code>AbortPolicy</code> (throws), <code>DiscardPolicy</code> (silent discard), <code>DiscardOldestPolicy</code>.</td></tr>
+</table>
+
+<h3>What Happens When Thread Pool is Full</h3>
+<ol>
+  <li>Active threads = corePoolSize (5). New tasks go to the queue.</li>
+  <li>Queue full (100 tasks). New threads are created up to maxPoolSize (10).</li>
+  <li>All 10 threads busy and queue full. The <code>RejectedExecutionHandler</code> decides: with <code>CallerRunsPolicy</code>, the thread that called the async method runs the task synchronously, applying backpressure to the caller.</li>
+</ol>
+
+<h3>Error Handling for Async Methods</h3>
+
+<p>The <code>@Async</code> methods in <code>EmailService</code> catch exceptions internally (<code>try-catch</code> with log). If an unhandled exception escapes an <code>@Async</code> method with a <code>Future</code> return type, it is captured in the <code>Future</code>. For <code>void</code> methods, the exception propagates to Spring's <code>AsyncUncaughtExceptionHandler</code>. To handle these globally:</p>
+
+<div class="code-block">
+<pre>@Configuration
+@EnableAsync
+public class AsyncConfig implements AsyncConfigurer {
+
+    @Override
+    public Executor getAsyncExecutor() { ... }
+
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        return (ex, method, params) -> {
+            log.error("Async method [{}] threw: {}", method.getName(), ex.getMessage());
+            // Notify monitoring, trigger alerts, etc.
+        };
+    }
+}</pre>
+</div>
+
+<p>Since <code>EmailService</code> catches all exceptions internally, this global handler is only a safety net for unhandled exceptions in other async methods.</p>
+
+<!-- ============================================================ -->
+<h2 id="exceptions">5. Exception Handling Strategy</h2>
+
+<h3>Custom Exception Hierarchy</h3>
+
+<div class="code-block">
+<div class="filename">Exception Classes</div>
+<pre>// ResourceNotFoundException.java
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) { super(message); }
+}
+
+// BadRequestException.java
+public class BadRequestException extends RuntimeException {
+    public BadRequestException(String message) { super(message); }
+}
+
+// UnauthorizedException.java
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message) { super(message); }
+}</pre>
+</div>
+
+<table>
+  <tr><th>Exception</th><th>HTTP Status</th><th>When Thrown</th></tr>
+  <tr><td>ResourceNotFoundException</td><td>404 Not Found</td><td>Entity not found by ID (product, category, order, user, etc.)</td></tr>
+  <tr><td>BadRequestException</td><td>400 Bad Request</td><td>Validation failure, business rule violation (duplicate email, insufficient stock, unauthorized action on another's resource, invalid role)</td></tr>
+  <tr><td>UnauthorizedException</td><td>401 Unauthorized</td><td>Authentication failure (invalid credentials, invalid/expired token)</td></tr>
+</table>
+
+<div class="code-block">
+<div class="filename">GlobalExceptionHandler.java</div>
+<pre>package com.ecommerce.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleBadRequest(BadRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(field, message);
+        });
+        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("errors", errors);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGeneral(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred");
+    }
+
+    private ResponseEntity&lt;Map&lt;String, Object&gt;&gt; buildResponse(HttpStatus status, String message) {
+        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("error", status.getReasonPhrase());
+        response.put("message", message);
+        return new ResponseEntity&lt;&gt;(response, status);
+    }
+}</pre>
+</div>
+
+<h3>Why Custom Exceptions Over ResponseStatusException</h3>
+
+<table>
+  <tr><th>Aspect</th><th>Custom Exceptions</th><th>ResponseStatusException</th></tr>
+  <tr><td>Reusability</td><td>Throw same exception from any service layer; handler maps consistently</td><td>Status code is embedded at throw site; inconsistent if duplicated</td></tr>
+  <tr><td>Clean code</td><td>Throws are one-liners: <code>throw new ResourceNotFoundException("msg")</code></td><td>Verbose: <code>throw new ResponseStatusException(HttpStatus.NOT_FOUND, "msg")</code></td></tr>
+  <tr><td>Separation of concerns</td><td>Service layer knows nothing about HTTP</td><td>Service layer is coupled to <code>org.springframework.http</code></td></tr>
+  <tr><td>Custom fields</td><td>Can add error codes, timestamps, field-level errors</td><td>Limited customization without subclassing</td></tr>
+  <tr><td>Testability</td><td>Assert exception type in tests: <code>assertThrows(ResourceNotFoundException.class, ...)</code></td><td>Must check status code: <code>assertThrows(ResponseStatusException.class, ...)</code> then inspect <code>getStatusCode()</code></td></tr>
+</table>
+
+<h3>Exception Propagation</h3>
+
+<ol>
+  <li>A service method throws e.g., <code>ResourceNotFoundException</code>.</li>
+  <li>The exception propagates up through the controller layer (the controller does not catch it).</li>
+  <li>Spring's <code>DispatcherServlet</code> sees the unhandled exception and delegates to the <code>HandlerExceptionResolver</code> chain.</li>
+  <li><code>@RestControllerAdvice</code>-annotated <code>GlobalExceptionHandler</code> matches via <code>@ExceptionHandler</code> type.</li>
+  <li>The matching handler method builds a consistent JSON response map with timestamp, status, and message.</li>
+  <li>Spring returns the <code>ResponseEntity</code> with the appropriate HTTP status.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="dto">6. DTO Mapping Pattern</h2>
+
+<h3>Why Entities Are Not Exposed Directly</h3>
+
+<table>
+  <tr><th>Reason</th><th>Explanation</th></tr>
+  <tr><td>Security</td><td>Entities may contain sensitive fields (e.g., <code>User.password</code>). DTOs select only what the API should expose.</td></tr>
+  <tr><td>Decoupling</td><td>Entity changes (field renames, new relationships) do not break API consumers. The DTO is the contract.</td></tr>
+  <tr><td>Performance</td><td>DTOs fetch only needed fields. Avoids N+1 queries from lazy-loaded relationships during serialization.</td></tr>
+  <tr><td>API stability</td><td>Entity refactoring can change JSON structure. DTOs act as a versioned contract.</td></tr>
+  <tr><td>Computed fields</td><td>DTO can include fields not present in the entity (e.g., <code>subtotal</code>, <code>totalAmount</code>, <code>categoryName</code>).</td></tr>
+</table>
+
+<h3>The Private toXxxResponse() Pattern</h3>
+
+<p>Each service defines a private mapping method (e.g., <code>toProductResponse()</code>, <code>toCartResponse()</code>, <code>toOrderResponse()</code>). This is a simple, explicit mapping approach:</p>
+<ul>
+  <li><strong>No framework dependency</strong> — no MapStruct annotation processors, no ModelMapper runtime reflection.</li>
+  <li><strong>Explicit</strong> — every field mapping is visible in the source code. No magic.</li>
+  <li><strong>Type-safe</strong> — compile-time checked.</li>
+  <li><strong>Private</strong> — prevents external callers from bypassing the pattern to get raw entity data.</li>
+</ul>
+
+<p>For large projects, MapStruct is preferred because it generates mapping code at compile time via annotation processing, avoiding runtime reflection while being far less verbose. For this project's scale, manual private methods are clean and sufficient.</p>
+
+<!-- ============================================================ -->
+<h2 id="qa">7. Interview Q&A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q1: How does @Transactional work internally in Spring?</div>
+  <div class="qa-a">Spring creates a CGLIB proxy around the bean. When a @Transactional method is called, the proxy's TransactionInterceptor begins a transaction using the PlatformTransactionManager, binds the connection to the current thread via TransactionSynchronizationManager, invokes the target method, then commits or rolls back based on whether the method threw a RuntimeException. The key internal mechanism: AOP around advice using a proxy pattern, with thread-bound transaction state.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q2: How does @Async work, and what happens if the thread pool is saturated?</div>
+  <div class="qa-a">@Async causes Spring to create an AOP proxy that intercepts the method call and submits it to a TaskExecutor. If no custom executor is defined, Spring uses SimpleAsyncTaskExecutor (creates a new thread per invocation — not suitable for production). When the pool is saturated (all core threads busy, queue full, all max threads busy), the RejectedExecutionHandler fires. With CallerRunsPolicy, the calling thread runs the task synchronously, applying backpressure. With AbortPolicy (default for ThreadPoolExecutor), a RejectedExecutionException is thrown.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q3: Why constructor injection over @Autowired field injection?</div>
+  <div class="qa-a">Constructor injection provides immutability (fields are final), straightforward testability (no reflection needed to inject mocks), null safety (constructor enforces all dependencies at construction time), and early circular dependency detection (BeanCurrentlyInCreationException at startup). @Autowired field injection requires the class to be instantiated by a container, uses slower reflection, cannot be used with final fields, and can hide null dependencies until runtime.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q4: What does @RequiredArgsConstructor actually generate?</div>
+  <div class="qa-a">Lombok generates a public constructor with one parameter for every final field (or non-initialized final field) in the class. For AuthService with four final fields (userRepository, passwordEncoder, jwtTokenProvider, authenticationManager), it generates exactly: <code>public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager)</code>. Spring auto-discovers this constructor and performs constructor injection without any @Autowired annotation.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q5: How does Spring create proxies for @Transactional and @Async, and what is the self-invocation problem?</div>
+  <div class="qa-a">Spring creates a CGLIB proxy (subclass) of the service class. The proxy intercepts method calls and applies transaction/async logic. The self-invocation problem: when method A in the same class calls method B that has @Transactional, the call goes to <code>this.methodB()</code> — the proxy is bypassed. The transaction interceptor never fires, so method B runs without a transaction (or in the caller's existing transaction without propagation isolation). Solutions: extract the transactional method to a separate @Service, inject a self-reference via @Autowired on a field, or use AspectJ compile-time weaving.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q6: How does AuthenticationManager work in the login flow?</div>
+  <div class="qa-a">AuthenticationManager.authenticate() is implemented by ProviderManager, which iterates over registered AuthenticationProvider instances. For username/password auth, DaoAuthenticationProvider is used. It calls UserDetailsService.loadUserByUsername() (custom implementation that queries UserRepository by email), then uses PasswordEncoder.matches() to compare the raw password with the stored hash. If they match, it returns a fully populated UsernamePasswordAuthenticationToken with granted authorities. If not, it throws BadCredentialsException, which AuthService catches and wraps as UnauthorizedException.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q7: What does readOnly=true on @Transactional actually optimize?</div>
+  <div class="qa-a">readOnly=true is a hint to the JPA provider. Hibernate sets FlushMode to MANUAL (no dirty checking), which avoids the need to snapshot entity state and skip flush at commit. It also allows some databases to optimize the connection (e.g., PostgreSQL might use a read-only transaction snapshot). However, it does NOT prevent writes — if a method annotated with <code>@Transactional(readOnly = true)</code> calls save(), the data will still be persisted. The flag is primarily a performance optimization that tells the ORM to skip the flush cycle after each query.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q8: How do custom exceptions propagate from the service layer to the HTTP response?</div>
+  <div class="qa-a">A service method throws a RuntimeException subclass (e.g., ResourceNotFoundException). It propagates through the controller (which does not catch it). Spring's DispatcherServlet catches the exception and invokes HandlerExceptionResolvers. The @RestControllerAdvice-annotated GlobalExceptionHandler matches the exception type via @ExceptionHandler annotations. The matching handler builds a ResponseEntity with a consistent JSON body (timestamp, status, error, message) and the appropriate HTTP status code. The response is serialized and sent to the client.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q9: Why convert entities to DTOs instead of exposing entities directly?</div>
+  <div class="qa-a">Three primary reasons: (1) Security — entities may contain sensitive fields like passwords, internal IDs, or audit trails that should never be serialized. (2) Decoupling — entity schema changes (field renames, relationship additions) become breaking API changes if entities are exposed directly; DTOs define the API contract independently. (3) Performance — entities often have lazy-loaded relationships; serializing them triggers N+1 queries or LazyInitializationException; DTOs eagerly map only the required fields.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q10: How do you handle errors in @Async methods, and what happens if an exception escapes an @Async void method?</div>
+  <div class="qa-a">For @Async methods returning void, if an unhandled exception escapes, Spring's AsyncUncaughtExceptionHandler is invoked (if implemented via AsyncConfigurer), otherwise the exception is silently lost (the default behavior logs a warning at best). The recommended approach: catch exceptions inside the async method and log them (as EmailService does with try-catch + log.error). For @Async methods returning Future, the exception is captured in the Future object and surfaced when .get() is called. In production, implement AsyncConfigurer.getAsyncUncaughtExceptionHandler() to log errors to monitoring systems and trigger alerts. Note that exceptions in async methods cannot propagate to the original caller because the method runs in a different thread.</div>
+</div>
+
+<hr>
+<p style="text-align:center;color:#666;font-size:.85rem;">Phase 5: Services & Business Logic — Interview Guide. Built from source code analysis.</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 6: Controllers &amp; REST APIs - Interview Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: 'Segoe UI', -apple-system, sans-serif; line-height: 1.7; padding: 0; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 30px; }
+  h1 { font-size: 2.4rem; color: #fff; margin-bottom: 8px; border-left: 5px solid #6C63FF; padding-left: 20px; }
+  h1 small { display: block; font-size: 1rem; color: #888; font-weight: 400; margin-top: 4px; }
+  h2 { font-size: 1.6rem; color: #6C63FF; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #2a2a3e; }
+  h3 { font-size: 1.2rem; color: #b0aaff; margin: 28px 0 12px; }
+  h4 { color: #c0b8ff; margin: 18px 0 8px; font-size: 1.05rem; }
+  p { margin: 10px 0; color: #c8c8d4; }
+  .tag { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 4px; margin-right: 4px; }
+  .tag-green { background: #1a3a2a; color: #6fcf97; }
+  .tag-blue { background: #1a2a3a; color: #6fc1cf; }
+  .tag-red { background: #3a1a1a; color: #cf6f6f; }
+  .tag-orange { background: #3a2a1a; color: #cfb06f; }
+  .tag-purple { background: #2a1a3a; color: #b06fcf; }
+
+  pre { background: #16162a; border: 1px solid #2a2a3e; border-radius: 8px; padding: 16px 20px; overflow-x: auto; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.85rem; line-height: 1.55; margin: 12px 0; color: #d4d4e8; }
+  pre .k { color: #7c7cff; }
+  pre .s { color: #b5cea8; }
+  pre .c { color: #6a737d; font-style: italic; }
+  pre .a { color: #ce91d8; }
+  pre .h { color: #f08d49; }
+
+  .code-block { position: relative; margin: 16px 0; }
+  .code-block .label { position: absolute; top: 0; right: 0; background: #6C63FF; color: #fff; font-size: 0.7rem; padding: 3px 12px; border-radius: 0 8px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .endpoint-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+  .endpoint-table th { background: #1a1a2e; color: #6C63FF; text-align: left; padding: 10px 14px; border: 1px solid #2a2a3e; font-weight: 600; }
+  .endpoint-table td { padding: 10px 14px; border: 1px solid #2a2a3e; vertical-align: top; }
+  .endpoint-table tr:nth-child(even) { background: #12121f; }
+  .endpoint-table tr:hover { background: #1a1a30; }
+  .method { display: inline-block; font-weight: 700; font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; }
+  .method-get { background: #1a3a2a; color: #61affe; }
+  .method-post { background: #1a3a2a; color: #49cc90; }
+  .method-put { background: #1a3a1a; color: #fca130; }
+  .method-delete { background: #3a1a1a; color: #f93e3e; }
+  .method-patch { background: #2a1a3a; color: #b06fcf; }
+  .status-code { font-family: monospace; font-weight: 600; }
+
+  .card { background: #14142a; border: 1px solid #2a2a3e; border-radius: 10px; padding: 20px; margin: 16px 0; }
+  .card-title { color: #6C63FF; font-weight: 600; font-size: 1rem; margin-bottom: 8px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  ul { margin: 8px 0 8px 24px; }
+  li { margin: 4px 0; color: #c8c8d4; }
+
+  .qa { border: 1px solid #2a2a3e; border-radius: 8px; margin: 10px 0; }
+  .qa-q { background: #1a1a2e; padding: 12px 16px; font-weight: 600; color: #6C63FF; cursor: pointer; border-radius: 8px 8px 0 0; }
+  .qa-a { padding: 12px 16px; border-top: 1px solid #2a2a3e; color: #c8c8d4; }
+
+  .badge { display: inline-block; background: #6C63FF; color: #fff; font-size: 0.7rem; padding: 1px 8px; border-radius: 3px; margin-right: 4px; }
+
+  .nav { background: #0a0a14; border-bottom: 1px solid #2a2a3e; padding: 12px 30px; position: sticky; top: 0; z-index: 100; }
+  .nav a { color: #888; text-decoration: none; font-size: 0.85rem; margin-right: 20px; transition: color 0.2s; }
+  .nav a:hover { color: #6C63FF; }
+
+  .toc { background: #14142a; border: 1px solid #2a2a3e; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+  .toc h3 { margin: 0 0 12px; color: #6C63FF; }
+  .toc a { color: #b0aaff; text-decoration: none; display: block; padding: 3px 0; font-size: 0.9rem; }
+  .toc a:hover { color: #6C63FF; }
+  .toc .toc-h2 { margin-left: 0; font-weight: 600; }
+  .toc .toc-h3 { margin-left: 20px; }
+
+  .note { background: #1a1a30; border-left: 4px solid #6C63FF; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 0.92rem; }
+
+  hr { border: none; border-top: 1px solid #2a2a3e; margin: 32px 0; }
+
+  footer { text-align: center; padding: 30px; color: #555; font-size: 0.85rem; border-top: 1px solid #2a2a3e; margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#principles">REST Principles</a>
+  <a href="#controllers">Controllers</a>
+  <a href="#validation">Validation</a>
+  <a href="#security">Security</a>
+  <a href="#status-codes">Status Codes</a>
+  <a href="#exception-handling">Exception Handling</a>
+  <a href="#swagger">Swagger</a>
+  <a href="#qa">Q&amp;A</a>
+</nav>
+
+<div class="container">
+
+<h1>Phase 6: Controllers &amp; REST APIs<small>E-Commerce Backend - Senior-Level Interview Reference</small></h1>
+
+<div class="toc">
+<h3>Contents</h3>
+<a href="#principles" class="toc-h2">1. REST API Design Principles</a>
+<a href="#controllers" class="toc-h2">2. Controller-by-Controller Deep Dive</a>
+<a href="#c-auth" class="toc-h3">AuthController</a>
+<a href="#c-product" class="toc-h3">ProductController</a>
+<a href="#c-category" class="toc-h3">CategoryController</a>
+<a href="#c-cart" class="toc-h3">CartController</a>
+<a href="#c-order" class="toc-h3">OrderController</a>
+<a href="#c-payment" class="toc-h3">PaymentController</a>
+<a href="#c-health" class="toc-h3">HealthController</a>
+<a href="#validation" class="toc-h2">3. Validation Deep Dive</a>
+<a href="#security" class="toc-h2">4. Security at Controller Level</a>
+<a href="#status-codes" class="toc-h2">5. HTTP Status Codes</a>
+<a href="#exception-handling" class="toc-h2">6. Exception Handling &amp; GlobalExceptionHandler</a>
+<a href="#swagger" class="toc-h2">7. Swagger / OpenAPI</a>
+<a href="#qa" class="toc-h2">8. Interview Q&amp;A</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="principles">1. REST API Design Principles</h2>
+
+<div class="card">
+<div class="card-title">What is REST?</div>
+<p>Representational State Transfer (REST) is an architectural style defined by Roy Fielding. It leverages the HTTP protocol as an application-layer transport, treating every resource as a URL-addressable entity. REST APIs are <strong>stateless</strong>: each request from a client to a server must contain all information needed to understand and process the request. The server does not store any client context between requests.</p>
+</div>
+
+<h3>Resource-Based URL Structure</h3>
+<p>Our API base path is <code>/api/</code>, followed by the plural resource name:</p>
+<pre><span class="k">/api/auth</span>       <span class="c">-- Authentication (Register, Login, Refresh)</span>
+<span class="k">/api/products</span>   <span class="c">-- Product CRUD &amp; search</span>
+<span class="k">/api/categories</span> <span class="c">-- Category management</span>
+<span class="k">/api/cart</span>       <span class="c">-- Shopping cart operations</span>
+<span class="k">/api/orders</span>     <span class="c">-- Order placement &amp; management</span>
+<span class="k">/api/payments</span>   <span class="c">-- Razorpay payment integration</span>
+<span class="k">/api/health</span>     <span class="c">-- Health check</span></pre>
+
+<h3>Key Design Decisions</h3>
+<ul>
+  <li><strong>Plural nouns</strong>: <code>/api/products</code> not <code>/api/product</code>. Consistent, predictable.</li>
+  <li><strong>No verbs in URLs</strong>: actions are expressed via HTTP methods (POST = create, GET = read, PUT = update, DELETE = delete, PATCH = partial update). Exception: <code>/api/auth/register</code> and <code>/api/auth/login</code> are RPC-style because authentication is a verb (action), not a resource.</li>
+  <li><strong>Sub-resource paths</strong>: <code>/api/cart/items/{productId}</code> for nested resources.</li>
+  <li><strong>Stateless with JWT</strong>: every request carries a Bearer token in the Authorization header. No HttpSession.</li>
+  <li><strong>Versioning</strong>: not present in URLs for this project (v1 is implied). Future versions could use a header or <code>/api/v2/</code>.</li>
+</ul>
+
+<div class="note">Statelessness is enforced by <code>SessionCreationPolicy.STATELESS</code> in SecurityConfig — Spring Security never creates an HttpSession. Every request must be authenticated via JWT.</div>
+
+<!-- ============================================================ -->
+<h2 id="controllers">2. Controller-by-Controller Deep Dive</h2>
+
+<!-- ==================== AUTH ==================== -->
+<h3 id="c-auth">AuthController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Register, login, and token refresh endpoints")
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/register")
+    @Operation(summary = "Register a new user",
+               description = "Creates a new user account. Default role is CUSTOMER.")
+    public ResponseEntity&lt;AuthResponse&gt; register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "Login",
+               description = "Authenticates user and returns JWT tokens")
+    public ResponseEntity&lt;AuthResponse&gt; login(
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh token",
+               description = "Generates new access and refresh tokens")
+    public ResponseEntity&lt;AuthResponse&gt; refresh(
+            @RequestBody Map&lt;String, String&gt; request) {
+        String refreshToken = request.get("refreshToken");
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    }
+}</pre>
+
+<h4>Annotation Breakdown</h4>
+<table class="endpoint-table">
+  <tr><th>Annotation</th><th>Explanation</th></tr>
+  <tr>
+    <td><code>@RestController</code></td>
+    <td>A meta-annotation combining <code>@Controller</code> + <code>@ResponseBody</code>. Every handler method's return value is automatically serialized (<code>HttpMessageConverter</code>) into JSON and written to the HTTP response body. With plain <code>@Controller</code>, methods must be annotated with <code>@ResponseBody</code> individually, otherwise Spring MVC treats the return value as a View name (Thymeleaf/JSP) and throws <code>TemplateResolutionException</code>.</td>
+  </tr>
+  <tr>
+    <td><code>@RequestMapping("/api/auth")</code></td>
+    <td>Class-level URL prefix. All endpoints in this controller are relative to <code>/api/auth</code>. Keeps mappings DRY and makes URL structure explicit.</td>
+  </tr>
+  <tr>
+    <td><code>@RequiredArgsConstructor</code></td>
+    <td>Lombok constructor injection. Generates a constructor for all <code>final</code> fields. Spring injects the <code>AuthService</code> bean via this constructor (no need for <code>@Autowired</code>).</td>
+  </tr>
+  <tr>
+    <td><code>@Tag</code></td>
+    <td>Swagger/OpenAPI grouping annotation. Groups endpoints under "Authentication" in Swagger UI.</td>
+  </tr>
+  <tr>
+    <td><code>@PostMapping</code></td>
+    <td>Maps HTTP POST to the method. POST is used for create operations and non-idempotent actions. POST to <code>/register</code> creates a user; POST to <code>/login</code> is an action (not idempotent — each call issues a new token).</td>
+  </tr>
+  <tr>
+    <td><code>@Valid</code></td>
+    <td>Triggers validation on the <code>@RequestBody</code> parameter. If validation fails, Spring throws <code>MethodArgumentNotValidException</code> (handled by GlobalExceptionHandler). Without <code>@Valid</code>, constraint annotations on DTO fields are ignored.</td>
+  </tr>
+  <tr>
+    <td><code>@RequestBody</code></td>
+    <td>Deserializes the HTTP request body (JSON) into the annotated Java object using <code>HttpMessageConverter</code> (typically <code>MappingJackson2HttpMessageConverter</code>). Cannot be used with GET requests (GET has no body).</td>
+  </tr>
+  <tr>
+    <td><code>@Operation</code></td>
+    <td>Swagger method-level annotation. Provides endpoint summary and description for generated OpenAPI docs.</td>
+  </tr>
+  <tr>
+    <td><code>ResponseEntity</code></td>
+    <td>Allows full control over the HTTP response: status code, headers, and body. <code>ResponseEntity.status(HttpStatus.CREATED)</code> sets 201; <code>ResponseEntity.ok()</code> sets 200.</td>
+  </tr>
+</table>
+
+<h4>Endpoints</h4>
+<table class="endpoint-table">
+  <tr><th>Method</th><th>URL</th><th>Request Body</th><th>Response Body</th><th>Status Codes</th></tr>
+  <tr>
+    <td><span class="method method-post">POST</span></td>
+    <td><code>/api/auth/register</code></td>
+    <td><code>RegisterRequest { name, email, password, role? }</code></td>
+    <td><code>AuthResponse { accessToken, refreshToken, tokenType, userId, name, email, role, expiresIn }</code></td>
+    <td><span class="status-code" style="color:#49cc90;">201 Created</span> — success<br><span class="status-code" style="color:#f93e3e;">400 Bad Request</span> — validation error or duplicate email<br><span class="status-code" style="color:#f93e3e;">409 Conflict</span> — email already exists</td>
+  </tr>
+  <tr>
+    <td><span class="method method-post">POST</span></td>
+    <td><code>/api/auth/login</code></td>
+    <td><code>LoginRequest { email, password }</code></td>
+    <td><code>AuthResponse</code></td>
+    <td><span class="status-code" style="color:#49cc90;">200 OK</span> — success<br><span class="status-code" style="color:#f93e3e;">401 Unauthorized</span> — bad credentials</td>
+  </tr>
+  <tr>
+    <td><span class="method method-post">POST</span></td>
+    <td><code>/api/auth/refresh</code></td>
+    <td><code>{ "refreshToken": "..." }</code></td>
+    <td><code>AuthResponse</code></td>
+    <td><span class="status-code" style="color:#49cc90;">200 OK</span> — new tokens issued<br><span class="status-code" style="color:#f93e3e;">401 Unauthorized</span> — invalid/expired refresh token</td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- ==================== PRODUCT ==================== -->
+<h3 id="c-product">ProductController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
+@Tag(name = "Products", description = "Product CRUD and search endpoints")
+public class ProductController {
+
+    private final ProductService productService;
+
+    @GetMapping
+    @Operation(summary = "Search products",
+               description = "Search products by keyword with pagination")
+    public ResponseEntity&lt;Page&lt;ProductResponse&gt;&gt; searchProducts(
+            @RequestParam(required = false) String q,
+            @PageableDefault(size = 20, sort = "createdAt",
+                             direction = Sort.Direction.DESC) Pageable pageable) {
+        if (q != null && !q.isBlank()) {
+            return ResponseEntity.ok(productService.searchProducts(q, pageable));
+        }
+        return ResponseEntity.ok(Page.empty());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get product by ID")
+    public ResponseEntity&lt;ProductResponse&gt; getProduct(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Get products by category")
+    public ResponseEntity&lt;Page&lt;ProductResponse&gt;&gt; getByCategory(
+            @PathVariable Long categoryId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(
+                productService.getProductsByCategory(categoryId, pageable));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('SELLER')")
+    @Operation(summary = "Create product",
+               description = "Only SELLER can create products")
+    public ResponseEntity&lt;ProductResponse&gt; createProduct(
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.createProduct(request, principal.getUserId()));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @Operation(summary = "Update product")
+    public ResponseEntity&lt;ProductResponse&gt; updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                productService.updateProduct(id, request, principal.getUserId()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @Operation(summary = "Delete product")
+    public ResponseEntity&lt;Void&gt; deleteProduct(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        productService.deleteProduct(id, principal.getUserId());
+        return ResponseEntity.noContent().build();
+    }
+}</pre>
+
+<h4>Annotation Breakdown</h4>
+<table class="endpoint-table">
+  <tr><th>Annotation</th><th>Explanation</th></tr>
+  <tr>
+    <td><code>@GetMapping</code></td>
+    <td>Maps HTTP GET. Used for read-only, idempotent, cacheable operations. Should not have side effects. Multiple overloads demonstrated: no path (<code>/api/products</code>), with <code>/{id}</code>, with <code>/category/{categoryId}</code>.</td>
+  </tr>
+  <tr>
+    <td><code>@RequestParam(required = false)</code></td>
+    <td>Binds a query parameter (<code>?q=searchterm</code>). <code>required = false</code> makes it optional — if absent, the value is <code>null</code>. <code>defaultValue</code> can also be specified. Compare to <code>@PathVariable</code> which extracts from the URI path template.</td>
+  </tr>
+  <tr>
+    <td><code>@PathVariable Long id</code></td>
+    <td>Extracts a value from the URL template <code>/{id}</code>. By default <code>required = true</code> — if the path variable is missing, Spring returns 404. The value is automatically converted to <code>Long</code> via Spring's type conversion system (<code>Converter&lt;String, Long&gt;</code>).</td>
+  </tr>
+  <tr>
+    <td><code>@PageableDefault</code></td>
+    <td>Spring Data web support. Injects a <code>Pageable</code> object from query parameters (<code>?page=0&size=20&sort=createdAt,desc</code>). Provides sensible defaults: size=20, sort by createdAt DESC.</td>
+  </tr>
+  <tr>
+    <td><code>@PreAuthorize("hasRole('SELLER')")</code></td>
+    <td>Spring Security method-level authorization. Only users with the SELLER role can execute this method. Powered by Spring AOP — <code>MethodSecurityInterceptor</code> wraps the bean, checks the <code>SecurityContextHolder</code> before invocation. If authorization fails, <code>AccessDeniedException</code> is thrown (handled by GlobalExceptionHandler).</td>
+  </tr>
+  <tr>
+    <td><code>@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")</code></td>
+    <td>Allows both SELLER and ADMIN roles. <code>hasAnyRole()</code> accepts a varargs of role strings. The <code>ROLE_</code> prefix is automatically prepended by the expression handler.</td>
+  </tr>
+  <tr>
+    <td><code>@AuthenticationPrincipal UserPrincipal</code></td>
+    <td>Extracts the currently authenticated user's principal object from <code>SecurityContextHolder.getContext().getAuthentication().getPrincipal()</code>. The <code>UserPrincipal</code> class extends Spring Security's <code>User</code> (which implements <code>UserDetails</code>). This annotation uses the <code>AuthenticationPrincipalArgumentResolver</code> to resolve the parameter. Provides access to <code>getUserId()</code> and <code>getUserEmail()</code>.</td>
+  </tr>
+  <tr>
+    <td><code>@PutMapping("/{id}")</code></td>
+    <td>Maps HTTP PUT. PUT is idempotent — calling it multiple times with the same body produces the same state. Used for full replacement of a resource. Contrast with PATCH (partial update, not idempotent).</td>
+  </tr>
+  <tr>
+    <td><code>@DeleteMapping("/{id}")</code></td>
+    <td>Maps HTTP DELETE. Idempotent — deleting a resource that doesn't exist still returns 204 (or 404 depending on design, we return 204 after service call succeeds).</td>
+  </tr>
+  <tr>
+    <td><code>ResponseEntity&lt;Void&gt;</code> + <code>noContent()</code></td>
+    <td>204 No Content. No response body. Used for successful DELETE operations where there is nothing to return.</td>
+  </tr>
+</table>
+
+<h4>Endpoints</h4>
+<table class="endpoint-table">
+  <tr><th>Method</th><th>URL</th><th>Request</th><th>Response</th><th>Auth</th><th>Status</th></tr>
+  <tr>
+    <td><span class="method method-get">GET</span></td>
+    <td><code>/api/products?q=keyword</code></td>
+    <td>Query param <code>q</code> (optional)</td>
+    <td><code>Page&lt;ProductResponse&gt;</code></td>
+    <td>permitAll</td>
+    <td><span style="color:#61affe;">200</span></td>
+  </tr>
+  <tr>
+    <td><span class="method method-get">GET</span></td>
+    <td><code>/api/products/{id}</code></td>
+    <td>Path variable</td>
+    <td><code>ProductResponse</code></td>
+    <td>permitAll</td>
+    <td><span style="color:#61affe;">200</span> | <span style="color:#f93e3e;">404</span></td>
+  </tr>
+  <tr>
+    <td><span class="method method-get">GET</span></td>
+    <td><code>/api/products/category/{id}</code></td>
+    <td>Path variable</td>
+    <td><code>Page&lt;ProductResponse&gt;</code></td>
+    <td>permitAll</td>
+    <td><span style="color:#61affe;">200</span></td>
+  </tr>
+  <tr>
+    <td><span class="method method-post">POST</span></td>
+    <td><code>/api/products</code></td>
+    <td><code>ProductRequest</code></td>
+    <td><code>ProductResponse</code></td>
+    <td>SELLER</td>
+    <td><span style="color:#49cc90;">201</span> | <span style="color:#f93e3e;">400</span> | <span style="color:#f93e3e;">403</span></td>
+  </tr>
+  <tr>
+    <td><span class="method method-put">PUT</span></td>
+    <td><code>/api/products/{id}</code></td>
+    <td><code>ProductRequest</code></td>
+    <td><code>ProductResponse</code></td>
+    <td>SELLER / ADMIN</td>
+    <td><span style="color:#fca130;">200</span> | <span style="color:#f93e3e;">400</span> | <span style="color:#f93e3e;">403</span> | <span style="color:#f93e3e;">404</span></td>
+  </tr>
+  <tr>
+    <td><span class="method method-delete">DELETE</span></td>
+    <td><code>/api/products/{id}</code></td>
+    <td>Path variable</td>
+    <td>(none)</td>
+    <td>SELLER / ADMIN</td>
+    <td><span style="color:#6fcf97;">204</span> | <span style="color:#f93e3e;">403</span> | <span style="color:#f93e3e;">404</span></td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- ==================== CATEGORY ==================== -->
+<h3 id="c-category">CategoryController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/categories")
+@RequiredArgsConstructor
+@Tag(name = "Categories", description = "Category management endpoints")
+public class CategoryController {
+
+    private final CategoryService categoryService;
+
+    @GetMapping
+    @Operation(summary = "Get all top-level categories")
+    public ResponseEntity&lt;List&lt;Category&gt;&gt; getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllTopLevelCategories());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get category by ID")
+    public ResponseEntity&lt;Category&gt; getCategory(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    }
+
+    @GetMapping("/{id}/subcategories")
+    @Operation(summary = "Get subcategories of a category")
+    public ResponseEntity&lt;List&lt;Category&gt;&gt; getSubCategories(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getSubCategories(id));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create category", description = "Only ADMIN can create categories")
+    public ResponseEntity&lt;Category&gt; createCategory(
+            @RequestBody Map&lt;String, Object&gt; request) {
+        String name = (String) request.get("name");
+        String description = (String) request.get("description");
+        Long parentId = request.get("parentId") != null
+                ? ((Number) request.get("parentId")).longValue() : null;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(categoryService.createCategory(name, description, parentId));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update category")
+    public ResponseEntity&lt;Category&gt; updateCategory(
+            @PathVariable Long id,
+            @RequestBody Map&lt;String, String&gt; request) {
+        return ResponseEntity.ok(categoryService.updateCategory(
+                id, request.get("name"), request.get("description")));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete category")
+    public ResponseEntity&lt;Void&gt; deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+}</pre>
+
+<h4>Key Design Notes</h4>
+<ul>
+  <li><strong>No DTO classes</strong> for categories — the controller directly uses the <code>Category</code> entity in responses. This is acceptable for simple read-only projections, but generally DTOs are preferred to avoid exposing internal entity structure.</li>
+  <li><strong>Map-based request bodies</strong> — category creation uses <code>Map&lt;String, Object&gt;</code> instead of a typed DTO. This means <code>@Valid</code> cannot be applied (no constraint annotations). Validation is delegated to the service layer.</li>
+  <li><strong>Hierarchical structure</strong> — <code>/api/categories/{id}/subcategories</code> demonstrates nested resource paths. The subcategory is a dependent resource of a category.</li>
+</ul>
+
+<h4>Endpoints</h4>
+<table class="endpoint-table">
+  <tr><th>Method</th><th>URL</th><th>Auth</th><th>Status</th></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/categories</code></td><td>permitAll</td><td><span style="color:#61affe;">200</span></td></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/categories/{id}</code></td><td>permitAll</td><td><span style="color:#61affe;">200</span> | <span style="color:#f93e3e;">404</span></td></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/categories/{id}/subcategories</code></td><td>permitAll</td><td><span style="color:#61affe;">200</span></td></tr>
+  <tr><td><span class="method method-post">POST</span></td><td><code>/api/categories</code></td><td>ADMIN</td><td><span style="color:#49cc90;">201</span> | <span style="color:#f93e3e;">403</span> | <span style="color:#f93e3e;">409</span></td></tr>
+  <tr><td><span class="method method-put">PUT</span></td><td><code>/api/categories/{id}</code></td><td>ADMIN</td><td><span style="color:#fca130;">200</span> | <span style="color:#f93e3e;">403</span> | <span style="color:#f93e3e;">404</span></td></tr>
+  <tr><td><span class="method method-delete">DELETE</span></td><td><code>/api/categories/{id}</code></td><td>ADMIN</td><td><span style="color:#6fcf97;">204</span> | <span style="color:#f93e3e;">403</span> | <span style="color:#f93e3e;">404</span></td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== CART ==================== -->
+<h3 id="c-cart">CartController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/cart")
+@RequiredArgsConstructor
+@Tag(name = "Cart", description = "Shopping cart management endpoints")
+public class CartController {
+
+    private final CartService cartService;
+
+    @GetMapping
+    @Operation(summary = "Get current user's cart")
+    public ResponseEntity&lt;CartResponse&gt; getCart(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(cartService.getCart(principal.getUserId()));
+    }
+
+    @PostMapping("/items")
+    @Operation(summary = "Add item to cart")
+    public ResponseEntity&lt;CartResponse&gt; addItem(
+            @Valid @RequestBody CartItemRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                cartService.addItemToCart(principal.getUserId(), request));
+    }
+
+    @PutMapping("/items/{productId}")
+    @Operation(summary = "Update item quantity in cart")
+    public ResponseEntity&lt;CartResponse&gt; updateItem(
+            @PathVariable Long productId,
+            @RequestParam int quantity,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                cartService.updateItemQuantity(
+                    principal.getUserId(), productId, quantity));
+    }
+
+    @DeleteMapping("/items/{productId}")
+    @Operation(summary = "Remove item from cart")
+    public ResponseEntity&lt;CartResponse&gt; removeItem(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                cartService.removeItemFromCart(principal.getUserId(), productId));
+    }
+
+    @DeleteMapping
+    @Operation(summary = "Clear entire cart")
+    public ResponseEntity&lt;Void&gt; clearCart(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        cartService.clearCart(principal.getUserId());
+        return ResponseEntity.noContent().build();
+    }
+}</pre>
+
+<h4>Key Observations</h4>
+<ul>
+  <li><strong>No <code>@PreAuthorize</code></strong> — cart endpoints rely on <code>isAuthenticated()</code> from SecurityConfig (<code>.anyRequest().authenticated()</code>). Since all cart URLs require authentication at the filter-chain level, method-level annotations are unnecessary.</li>
+  <li><strong>Implicit user binding</strong> — every method extracts the authenticated user via <code>@AuthenticationPrincipal</code>. No user ID is ever passed as a request parameter, preventing horizontal privilege escalation.</li>
+  <li><strong>Sub-resource structure</strong> — cart items are at <code>/api/cart/items/{productId}</code>. The product ID in the URL identifies which item to update/remove.</li>
+</ul>
+
+<h4>Endpoints</h4>
+<table class="endpoint-table">
+  <tr><th>Method</th><th>URL</th><th>Request</th><th>Response</th><th>Status</th></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/cart</code></td><td>-</td><td><code>CartResponse</code></td><td><span style="color:#61affe;">200</span></td></tr>
+  <tr><td><span class="method method-post">POST</span></td><td><code>/api/cart/items</code></td><td><code>CartItemRequest { productId, quantity }</code></td><td><code>CartResponse</code></td><td><span style="color:#49cc90;">200</span> | <span style="color:#f93e3e;">400</span></td></tr>
+  <tr><td><span class="method method-put">PUT</span></td><td><code>/api/cart/items/{productId}?quantity=N</code></td><td>Query param <code>quantity</code></td><td><code>CartResponse</code></td><td><span style="color:#fca130;">200</span> | <span style="color:#f93e3e;">404</span></td></tr>
+  <tr><td><span class="method method-delete">DELETE</span></td><td><code>/api/cart/items/{productId}</code></td><td>-</td><td><code>CartResponse</code></td><td><span style="color:#6fcf97;">200</span> | <span style="color:#f93e3e;">404</span></td></tr>
+  <tr><td><span class="method method-delete">DELETE</span></td><td><code>/api/cart</code></td><td>-</td><td>(none)</td><td><span style="color:#6fcf97;">204</span></td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== ORDER ==================== -->
+<h3 id="c-order">OrderController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/orders")
+@RequiredArgsConstructor
+@Tag(name = "Orders", description = "Order management endpoints")
+public class OrderController {
+
+    private final OrderService orderService;
+
+    @PostMapping
+    @Operation(summary = "Place a new order",
+               description = "Converts cart to order and deducts inventory")
+    public ResponseEntity&lt;OrderResponse&gt; placeOrder(
+            @Valid @RequestBody OrderRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.placeOrder(
+                    principal.getUserId(), request.getShippingAddress()));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get current user's orders")
+    public ResponseEntity&lt;Page&lt;OrderResponse&gt;&gt; getMyOrders(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PageableDefault(size = 10, sort = "createdAt",
+                             direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(
+                orderService.getUserOrders(principal.getUserId(), pageable));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get order by ID")
+    public ResponseEntity&lt;OrderResponse&gt; getOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                orderService.getOrderById(id, principal.getUserId()));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel an order")
+    public ResponseEntity&lt;OrderResponse&gt; cancelOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                orderService.cancelOrder(id, principal.getUserId()));
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all orders (Admin only)")
+    public ResponseEntity&lt;Page&lt;OrderResponse&gt;&gt; getAllOrders(
+            @PageableDefault(size = 20, sort = "createdAt",
+                             direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update order status (Admin only)")
+    public ResponseEntity&lt;OrderResponse&gt; updateStatus(
+            @PathVariable Long id,
+            @RequestBody Map&lt;String, String&gt; request) {
+        OrderStatus status = OrderStatus.valueOf(
+                request.get("status").toUpperCase());
+        return ResponseEntity.ok(
+                orderService.updateOrderStatus(id, status));
+    }
+}</pre>
+
+<h4>Key Observations</h4>
+<ul>
+  <li><strong>Owner check</strong> — <code>getOrder()</code> passes <code>principal.getUserId()</code> to the service, which verifies the order belongs to the requesting user. This is authorization at the service layer, not the controller layer.</li>
+  <li><strong>Action endpoints as POST</strong> — <code>/api/orders/{id}/cancel</code> uses POST because cancellation is an action (not a resource). REST purists call these "controller endpoints" or "RPC-style" endpoints.</li>
+  <li><strong>PATCH for partial update</strong> — <code>/api/orders/{id}/status</code> uses <code>@PatchMapping</code>. PATCH is semantically correct for partial updates (we're only changing the order status, not replacing the entire order).</li>
+  <li><strong>Admin segregation</strong> — admin endpoints are prefixed with <code>/admin</code> to avoid path collisions with <code>/{id}</code>. Spring matches the most specific path first, so <code>/admin</code> won't conflict with <code>/{id}</code>.</li>
+  <li><code>OrderStatus.valueOf()</code> — converts a string from the request body into an enum, throwing <code>IllegalArgumentException</code> (caught by GlobalExceptionHandler's catch-all <code>@ExceptionHandler(Exception.class)</code>) if invalid.</li>
+</ul>
+
+<h4>Endpoints</h4>
+<table class="endpoint-table">
+  <tr><th>Method</th><th>URL</th><th>Auth</th><th>Status</th></tr>
+  <tr><td><span class="method method-post">POST</span></td><td><code>/api/orders</code></td><td>authenticated</td><td><span style="color:#49cc90;">201</span> | <span style="color:#f93e3e;">400</span></td></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/orders</code></td><td>authenticated</td><td><span style="color:#61affe;">200</span></td></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/orders/{id}</code></td><td>authenticated</td><td><span style="color:#61affe;">200</span> | <span style="color:#f93e3e;">404</span></td></tr>
+  <tr><td><span class="method method-post">POST</span></td><td><code>/api/orders/{id}/cancel</code></td><td>authenticated</td><td><span style="color:#49cc90;">200</span></td></tr>
+  <tr><td><span class="method method-get">GET</span></td><td><code>/api/orders/admin</code></td><td>ADMIN</td><td><span style="color:#61affe;">200</span> | <span style="color:#f93e3e;">403</span></td></tr>
+  <tr><td><span class="method method-patch">PATCH</span></td><td><code>/api/orders/{id}/status</code></td><td>ADMIN</td><td><span style="color:#b06fcf;">200</span> | <span style="color:#f93e3e;">400</span> | <span style="color:#f93e3e;">403</span></td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== PAYMENT ==================== -->
+<h3 id="c-payment">PaymentController</h3>
+
+<pre>@RestController
+@RequestMapping("/api/payments")
+@RequiredArgsConstructor
+@Tag(name = "Payments", description = "Razorpay payment integration endpoints")
+public class PaymentController {
+
+    private final PaymentService paymentService;
+
+    @PostMapping("/create-order/{orderId}")
+    @Operation(summary = "Create Razorpay order for checkout")
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; createRazorpayOrder(
+            @PathVariable Long orderId) {
+        String razorpayOrderId = paymentService.createRazorpayOrder(orderId);
+        return ResponseEntity.ok(Map.of(
+                "razorpayOrderId", razorpayOrderId,
+                "status", "created"
+        ));
+    }
+
+    @PostMapping("/verify")
+    @Operation(summary = "Verify Razorpay payment signature")
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; verifyPayment(
+            @RequestBody Map&lt;String, String&gt; paymentData) {
+        paymentService.verifyPayment(
+                paymentData.get("razorpayOrderId"),
+                paymentData.get("razorpayPaymentId"),
+                paymentData.get("signature")
+        );
+        return ResponseEntity.ok(Map.of("status", "verified"));
+    }
+}</pre>
+
+<h4>Key Observations</h4>
+<ul>
+  <li><strong>RPC-style endpoints</strong> — payment actions (create order, verify) are verbs, not resources. Using POST for these RPC-style operations is the RESTful convention ("POST is the catch-all for non-CRUD operations").</li>
+  <li><strong>Map responses</strong> — returns <code>Map&lt;String, String&gt;</code> instead of typed DTOs. Simpler for small, ad-hoc response structures. Not recommended for complex responses (loses type safety, documentation).</li>
+  <li><strong>No authentication annotations</strong> — relies on SecurityConfig's <code>.anyRequest().authenticated()</code>.</li>
+</ul>
+
+<hr>
+
+<!-- ==================== HEALTH ==================== -->
+<h3 id="c-health">HealthController</h3>
+
+<pre>@RestController
+@Tag(name = "Health", description = "Application health check")
+public class HealthController {
+
+    @GetMapping("/api/health")
+    @Operation(summary = "Health check endpoint")
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "timestamp", LocalDateTime.now().toString(),
+                "version", "1.0.0"
+        ));
+    }
+}</pre>
+
+<h4>Key Observations</h4>
+<ul>
+  <li><strong>No <code>@RequestMapping</code></strong> — the base path is specified directly on the <code>@GetMapping("/api/health")</code> method. Since there is only one endpoint, class-level mapping was deemed unnecessary.</li>
+  <li><strong>No authentication</strong> — <code>/api/health</code> is in the <code>permitAll()</code> list in SecurityConfig. Health checks must be accessible without authentication for load balancers and orchestrators (Kubernetes liveness/readiness probes).</li>
+  <li><strong>No DB dependency</strong> — returns a simple map reflecting the app is running. For production, consider <code>DataSourceHealthIndicator</code> or Spring Boot Actuator.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="validation">3. Validation Deep Dive</h2>
+
+<h3>Jakarta Validation Annotations Used</h3>
+
+<table class="endpoint-table">
+  <tr><th>Annotation</th><th>Target DTOs</th><th>Checks</th><th>Error Message</th></tr>
+  <tr>
+    <td><code>@NotBlank</code></td>
+    <td>RegisterRequest.name, .email, .password<br>LoginRequest.email, .password<br>ProductRequest.name<br>OrderRequest.shippingAddress</td>
+    <td>String is not null and contains at least one non-whitespace character. Differs from <code>@NotNull</code> (only checks null) and <code>@NotEmpty</code> (checks null and length &gt; 0, but allows whitespace).</td>
+    <td><code>"Name is required"</code>, <code>"Email is required"</code>, etc.</td>
+  </tr>
+  <tr>
+    <td><code>@Email</code></td>
+    <td>RegisterRequest.email<br>LoginRequest.email</td>
+    <td>String must conform to email format regex (not a full RFC 5322 validation — checks for <code>user@domain</code> structure). Accepts internationalized domain names.</td>
+    <td><code>"Invalid email format"</code></td>
+  </tr>
+  <tr>
+    <td><code>@Size(min = 6)</code></td>
+    <td>RegisterRequest.password</td>
+    <td>String length must be &ge; 6. <code>max</code> can also be specified. Works on String, Collection, Map, and arrays.</td>
+    <td><code>"Password must be at least 6 characters"</code></td>
+  </tr>
+  <tr>
+    <td><code>@NotNull</code></td>
+    <td>ProductRequest.price, .stock, .categoryId<br>CartItemRequest.productId, .quantity</td>
+    <td>Value must not be null. For primitives, defaults handle null — use <code>@NotNull</code> on wrapper types (Long, Integer, BigDecimal).</td>
+    <td><code>"Price is required"</code>, <code>"Product ID is required"</code>, etc.</td>
+  </tr>
+  <tr>
+    <td><code>@Positive</code></td>
+    <td>ProductRequest.price, .stock<br>CartItemRequest.quantity</td>
+    <td>Value must be strictly positive (&gt; 0). Works on <code>BigDecimal</code>, <code>BigInteger</code>, <code>int</code>, <code>long</code>, <code>double</code>. <code>@PositiveOrZero</code> (&ge; 0) is the lenient variant.</td>
+    <td><code>"Price must be positive"</code>, <code>"Stock must be positive"</code></td>
+  </tr>
+</table>
+
+<h3>How <code>@Valid</code> Triggers Validation</h3>
+
+<div class="card">
+<div class="card-title">Validation Flow</div>
+<ol>
+  <li><strong>Request arrives</strong> — JSON body is deserialized by <code>MappingJackson2HttpMessageConverter</code> into the DTO object.</li>
+  <li><strong>MethodArgumentResolver</strong> — Spring MVC's <code>RequestResponseBodyMethodProcessor</code> detects the <code>@RequestBody</code> parameter.</li>
+  <li><strong>Validation trigger</strong> — If the parameter has <code>@Valid</code> (or <code>@Validated</code>), the processor calls the <code>Validator</code> bean (which is a <code>LocalValidatorFactoryBean</code> — a Spring-wrapped Jakarta Bean Validation engine).</li>
+  <li><strong>Constraint evaluation</strong> — The validator iterates over all <code>@NotBlank</code>, <code>@Email</code>, etc. annotations and evaluates them against the field values.</li>
+  <li><strong>ConstraintViolation collection</strong> — Each failed constraint generates a <code>ConstraintViolation</code> with: invalid value, violation message, property path.</li>
+  <li><strong>Exception thrown</strong> — Spring wraps the violations in <code>MethodArgumentNotValidException</code> (a subclass of <code>Exception</code>), which extends <code>BindingResult</code>-aware exceptions.</li>
+  <li><strong>ExceptionHandler catches</strong> — The <code>GlobalExceptionHandler</code>'s <code>handleValidation()</code> method extracts field-level errors and returns 400 Bad Request.</li>
+</ol>
+</div>
+
+<div class="note"><strong>What happens without <code>@Valid</code>?</strong> The DTO is still deserialized from JSON, but constraint annotations are never evaluated. Invalid data (e.g., null password) would pass through to the service layer, potentially causing cryptic <code>NullPointerException</code> or database constraint violations instead of clean validation errors.</div>
+
+<h3>Validation Error Response Format</h3>
+
+<pre>{
+  "timestamp": "2026-06-16T14:30:00.123",
+  "status": 400,
+  "errors": {
+    "email": "Invalid email format",
+    "password": "Password must be at least 6 characters"
+  }
+}</pre>
+
+<p>Each field that fails validation appears as a key in the <code>"errors"</code> map with its violation message. This gives the frontend precise, field-level error information.</p>
+
+<!-- ============================================================ -->
+<h2 id="security">4. Security at Controller Level</h2>
+
+<h3><code>@PreAuthorize</code> Usage Across Endpoints</h3>
+
+<table class="endpoint-table">
+  <tr><th>Expression</th><th>Endpoints</th><th>Meaning</th></tr>
+  <tr>
+    <td><code>hasRole('ADMIN')</code></td>
+    <td>POST/PUT/DELETE <code>/api/categories/**</code><br>GET <code>/api/orders/admin</code><br>PATCH <code>/api/orders/{id}/status</code></td>
+    <td>Only users with <code>ROLE_ADMIN</code> authority can access. Spring's <code>hasRole()</code> automatically prepends <code>ROLE_</code> prefix. Equivalent to <code>hasAuthority('ROLE_ADMIN')</code>.</td>
+  </tr>
+  <tr>
+    <td><code>hasRole('SELLER')</code></td>
+    <td>POST <code>/api/products</code></td>
+    <td>Only users with <code>ROLE_SELLER</code> can create products.</td>
+  </tr>
+  <tr>
+    <td><code>hasAnyRole('SELLER', 'ADMIN')</code></td>
+    <td>PUT/DELETE <code>/api/products/{id}</code></td>
+    <td>Users with either <code>ROLE_SELLER</code> or <code>ROLE_ADMIN</code> can update/delete products. <code>hasAnyRole()</code> also auto-prepends <code>ROLE_</code>.</td>
+  </tr>
+  <tr>
+    <td><code>isAuthenticated()</code></td>
+    <td>All cart, order (user), and payment endpoints<br><em>(via SecurityConfig filter chain)</em></td>
+    <td>Any authenticated user (any role) can access. This is checked at the filter-chain level, not method level.</td>
+  </tr>
+  <tr>
+    <td><code>permitAll()</code></td>
+    <td>GET <code>/api/products/**</code>, GET <code>/api/categories/**</code><br><code>/api/auth/**</code>, <code>/api/health</code><br><code>/swagger-ui/**</code>, <code>/v3/api-docs/**</code></td>
+    <td>No authentication required. Configured in SecurityConfig's <code>authorizeHttpRequests</code>.</td>
+  </tr>
+</table>
+
+<h3>How Roles Work: <code>ROLE_</code> Prefix</h3>
+
+<div class="card">
+<div class="card-title">ROLE_ Prefix Mechanics</div>
+<p>In <code>UserPrincipal</code>, the authority is constructed as:</p>
+<pre>new SimpleGrantedAuthority("ROLE_" + user.getRole().name())</pre>
+<p>For a user with role <code>CUSTOMER</code>, the granted authority is <code>"ROLE_CUSTOMER"</code>.</p>
+
+<p><strong><code>hasRole('ADMIN')</code></strong> — Spring Security's <code>SecurityExpressionRoot.hasRole(String role)</code> internally calls <code>hasAuthority("ROLE_" + role)</code>. So <code>hasRole('ADMIN')</code> checks for <code>"ROLE_ADMIN"</code>.</p>
+
+<p><strong><code>hasAnyRole('SELLER', 'ADMIN')</code></strong> — Similarly, <code>hasAnyRole()</code> prepends <code>ROLE_</code> to each argument: <code>hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN")</code>.</p>
+
+<p><strong><code>hasAuthority('ROLE_ADMIN')</code></strong> — If you used <code>hasAuthority()</code> instead, you must include the <code>ROLE_</code> prefix yourself. <code>hasAuthority()</code> performs an exact match against the granted authority string.</p>
+</div>
+
+<h3>Internal Mechanism of <code>@PreAuthorize</code></h3>
+<ul>
+  <li><strong>AOP Proxy</strong> — Spring creates a CGLIB or JDK dynamic proxy around beans containing <code>@PreAuthorize</code> methods.</li>
+  <li><strong>MethodSecurityInterceptor</strong> — When an annotated method is called, the interceptor invokes the <code>SecurityExpressionHandler</code> to evaluate the expression.</li>
+  <li><strong>SecurityContextHolder</strong> — The expression evaluator reads the current <code>Authentication</code> from <code>SecurityContextHolder.getContext().getAuthentication()</code>.</li>
+  <li><strong>Evaluation</strong> — <code>hasRole('ADMIN')</code> checks if the authentication's granted authorities contain <code>ROLE_ADMIN</code>.</li>
+  <li><strong>AccessDeniedException</strong> — If the expression evaluates to <code>false</code>, <code>AccessDeniedException</code> is thrown. This is caught by <code>GlobalExceptionHandler.handleAccessDenied()</code> which returns 403 Forbidden.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="status-codes">5. HTTP Status Codes</h2>
+
+<table class="endpoint-table">
+  <tr><th>Code</th><th>Status</th><th>When It Occurs</th><th>Example</th></tr>
+  <tr>
+    <td><span class="status-code" style="color:#61affe;">200</span></td>
+    <td>OK</td>
+    <td>Successful GET, PUT, POST (non-create), PATCH responses. The response body contains the resource.</td>
+    <td><code>GET /api/products/{id}</code> returns product JSON. <code>PUT /api/products/{id}</code> returns updated product.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#49cc90;">201</span></td>
+    <td>Created</td>
+    <td>Successful resource creation via POST. Response includes <code>Location</code> header conceptually (though not explicitly set here). Body contains the created resource.</td>
+    <td><code>POST /api/auth/register</code> returns auth tokens. <code>POST /api/products</code> returns created product.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#6fcf97;">204</span></td>
+    <td>No Content</td>
+    <td>Successful DELETE where no response body is needed. Also used for <code>DELETE /api/cart</code> (clear cart).</td>
+    <td><code>DELETE /api/products/{id}</code> returns no body. <code>DELETE /api/categories/{id}</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">400</span></td>
+    <td>Bad Request</td>
+    <td>Validation failure (<code>MethodArgumentNotValidException</code>), malformed JSON, missing required body, invalid enum values (<code>OrderStatus.valueOf</code>).</td>
+    <td><code>POST /api/products</code> with missing name → <code>{ "errors": { "name": "Product name is required" } }</code></td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">401</span></td>
+    <td>Unauthorized</td>
+    <td>Missing/invalid JWT token, token expired, wrong credentials at login. The request has not been authenticated.</td>
+    <td><code>POST /api/auth/login</code> with wrong password. Request with missing <code>Authorization</code> header.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">403</span></td>
+    <td>Forbidden</td>
+    <td>Valid JWT token but insufficient role. <code>AccessDeniedException</code> is thrown when <code>@PreAuthorize</code> evaluates to false.</td>
+    <td><code>POST /api/products</code> by a CUSTOMER role user. <code>GET /api/orders/admin</code> by a SELLER.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">404</span></td>
+    <td>Not Found</td>
+    <td>Resource doesn't exist. <code>ResourceNotFoundException</code> is thrown when a product, category, or order with the given ID is not found.</td>
+    <td><code>GET /api/products/999</code> when product 999 doesn't exist. <code>GET /api/orders/999</code></td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">409</span></td>
+    <td>Conflict</td>
+    <td>Duplicate resource creation attempt. Duplicate email during registration, duplicate category name.</td>
+    <td><code>POST /api/auth/register</code> with existing email. <code>POST /api/categories</code> with duplicate name.</td>
+  </tr>
+  <tr>
+    <td><span class="status-code" style="color:#f93e3e;">500</span></td>
+    <td>Internal Server Error</td>
+    <td>Unhandled exceptions, null pointer exceptions, database connection failures, unexpected errors.</td>
+    <td>Service layer throws <code>RuntimeException</code>. Caught by <code>GlobalExceptionHandler.handleGeneral()</code>.</td>
+  </tr>
+</table>
+
+<div class="note"><strong>401 vs 403 distinction:</strong> 401 means "you are not authenticated" (missing or invalid credentials). 403 means "you are authenticated but not authorized" (insufficient permissions). Spring Security distinguishes these: authentication failures (bad JWT) produce 401; authorization failures (<code>AccessDeniedException</code>) produce 403.</div>
+
+<!-- ============================================================ -->
+<h2 id="exception-handling">6. Exception Handling &amp; GlobalExceptionHandler</h2>
+
+<p>The <code>GlobalExceptionHandler</code> is the centralized error-handling component. All exceptions thrown from controllers propagate to this handler, which maps them to consistent JSON error responses.</p>
+
+<h3>Full Code</h3>
+
+<pre>@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleNotFound(
+            ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleBadRequest(
+            BadRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleUnauthorized(
+            UnauthorizedException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(field, message);
+        });
+        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("errors", errors);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGeneral(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred");
+    }
+
+    private ResponseEntity&lt;Map&lt;String, Object&gt;&gt; buildResponse(
+            HttpStatus status, String message) {
+        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("error", status.getReasonPhrase());
+        response.put("message", message);
+        return new ResponseEntity&lt;&gt;(response, status);
+    }
+}</pre>
+
+<h3>Annotation Breakdown</h3>
+<table class="endpoint-table">
+  <tr><th>Annotation</th><th>Explanation</th></tr>
+  <tr>
+    <td><code>@RestControllerAdvice</code></td>
+    <td>A combination of <code>@ControllerAdvice</code> + <code>@ResponseBody</code>. <code>@ControllerAdvice</code> is a Spring stereotype that allows a class to intercept exceptions across all <code>@Controller</code> classes. Without <code>@ResponseBody</code>, the handler methods would need method-level <code>@ResponseBody</code>. Using <code>@RestControllerAdvice</code> applies <code>@ResponseBody</code> globally — all return values from handler methods are serialized directly to JSON.</td>
+  </tr>
+  <tr>
+    <td><code>@ExceptionHandler(ResourceNotFoundException.class)</code></td>
+    <td>Marks a method as an exception handler for the specified exception class (and its subclasses). Spring's <code>DispatcherServlet</code> propagates exceptions to <code>HandlerExceptionResolver</code> beans; <code>ExceptionHandlerExceptionResolver</code> (internal to Spring MVC) dispatches to methods annotated with <code>@ExceptionHandler</code>. The most specific handler wins (based on the exception type hierarchy).</td>
+  </tr>
+</table>
+
+<h4>Exception Handler Priority Order</h4>
+<p>Spring matches the <strong>most specific</strong> (most derived) exception class first:</p>
+<ol>
+  <li><code>ResourceNotFoundException</code> — 404 (most specific)</li>
+  <li><code>BadRequestException</code> — 400</li>
+  <li><code>UnauthorizedException</code> — 401</li>
+  <li><code>MethodArgumentNotValidException</code> — 400 with field errors</li>
+  <li><code>Exception.class</code> — 500 catch-all (least specific)</li>
+</ol>
+<p>If a <code>ResourceNotFoundException</code> is thrown, Spring checks handler #1 first (match), then stops. The generic <code>Exception.class</code> handler is only reached for exception types not caught by any more specific handler.</p>
+
+<h4>Error Response Structure</h4>
+<p>Standard error response (for 400, 401, 404, 500):</p>
+<pre>{
+  "timestamp": "2026-06-16T14:30:00.123",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Product not found with id: 999"
+}</pre>
+
+<p>Validation error response (400):</p>
+<pre>{
+  "timestamp": "2026-06-16T14:30:00.123",
+  "status": 400,
+  "errors": {
+    "email": "Invalid email format",
+    "password": "Password must be at least 6 characters"
+  }
+}</pre>
+
+<div class="note"><strong>Why buildResponse is private:</strong> It's a helper method reused by all simple exception handlers to avoid repeating the response structure. The validation handler is separate because its response structure is different (map of field errors instead of a single message).</div>
+
+<!-- ============================================================ -->
+<h2 id="swagger">7. Swagger / OpenAPI</h2>
+
+<div class="card">
+<div class="card-title">springdoc-openapi Integration</div>
+<p>The project uses <code>springdoc-openapi-starter-webmvc-ui</code> (dependency not shown) which auto-generates OpenAPI 3.0 specification from the controller and DTO classes. No manual configuration is required — SpringDoc scans all <code>@RestController</code> beans and <code>@Tag</code> annotations.</p>
+</div>
+
+<h3>How It Works</h3>
+<ul>
+  <li><strong>Auto-detection</strong> — At startup, SpringDoc introspects all <code>@RequestMapping</code>/<code>@GetMapping</code>/etc. annotations to build the OpenAPI spec.</li>
+  <li><strong>Type inference</strong> — DTO classes (<code>ProductRequest</code>, <code>AuthResponse</code>, etc.) are automatically analyzed via Jackson serialization configuration. Nested objects and collections are included.</li>
+  <li><strong>Validation inheritance</strong> — <code>@NotBlank</code>, <code>@Email</code>, etc. annotations are reflected in the generated schema (required fields, format hints).</li>
+  <li><strong>@Tag / @Operation</strong> — These annotations provide human-readable grouping and descriptions.</li>
+</ul>
+
+<h3>Available Endpoints</h3>
+<table class="endpoint-table">
+  <tr><th>URL</th><th>Purpose</th><th>Auth</th></tr>
+  <tr><td><code>/swagger-ui/index.html</code></td><td>Interactive Swagger UI (HTML UI to test endpoints)</td><td>permitAll</td></tr>
+  <tr><td><code>/v3/api-docs</code></td><td>OpenAPI specification (JSON)</td><td>permitAll</td></tr>
+  <tr><td><code>/v3/api-docs.yaml</code></td><td>OpenAPI specification (YAML)</td><td>permitAll</td></tr>
+</table>
+
+<p>Access <code>http://localhost:8080/swagger-ui/index.html</code> in development. The <code>Authorize</code> button allows entering a Bearer JWT token for authenticated endpoint testing.</p>
+
+<div class="note"><strong>SecurityConfig permits</strong> — <code>/swagger-ui/**</code> and <code>/v3/api-docs/**</code> are in the <code>permitAll()</code> list so developers can access documentation without authentication.</div>
+
+<!-- ============================================================ -->
+<h2 id="qa">8. Interview Q&amp;A</h2>
+
+<div class="qa">
+<div class="qa-q">1. What is the difference between @RestController and @Controller?</div>
+<div class="qa-a">
+  <code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code>. With <code>@Controller</code>, each handler method's return value is interpreted as a view name (for Thymeleaf/JSP resolution) unless the method is also annotated with <code>@ResponseBody</code>. This means a <code>@Controller</code> returning a <code>User</code> object without <code>@ResponseBody</code> would fail with a <code>TemplateResolutionException</code> because Spring would look for a <code>User.ftlh</code> or <code>User.jsp</code> template. <code>@RestController</code> avoids this by applying <code>@ResponseBody</code> on every method — the return value is directly serialized via <code>HttpMessageConverter</code> (JSON by default). For REST APIs, always use <code>@RestController</code>.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">2. What is the difference between @RequestBody and @ModelAttribute?</div>
+<div class="qa-a">
+  <code>@RequestBody</code> deserializes the entire HTTP request body (usually JSON) into a Java object using <code>HttpMessageConverter</code>. It expects a single deserializable payload. <code>@ModelAttribute</code> binds query parameters, path variables, and form fields to an object using property setters — it's designed for form submissions (<code>application/x-www-form-urlencoded</code>) or query parameter binding. In this codebase, all POST/PUT endpoints use <code>@RequestBody</code> + JSON because we're building a JSON API. <code>@ModelAttribute</code> is more common in Spring MVC applications with form rendering.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">3. How does @Valid trigger validation? What happens on failure?</div>
+<div class="qa-a">
+  When a handler parameter is annotated with <code>@Valid</code>, Spring MVC's <code>RequestResponseBodyMethodProcessor</code> invokes the configured <code>Validator</code> (a <code>LocalValidatorFactoryBean</code> wrapping the Jakarta Bean Validation engine). The validator evaluates all constraint annotations on the DTO fields. If any constraint fails, a <code>ConstraintViolation</code> is created. These violations are wrapped in <code>MethodArgumentNotValidException</code>, which is thrown before the handler method executes. The <code>GlobalExceptionHandler.handleValidation()</code> method catches this exception and returns a 400 Bad Request with a map of field-level errors. Without <code>@Valid</code>, no validation occurs — constraints are silently ignored.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">4. How does @PreAuthorize work internally?</div>
+<div class="qa-a">
+  <code>@PreAuthorize</code> relies on Spring AOP. When <code>@EnableMethodSecurity</code> is active, Spring creates a CGLIB proxy (or JDK dynamic proxy for interfaces) around beans containing <code>@PreAuthorize</code> methods. When the method is called, the proxy's <code>MethodSecurityInterceptor</code> intercepts the invocation and uses <code>SecurityExpressionHandler</code> to evaluate the SpEL expression. The expression evaluator reads the current <code>Authentication</code> from <code>SecurityContextHolder</code>. For <code>hasRole('ADMIN')</code>, it checks <code>Authentication.getAuthorities()</code> for <code>"ROLE_ADMIN"</code>. If the check fails, <code>AccessDeniedException</code> is thrown. If it passes, the real method is invoked. This all happens transparently — the controller code has no knowledge of the proxy.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">5. What is the difference between 401 Unauthorized and 403 Forbidden?</div>
+<div class="qa-a">
+  401 Unauthorized: The request lacks valid authentication credentials. The client is not logged in, the JWT is missing, expired, or malformed. The server does not know who the client is. Spring Security's <code>AuthenticationEntryPoint</code> returns this when <code>AuthenticationException</code> occurs (e.g., bad JWT). 403 Forbidden: The request is authenticated (the JWT is valid, the server knows who the user is), but the authenticated user does not have the required role or permission. <code>AccessDeniedException</code> triggers this, handled by <code>AccessDeniedHandler</code>. In this project: a CUSTOMER trying to POST to <code>/api/products</code> gets 403 (valid token, but missing SELLER role). A request with no token at all to the same endpoint gets 401.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">6. How does @AuthenticationPrincipal extract the current user?</div>
+<div class="qa-a">
+  <code>@AuthenticationPrincipal</code> is resolved by <code>AuthenticationPrincipalArgumentResolver</code>, a Spring MVC argument resolver. It reads from <code>SecurityContextHolder.getContext().getAuthentication().getPrincipal()</code>. The <code>Authentication.getPrincipal()</code> returns an <code>Object</code> (typically <code>UserDetails</code>). The resolver casts it to the parameter type — <code>UserPrincipal</code>. Our <code>UserPrincipal</code> extends Spring Security's <code>User</code> (which implements <code>UserDetails</code>) and adds <code>userId</code> and <code>userEmail</code> fields. The resolver returns this as the method argument. This is cleaner than calling <code>SecurityContextHolder</code> directly in every controller method.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">7. What is the difference between @ControllerAdvice and @RestControllerAdvice?</div>
+<div class="qa-a">
+  Same relationship as <code>@Controller</code> vs <code>@RestController</code>. <code>@ControllerAdvice</code> is a global interceptor for controllers — it can define <code>@ExceptionHandler</code>, <code>@InitBinder</code>, and <code>@ModelAttribute</code> methods that apply across all controllers. However, handler methods in <code>@ControllerAdvice</code> need <code>@ResponseBody</code> to return JSON. <code>@RestControllerAdvice</code> = <code>@ControllerAdvice</code> + <code>@ResponseBody</code>, meaning all exception handler methods automatically serialize their return values to JSON. For REST APIs, always use <code>@RestControllerAdvice</code>.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">8. What determines the priority of @ExceptionHandler methods?</div>
+<div class="qa-a">
+  Spring matches exception handlers based on the <strong>specificity</strong> of the exception type. It uses <code>ExceptionDepthComparator</code> to find the closest matching handler. For example, if <code>ResourceNotFoundException extends RuntimeException extends Exception</code>:<br>
+  - Throwing <code>ResourceNotFoundException</code> matches <code>handleNotFound()</code> (closest)<br>
+  - Throwing <code>IllegalArgumentException</code> (a <code>RuntimeException</code>) does NOT match <code>handleNotFound()</code> and falls through to <code>handleGeneral()</code> (the catch-all for <code>Exception.class</code>).<br>
+  Order of declaration in the class does NOT matter — Spring always picks the most specific match. If there are multiple handlers at the same level (e.g., two handlers for <code>RuntimeException</code>), Spring reports an ambiguity error.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">9. How would you design a global exception handler for a microservice?</div>
+<div class="qa-a">
+  A well-designed global exception handler should: (1) Use <code>@RestControllerAdvice</code> for automatic JSON serialization. (2) Cover all application-specific exceptions (e.g., <code>ResourceNotFoundException</code> → 404, <code>BadRequestException</code> → 400, <code>DuplicateResourceException</code> → 409, <code>UnauthorizedException</code> → 401). (3) Handle Spring exceptions (<code>MethodArgumentNotValidException</code> → 400 with field errors, <code>HttpMessageNotReadableException</code> → 400 for malformed JSON, <code>AccessDeniedException</code> → 403). (4) Have a catch-all for <code>Exception.class</code> returning 500 without leaking stack traces. (5) Use a consistent response envelope with <code>timestamp</code>, <code>status</code>, <code>error</code>, <code>message</code>, and optionally a <code>path</code> field. (6) Log exceptions appropriately (WARN for 4xx, ERROR for 5xx). (7) Consider a unique error code for each exception type for easier client-side handling.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">10. Why use DTOs instead of entities in controller responses?</div>
+<div class="qa-a">
+  Returning JPA entities directly from controllers couples the API contract to the persistence model. Problems include: (1) Lazy loading — accessing lazily-loaded fields outside a transaction throws <code>LazyInitializationException</code>. (2) Over-fetching — entities may contain sensitive fields (password hash, internal IDs) or unnecessary data. (3) Circular references — bidirectional relationships cause infinite JSON recursion without <code>@JsonIgnore</code> / <code>@JsonManagedReference</code>. (4) Tight coupling — changing the database schema changes the API contract. DTOs provide a clean separation layer, allowing each endpoint to return exactly the data the client needs, in the shape the client expects. They also enable versioning: you can change the entity structure without breaking the API.
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">11. How are validation errors structured in the response?</div>
+<div class="qa-a">
+  The <code>handleValidation()</code> method in GlobalExceptionHandler extracts field-level errors from <code>MethodArgumentNotValidException.getBindingResult().getAllErrors()</code>. Each <code>ObjectError</code> is cast to <code>FieldError</code> to access <code>.getField()</code> (the field name) and <code>.getDefaultMessage()</code> (the validation message from the annotation). These are collected into a <code>Map&lt;String, String&gt;</code> (<code>errors</code>) and wrapped in the response with <code>timestamp</code> and <code>status</code> 400. The frontend can display field-level error messages directly under each input field. Example response:<br>
+  <code>{ "timestamp": "...", "status": 400, "errors": { "email": "Invalid email format", "password": "Password must be at least 6 characters" } }</code>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">12. What happens when @RequestBody is missing in a POST request?</div>
+<div class="qa-a">
+  If the <code>@RequestBody</code> parameter is not annotated with <code>@Valid</code> (or <code>@Validated</code>), no validation occurs. For example, <code>CategoryController.createCategory()</code> uses <code>@RequestBody Map&lt;String, Object&gt; request</code> without <code>@Valid</code>. Any JSON body will be accepted — missing fields will simply be null in the map. This means validation of required fields must happen in the service layer. If the <code>@RequestBody</code> annotation is present but the request body is empty or not valid JSON, Spring throws <code>HttpMessageNotReadableException</code> (400 Bad Request). If the request body is missing entirely (no <code>Content-Type</code> header or empty body), the same exception occurs. If there were no <code>@RequestBody</code> at all (hypothetically), Spring would bind query parameters instead, and the parameter would be null.
+</div>
+</div>
+
+<!-- ============================================================ -->
+<footer>
+  Phase 6: Controllers &amp; REST APIs - E-Commerce Backend Interview Guide<br>
+  Generated from actual source code. All annotations and endpoints correspond to the production codebase.
+</footer>
+
+</div>
+</body>
+</html>

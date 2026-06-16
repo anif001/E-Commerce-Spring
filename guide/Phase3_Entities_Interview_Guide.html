@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3: Entities & JPA Models — Interview Guide</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --bg2: #1a1a2e;
+            --bg3: #252540;
+            --accent: #6C63FF;
+            --accent-dim: #4a42d4;
+            --text: #e0e0f0;
+            --text-dim: #9898b8;
+            --green: #4caf7d;
+            --red: #e55555;
+            --yellow: #f0c040;
+            --border: #2a2a45;
+            --font: 'Segoe UI', 'Cascadia Code', 'Fira Code', system-ui, sans-serif;
+            --mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 15px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            line-height: 1.7;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1, h2, h3, h4 { color: #fff; font-weight: 600; letter-spacing: 0.01em; }
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 0.3rem;
+            border-left: 5px solid var(--accent);
+            padding-left: 1.2rem;
+        }
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            margin-bottom: 2.5rem;
+            padding-left: 1.2rem;
+            font-weight: 400;
+        }
+        h2 {
+            font-size: 1.6rem;
+            margin: 2.8rem 0 1.2rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        h3 {
+            font-size: 1.2rem;
+            margin: 2rem 0 0.8rem;
+            color: #d0d0f0;
+        }
+        h4 {
+            font-size: 1.05rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--accent);
+        }
+        p { margin-bottom: 0.8rem; color: var(--text); }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .code-block {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+            margin: 1rem 0 1.4rem;
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            position: relative;
+        }
+        .code-block .kw { color: #c792ea; }
+        .code-block .ann { color: #ffcb6b; }
+        .code-block .str { color: #c3e88d; }
+        .code-block .typ { color: #82aaff; }
+        .code-block .cm { color: #546e7a; font-style: italic; }
+        .code-block .num { color: #f78c6c; }
+        .code-block .fn { color: #82aaff; }
+
+        .info-box {
+            background: var(--bg3);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 6px 6px 0;
+            padding: 1rem 1.3rem;
+            margin: 1rem 0;
+        }
+        .info-box.warn { border-left-color: var(--yellow); }
+        .info-box.danger { border-left-color: var(--red); }
+        .info-box.ok { border-left-color: var(--green); }
+        .info-box strong { color: #fff; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.92rem;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.6rem 0.9rem;
+            text-align: left;
+        }
+        th {
+            background: var(--bg3);
+            color: #fff;
+            font-weight: 600;
+        }
+        td { background: var(--bg2); }
+        tr:hover td { background: var(--bg3); }
+
+        ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+        li { margin-bottom: 0.4rem; }
+        strong { color: #fff; }
+
+        .entity-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+        .entity-nav a {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .entity-nav a:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            text-decoration: none;
+        }
+
+        .qa-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+            margin: 1rem 0;
+        }
+        .qa-box .q {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.02rem;
+        }
+        .qa-box .a { color: var(--text); }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-dim);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            vertical-align: middle;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+        @media (max-width: 700px) {
+            body { padding: 1rem 0.6rem; }
+            h1 { font-size: 1.7rem; }
+            .code-block { font-size: 0.78rem; padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1>Phase 3: Entities &amp; JPA Models</h1>
+<p class="subtitle">E-Commerce Backend &mdash; Senior-Level Interview Deep-Dive</p>
+
+<ul style="margin: 0 0 2rem 1.2rem; color: var(--text-dim);">
+    <li>7 entities &middot; 3 enums &middot; Jakarta Persistence (JPA 3.x) &middot; Hibernate 6.x &middot; PostgreSQL</li>
+    <li>Annotations explained at senior-engineer depth &middot; Production patterns &middot; Anti-patterns exposed</li>
+</ul>
+
+<!-- ======================================================================== -->
+<h2>1. Entity Design Principles</h2>
+
+<h3>What Is a JPA Entity?</h3>
+<p>A JPA entity is a plain Java class annotated with <code>@Entity</code> that is managed by the persistence context (Hibernate). Each entity instance corresponds to a row in a database table. The entity's fields (or properties) map to table columns.</p>
+
+<h3>Why Entities Exist</h3>
+<p>Entities bridge the object-oriented domain model with the relational database (ORM). Instead of writing raw JDBC and hand-crafting SQL, entities let us work with objects while Hibernate generates the SQL. This gives us:</p>
+<ul>
+    <li><strong>Abstraction</strong> &mdash; work with Java objects, not <code>ResultSet</code> rows</li>
+    <li><strong>Automatic dirty checking</strong> &mdash; Hibernate detects which fields changed and issues minimal UPDATE statements</li>
+    <li><strong>Cascading operations</strong> &mdash; persist/remove a parent and its children in one call</li>
+    <li><strong>Lazy loading</strong> &mdash; fetch only what you need, when you need it (via proxies)</li>
+    <li><strong>Identity management</strong> &mdash; the <code>@Id</code> and persistence context guarantee at-most-one-instance-per-row within a session</li>
+</ul>
+
+<h3>Entity Lifecycle States</h3>
+<table>
+    <tr><th>State</th><th>Description</th><th>Persistence Context?</th><th>DB Row?</th></tr>
+    <tr><td><strong>Transient</strong></td><td>Created with <code>new</code>, not yet associated with a persistence context. No DB identity.</td><td>No</td><td>No</td></tr>
+    <tr><td><strong>Managed (Persistent)</strong></td><td>Returned by <code>EntityManager.persist()</code>, <code>find()</code>, or a query. Hibernate tracks changes automatically.</td><td>Yes</td><td>Yes (or will be at flush)</td></tr>
+    <tr><td><strong>Detached</strong></td><td>Was managed but the persistence context closed (or <code>detach()</code> called). No longer tracked.</td><td>No</td><td>Yes (in database)</td></tr>
+    <tr><td><strong>Removed</strong></td><td>Marked for deletion via <code>EntityManager.remove()</code>. Removed at flush time.</td><td>Yes (scheduled)</td><td>Will be deleted</td></tr>
+</table>
+
+<div class="info-box">
+    <strong>Key Insight:</strong> The persistence context (first-level cache) is the heart of Hibernate. It guarantees that within a single <code>EntityManager</code>/<code>Session</code>, each database row maps to at most one Java object instance. This is why <code>==</code> checks work on managed entities from the same session.
+</div>
+
+<!-- ======================================================================== -->
+<h2>2. Entity by Entity Explanation</h2>
+
+<div class="entity-nav">
+    <a href="#entity-user">User</a>
+    <a href="#entity-product">Product</a>
+    <a href="#entity-category">Category</a>
+    <a href="#entity-cart">Cart</a>
+    <a href="#entity-cartitem">CartItem</a>
+    <a href="#entity-order">Order</a>
+    <a href="#entity-orderitem">OrderItem</a>
+</div>
+
+<!-- ===================== USER ===================== -->
+<h3 id="entity-user">2.1 User</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "users")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    private String phone;
+
+    private String address;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>@Entity</strong> &mdash; Marks this class as a JPA entity. Hibernate's <code>EntityManagerFactory</code> scans for <code>@Entity</code> classes during bootstrap and registers them in the <code>Metamodel</code>. Without it, the class is just a POJO. Internally, Hibernate creates a <code>EntityPersister</code> per entity class which knows how to generate CRUD SQL and manage the persistence lifecycle. An entity must have a no-arg constructor (public or protected).</p>
+
+<p><strong>@Table(name = "users")</strong> &mdash; Maps the entity to the <code>users</code> table. Without <code>@Table</code>, Hibernate defaults the table name to the entity class name (<code>User</code>). We customize it because <code>user</code> is a reserved word in PostgreSQL (and SQL-92). The plural <code>users</code> avoids keyword conflicts and follows naming conventions. <code>@Table</code> also accepts <code>schema</code>, <code>catalog</code>, <code>uniqueConstraints</code>, and <code>indexes</code>.</p>
+
+<p><strong>@Id + @GeneratedValue(strategy = GenerationType.IDENTITY)</strong> &mdash; <code>@Id</code> marks the primary key field. Every entity <em>must</em> have an <code>@Id</code>. <code>@GeneratedValue</code> tells Hibernate how to generate PK values:</p>
+<table>
+    <tr><th>Strategy</th><th>How It Works</th><th>PostgreSQL</th><th>Pros</th><th>Cons</th></tr>
+    <tr><td><code>IDENTITY</code></td><td>Relies on DB auto-increment (SERIAL / IDENTITY columns)</td><td><code>BIGSERIAL</code> / <code>GENERATED BY DEFAULT AS IDENTITY</code></td><td>Simple, no sequence call before insert</td><td>Requires immediate insert (disables JDBC batch inserts, no <code>persist()</code> before PK known)</td></tr>
+    <tr><td><code>SEQUENCE</code></td><td>Calls a DB sequence (e.g., <code>hibernate_sequence</code>) for each new ID</td><td><code>CREATE SEQUENCE</code> &mdash; native PostgreSQL</td><td>Supports batch inserts, <code>ALLOCATION_SIZE</code> optimization</td><td>Extra round-trip per batch (mitigated by allocationSize)</td></tr>
+    <tr><td><code>TABLE</code></td><td>Emulates sequence with a DB table (pessimistic)</td><td>Works but suboptimal</td><td>DB-portable</td><td>Slow, pessimistic locking, never use in production</td></tr>
+    <tr><td><code>AUTO</code></td><td>Hibernate picks (often <code>SEQUENCE</code> for PostgreSQL)</td><td>Delegates to Hibernate's dialect</td><td>Convenient</td><td>Not explicit; may surprise you when DB changes</td></tr>
+</table>
+<p>We chose <code>IDENTITY</code> because it maps directly to PostgreSQL's <code>BIGSERIAL</code> / identity columns and is the simplest strategy. The trade-off is that Hibernate cannot use JDBC batch inserts for IDENTITY (it must insert immediately to get the generated key). For an e-commerce backend where writes are moderate, this is acceptable. For high-volume write systems, <code>SEQUENCE</code> with <code>allocationSize=50</code> is preferred.</p>
+
+<p><strong>@Column(nullable = false, ...)</strong> &mdash; Configures the DB column:</p>
+<ul>
+    <li><code>nullable = false</code> &mdash; Adds <code>NOT NULL</code> constraint at schema generation. Also triggers JPA validation before flush (if validation is enabled).</li>
+    <li><code>unique = true</code> &mdash; Adds a <code>UNIQUE</code> constraint. Equivalent to <code>@Table(uniqueConstraints = ...)</code> but inline.</li>
+    <li><code>columnDefinition = "TEXT"</code> &mdash; Overrides the default SQL type. By default Hibernate maps <code>String</code> to <code>VARCHAR(255)</code>. For long text, we override to <code>TEXT</code>.</li>
+    <li><code>precision = 10, scale = 2</code> &mdash; For decimal columns. <code>precision</code> = total digits, <code>scale</code> = digits after decimal. Used with <code>BigDecimal</code>. Maps to <code>NUMERIC(10,2)</code>.</li>
+    <li><code>updatable = false</code> &mdash; Excludes this column from UPDATE statements. Useful for <code>createdAt</code>.</li>
+</ul>
+
+<p><strong>@Enumerated(EnumType.STRING)</strong> &mdash; Stores the enum as a string in the DB. <code>EnumType.ORDINAL</code> stores the integer <code>ordinal()</code> (0, 1, 2...). <strong>NEVER use ORDINAL in production.</strong> If someone reorders enum constants (e.g., adds <code>SUPER_ADMIN</code> before <code>ADMIN</code>), all existing ORDINAL data corrupts silently. STRING stores the literal name (e.g., <code>"CUSTOMER"</code>), which survives reordering. The cost is slightly more storage (a VARCHAR vs an integer) &mdash; a trivial trade for data integrity.</p>
+
+<p><strong>@PrePersist / @PreUpdate</strong> &mdash; JPA lifecycle callback annotations:</p>
+<ul>
+    <li><code>@PrePersist</code> &mdash; Fires before <code>EntityManager.persist()</code> or <code>em.flush()</code> for a new entity. Used here to set <code>createdAt</code> and <code>updatedAt</code>.</li>
+    <li><code>@PreUpdate</code> &mdash; Fires before the UPDATE statement is generated for a managed entity.</li>
+</ul>
+<p>Alternatives: <code>@EntityListeners(AuditingEntityListener.class)</code> with Spring Data JPA's <code>@CreatedDate</code>/<code>@LastModifiedDate</code>, which is declarative and reusable. Our <code>@PrePersist</code>/<code>@PreUpdate</code> approach is explicit and self-contained; both are valid. The callback method must return <code>void</code>, take no parameters, and be <code>protected</code> or <code>public</code>.</p>
+
+<p><strong>Lombok @Builder</strong> &mdash; Generates a builder pattern. Works fine with JPA as long as a no-arg constructor exists (<code>@NoArgsConstructor</code>). Hibernate needs the no-arg constructor to create proxy instances for lazy loading. Note: <code>@Builder</code> sets all fields to their Java defaults (null, 0, false), which is why <code>@Builder.Default</code> is needed for collections and fields with default values.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE users (
+    id         BIGSERIAL    PRIMARY KEY,
+    name       VARCHAR(255) NOT NULL,
+    email      VARCHAR(255) NOT NULL UNIQUE,
+    password   VARCHAR(255) NOT NULL,
+    role       VARCHAR(20)  NOT NULL,
+    phone      VARCHAR(255),
+    address    VARCHAR(255),
+    created_at TIMESTAMP    NOT NULL,
+    updated_at TIMESTAMP    NOT NULL
+);</pre>
+</div>
+
+<!-- ===================== PRODUCT ===================== -->
+<h3 id="entity-product">2.2 Product</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "products")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(nullable = false)
+    private Integer stock;
+
+    private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() { createdAt = LocalDateTime.now(); updatedAt = LocalDateTime.now(); }
+
+    @PreUpdate
+    protected void onUpdate() { updatedAt = LocalDateTime.now(); }
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>@ManyToOne(fetch = FetchType.LAZY)</strong> &mdash; Defines a many-to-one relationship: many products belong to one category/one seller.</p>
+<ul>
+    <li><strong>Why LAZY?</strong> &mdash; Lazy loading defers fetching the associated entity until it is accessed. With <code>FetchType.EAGER</code>, Hibernate automatically fetches the association via a JOIN or separate SELECT <em>every time</em> the owning entity is loaded, even if you don't need it. This causes:
+        <ul>
+            <li><strong>Performance waste</strong> &mdash; Loading 100 products would also fetch 100 categories and 100 sellers, even if you only need product names.</li>
+            <li><strong>N+1 problem</strong> &mdash; (See Q&amp;A) &mdash; If you query a list and EAGER uses a separate SELECT per row, you get N+1 queries.</li>
+            <li><strong>Cartesian products</strong> &mdash; Multiple EAGER collections on the same entity produce massive cross-joins.</li>
+        </ul>
+    </li>
+    <li><strong>What LAZY does internally:</strong> Hibernate wraps the associated entity in a <em>proxy object</em> (a dynamically generated subclass via <code>javassist</code> or ByteBuddy). The proxy has only the <code>@Id</code> value initialized. On the first method call (e.g., <code>getCategory().getName()</code>), the proxy triggers a SELECT to load the full entity from the database. This only works within an active <code>@Transactional</code> session; outside, you get a <code>LazyInitializationException</code>.</li>
+    <li><strong>Why not EAGER?</strong> &mdash; Spring/Data JPA expert <em>Vlad Mihalcea</em> and the Hibernate team explicitly recommend always using LAZY. EAGER is an anti-pattern in nearly all cases; it violates the principle of least surprise and forces unnecessary queries on every read.</li>
+</ul>
+
+<p><strong>@JoinColumn(name = "category_id", nullable = false)</strong> &mdash; Configures the foreign key column:</p>
+<ul>
+    <li><code>name</code> &mdash; The column name in the <code>products</code> table that references the parent table's PK.</li>
+    <li><code>nullable = false</code> &mdash; Every product <em>must</em> have a category and a seller. This is a DB-level constraint.</li>
+    <li>Without <code>@JoinColumn</code>, Hibernate generates a default name (e.g., <code>category_id</code> from <code>category</code> field + <code>_id</code>).</li>
+</ul>
+
+<p><strong>@Column(columnDefinition = "TEXT")</strong> &mdash; Overrides default VARCHAR(255) for the description field. Since product descriptions can be paragraphs long, TEXT is appropriate. This is database-specific; Hibernate passes the string verbatim in the DDL.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE products (
+    id          BIGSERIAL       PRIMARY KEY,
+    name        VARCHAR(255)    NOT NULL,
+    description TEXT,
+    price       NUMERIC(10,2)   NOT NULL,
+    stock       INTEGER         NOT NULL,
+    image_url   VARCHAR(255),
+    category_id BIGINT          NOT NULL REFERENCES categories(id),
+    seller_id   BIGINT          NOT NULL REFERENCES users(id),
+    created_at  TIMESTAMP       NOT NULL,
+    updated_at  TIMESTAMP       NOT NULL
+);</pre>
+</div>
+
+<!-- ===================== CATEGORY ===================== -->
+<h3 id="entity-category">2.3 Category</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "categories")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonIgnoreProperties({"parent"})
+    private List<Category> subCategories = new ArrayList<>();
+
+    public void addSubCategory(Category subCategory) {
+        subCategories.add(subCategory);
+        subCategory.setParent(this);
+    }
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>Self-referencing @ManyToOne / @OneToMany</strong> &mdash; Category references itself to create a tree hierarchy (adjacency list model). The <code>parent</code> field maps to <code>parent_id</code> in the same table. Each category can have one parent (null = root) and many children. This is a single-table hierarchy.</p>
+
+<p><strong>@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})</strong> &mdash; This is critical for JSON serialization:</p>
+<ul>
+    <li>Hibernate's LAZY proxy objects contain extra fields: <code>hibernateLazyInitializer</code> and <code>handler</code>. Without <code>@JsonIgnoreProperties</code>, Jackson attempts to serialize these Hibernate-internal fields and fails or causes infinite recursion.</li>
+    <li>On the <code>subCategories</code> field, <code>@JsonIgnoreProperties({"parent"})</code> breaks the circular serialization: when serializing a subCategory, Jackson omits the <code>parent</code> field, preventing infinite recursion back up the tree.</li>
+</ul>
+
+<p><strong>@Builder.Default</strong> &mdash; Lombok's <code>@Builder</code> sets all fields to default values (null for objects). The <code>@Builder.Default</code> annotation tells Lombok to use the field initializer (<code>new ArrayList&lt;&gt;()</code>) as the builder's default. Without this, the builder would produce a Category with <code>subCategories = null</code>, causing <code>NullPointerException</code> in <code>addSubCategory()</code>.</p>
+
+<p><strong>cascade = CascadeType.ALL, orphanRemoval = true</strong> &mdash; See detailed explanation below. In short: any operation on a Category cascades to its subCategories (persist, merge, remove). Orphan removal deletes any subCategory removed from the list.</p>
+
+<p><strong>addSubCategory() helper</strong> &mdash; This is the bidirectional relationship management helper. It ensures both sides of the relationship are consistent: it adds to the <code>subCategories</code> collection AND sets the child's <code>parent</code>. Without this, you'd need to manually call <code>subCategory.setParent(this)</code> every time. Forgetting to set both sides is a common JPA pitfall that leads to <code>null</code> foreign keys or in-memory inconsistency.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE categories (
+    id          BIGSERIAL       PRIMARY KEY,
+    name        VARCHAR(255)    NOT NULL UNIQUE,
+    description VARCHAR(255),
+    parent_id   BIGINT          REFERENCES categories(id)
+);</pre>
+</div>
+
+<!-- ===================== CART ===================== -->
+<h3 id="entity-cart">2.4 Cart</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "carts")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Cart {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CartItem> items = new ArrayList<>();
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>@OneToOne(fetch = FetchType.LAZY)</strong> &mdash; One user has exactly one cart. <code>@OneToOne</code> is semantically correct here: the relationship cardinality is 1:1. Internally it behaves similarly to <code>@ManyToOne</code> (a FK column is created), but it also adds a UNIQUE constraint on the FK (<code>unique = true</code> explicit here too). The choice of <code>@OneToOne</code> vs <code>@ManyToOne</code> is <em>semantic</em>: the schema is identical (FK + unique). Use <code>@OneToOne</code> when the domain says "exactly one" to communicate intent.</p>
+
+<p><strong>@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)</strong> &mdash; One cart has many items. <code>mappedBy = "cart"</code> indicates that the <code>CartItem.cart</code> field owns the relationship (the FK column is in the <code>cart_items</code> table). The <code>cart</code> table itself has no items column; the relationship is purely through the foreign key.</p>
+
+<ul>
+    <li><strong>CascadeType.ALL</strong> &mdash; See table below. All operations (persist, merge, remove, refresh, detach) on Cart cascade to its CartItems.</li>
+    <li><strong>orphanRemoval = true</strong> &mdash; If a <code>CartItem</code> is removed from the <code>items</code> list, Hibernate automatically deletes it from the database. Without <code>orphanRemoval</code>, the CartItem would remain in DB with a null cart_id (or would need manual deletion).</li>
+</ul>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE carts (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT    NOT NULL UNIQUE REFERENCES users(id)
+);</pre>
+</div>
+
+<!-- ===================== CART ITEM ===================== -->
+<h3 id="entity-cartitem">2.5 CartItem</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "cart_items")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class CartItem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    public BigDecimal getSubtotal() {
+        return product.getPrice().multiply(BigDecimal.valueOf(quantity));
+    }
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>@ManyToOne on cart and product</strong> &mdash; CartItem is the <em>owning side</em> of both relationships. The FK columns (<code>cart_id</code>, <code>product_id</code>) reside in the <code>cart_items</code> table. This is the standard pattern: the "many" side holds the foreign key.</p>
+
+<p><strong>getSubtotal() as a transient method</strong> &mdash; This is a runtime calculation, not a persisted column. It's simply <code>unitPrice * quantity</code>. Note: for CartItem, the price comes from the current <code>product.getPrice()</code>. For the order (historical record), we persist <code>unitPrice</code> and <code>subtotal</code> in OrderItem to capture the price at the time of purchase.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE cart_items (
+    id         BIGSERIAL    PRIMARY KEY,
+    cart_id    BIGINT       NOT NULL REFERENCES carts(id),
+    product_id BIGINT       NOT NULL REFERENCES products(id),
+    quantity   INTEGER      NOT NULL
+);</pre>
+</div>
+
+<!-- ===================== ORDER ===================== -->
+<h3 id="entity-order">2.6 Order</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "orders")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Order {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private OrderStatus orderStatus = OrderStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount;
+
+    private String shippingAddress;
+
+    private String razorpayOrderId;
+
+    private String razorpayPaymentId;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() { createdAt = LocalDateTime.now(); updatedAt = LocalDateTime.now(); }
+
+    @PreUpdate
+    protected void onUpdate() { updatedAt = LocalDateTime.now(); }
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>@Enumerated(EnumType.STRING) x2</strong> &mdash; Two independent enum fields: <code>orderStatus</code> (tracks fulfillment lifecycle) and <code>paymentStatus</code> (tracks payment lifecycle). They are intentionally separated because they change independently: an order can be SHIPPED before payment clears (COD), or payment can be PAID but order still PENDING. Storing them as separate enum columns avoids coupling two orthogonal state machines.</p>
+
+<p><strong>@Builder.Default on enum fields</strong> &mdash; Without <code>@Builder.Default</code>, Lombok's builder would set <code>orderStatus</code> to null, which violates the <code>nullable = false</code> column constraint. <code>@Builder.Default</code> ensures the builder initializes the field with the Java initializer value (<code>OrderStatus.PENDING</code>). Same for <code>paymentStatus</code> and the <code>orderItems</code> list.</p>
+
+<p><strong>Razorpay fields</strong> &mdash; <code>razorpayOrderId</code> and <code>razorpayPaymentId</code> are stored directly on the Order entity for simplicity. An alternative is a separate <code>Payment</code> entity supporting multiple payment gateways, but for this project's scope, inline fields are pragmatic.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE orders (
+    id                BIGSERIAL       PRIMARY KEY,
+    user_id           BIGINT          NOT NULL REFERENCES users(id),
+    order_status      VARCHAR(20)     NOT NULL,
+    payment_status    VARCHAR(20)     NOT NULL,
+    total_amount      NUMERIC(10,2)   NOT NULL,
+    shipping_address  VARCHAR(255),
+    razorpay_order_id VARCHAR(255),
+    razorpay_payment_id VARCHAR(255),
+    created_at        TIMESTAMP       NOT NULL,
+    updated_at        TIMESTAMP       NOT NULL
+);</pre>
+</div>
+
+<!-- ===================== ORDER ITEM ===================== -->
+<h3 id="entity-orderitem">2.7 OrderItem</h3>
+<div class="code-block">
+<pre>@Entity
+@Table(name = "order_items")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class OrderItem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal unitPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal subtotal;
+}</pre>
+</div>
+
+<h4>Annotation Deep-Dive</h4>
+
+<p><strong>unitPrice and subtotal are persisted</strong> &mdash; Unlike <code>CartItem.getSubtotal()</code> which is a runtime calculation, OrderItem stores the actual price and subtotal at the time of the order. This is <strong>critical for financial/audit compliance</strong>. Product prices change over time; if you recalculated order history from current prices, past orders would show wrong amounts. Storing <code>unitPrice</code> and <code>subtotal</code> freezes the financial record.</p>
+
+<p><strong>Why not join back to Product for price?</strong> &mdash; Never compute historical financial data from dynamic source data. The product's price today could be different from when the order was placed. Always snapshot the price at order time.</p>
+
+<h4>Generated Table</h4>
+<div class="code-block">
+<pre>CREATE TABLE order_items (
+    id         BIGSERIAL       PRIMARY KEY,
+    order_id   BIGINT          NOT NULL REFERENCES orders(id),
+    product_id BIGINT          NOT NULL REFERENCES products(id),
+    quantity   INTEGER         NOT NULL,
+    unit_price NUMERIC(10,2)   NOT NULL,
+    subtotal   NUMERIC(10,2)   NOT NULL
+);</pre>
+</div>
+
+<!-- ======================================================================== -->
+<h2>3. Relationship Mapping Patterns</h2>
+
+<h3>Uni-directional vs Bi-directional</h3>
+<p>In this project, we use <strong>bi-directional</strong> relationships for parent-child compositions (Cart-CartItem, Order-OrderItem, Category-subCategories) but <strong>uni-directional</strong> where only one side needs navigation (Product-Category, Product-User(seller)).</p>
+<div class="info-box">
+    <strong>Rule of thumb:</strong> Use bi-directional only when you need to navigate both ways in the domain. Every bi-directional relationship adds complexity: you must keep both sides consistent. For simple lookups (e.g., "which products belong to this category?"), a repository query is cleaner than a bi-directional <code>@OneToMany</code>.
+</div>
+
+<h3>Owning Side vs Inverse Side</h3>
+<ul>
+    <li><strong>Owning side</strong> &mdash; The entity that contains <code>@JoinColumn</code>. The table with the foreign key. Example: <code>CartItem.cart</code> (has <code>cart_id</code> column).</li>
+    <li><strong>Inverse side</strong> &mdash; The entity that has <code>mappedBy</code>. Does not have a FK column; the mapping is read-only from this side. Example: <code>Cart.items</code>.</li>
+    <li>Hibernate only checks the <em>owning side</em> for relationship changes. If you modify only the inverse side (e.g., <code>cart.getItems().add(item)</code> without setting <code>item.setCart(cart)</code>), Hibernate may not persist the relationship.</li>
+</ul>
+
+<h3>Helper Methods (Bidirectional Consistency)</h3>
+<p>For bi-directional relationships, always provide a helper method that sets both sides:</p>
+<div class="code-block">
+<pre>public void addSubCategory(Category subCategory) {
+    subCategories.add(subCategory);   // inverse side
+    subCategory.setParent(this);      // owning side
+}</pre>
+</div>
+<p>This ensures in-memory consistency. Without it, calling <code>parent.addSubCategory(child)</code> followed by <code>child.getParent()</code> would return null, leading to bugs.</p>
+
+<div class="info-box warn">
+    <strong>Common Pitfall:</strong> Forgetting to set the owning side in a bi-directional relationship. If you do <code>cart.getItems().add(item)</code> but never call <code>item.setCart(cart)</code>, Hibernate persists the CartItem with a NULL <code>cart_id</code> because it only looks at the owning side (<code>CartItem.cart</code>) for the FK value.
+</div>
+
+<!-- ======================================================================== -->
+<h2>4. Schema Design Decisions</h2>
+
+<h3>4.1 Why unitPrice is Stored in OrderItem</h3>
+<p><strong>Price history / financial audit.</strong> The <code>unitPrice</code> column captures the product price exactly when the order was placed. Future price changes to the Product entity do not retroactively alter past orders. This is a legal/accounting requirement for any e-commerce system. <strong>Never recalculate historical financial data from live entity state.</strong></p>
+
+<h3>4.2 Why Category Uses Self-Referencing ManyToOne (Adjacency List)</h3>
+<p>The adjacency list model (parent_id column) is the simplest hierarchical model in SQL. Alternatives:</p>
+<ul>
+    <li><strong>Nested Sets</strong> &mdash; Efficient reads, expensive writes, hard to maintain.</li>
+    <li><strong>Closure Table</strong> &mdash; Flexible, requires a separate table, more complex queries.</li>
+    <li><strong>Materialized Path</strong> &mdash; Store full path as string, limited depth.</li>
+</ul>
+<p>For an e-commerce category tree (typically &lt; 3 levels deep, &lt; 1000 categories), adjacency list is the right call. It maps naturally to JPA's <code>@ManyToOne</code>/<code>@OneToMany</code> and queries are efficient with a known depth.</p>
+
+<h3>4.3 Why Composition Pattern (Cart-CartItem, Order-OrderItem) Instead of Single Entity</h3>
+<p>A cart/order <em>is not</em> simply a list of product IDs. It contains metadata (user, status, timestamps, payment info). Each item has quantity and (for orders) price snapshot. Normalizing into separate entities gives:</p>
+<ul>
+    <li><strong>Single responsibility</strong> &mdash; Cart manages lifecycle; CartItem manages quantity/price.</li>
+    <li><strong>No denormalized data</strong> &mdash; No repeating groups, no JSON columns, no array columns.</li>
+    <li><strong>Efficient updates</strong> &mdash; Update quantity on one item without rewriting the entire list.</li>
+    <li><strong>Indexable FK queries</strong> &mdash; "Find all orders containing product X" is a simple index seek on <code>order_items.product_id</code>.</li>
+</ul>
+
+<h3>4.4 Why Separate orderStatus and paymentStatus Enums</h3>
+<p>Order lifecycle (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, RETURNED) and payment lifecycle (PENDING, PAID, FAILED, REFUNDED) are orthogonal state machines. They change at different times and for different reasons:</p>
+<ul>
+    <li>An order can be SHIPPED before payment is PAID (Cash on Delivery).</li>
+    <li>A payment can be PAID but the order remains PENDING (awaiting fulfillment).</li>
+    <li>A payment can be REFUNDED while the order status stays DELIVERED.</li>
+</ul>
+<p>Combining them into one field (e.g., an enum with 36 combinations) would be a design smell. Two independent enums are cleaner, more extensible, and map directly to business workflows.</p>
+
+<!-- ======================================================================== -->
+<h2>5. JSON Serialization</h2>
+
+<h3>How Jackson Serializes Entities</h3>
+<p>By default, Jackson serializes all public getters (or fields, depending on visibility). When serializing a <code>Product</code> with a <code>Category</code>, Jackson calls <code>product.getCategory()</code>, which triggers Hibernate's LAZY proxy to load the full Category from the DB (if inside a transaction). The Category then has a <code>parent</code> field, which triggers another load, and so on. This creates a <strong>circular reference</strong> that causes a <code>StackOverflowError</code> or infinite JSON recursion.</p>
+
+<h3>@JsonIgnoreProperties to Break Cycles</h3>
+<p>We use <code>@JsonIgnoreProperties</code> at the class level to suppress specific properties during serialization:</p>
+<ul>
+    <li><code>@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})</code> &mdash; Hides Hibernate proxy internals from Jackson. Without this, Jackson may fail to serialize LAZY proxies when the session is closed.</li>
+    <li><code>@JsonIgnoreProperties({"parent"})</code> on <code>subCategories</code> &mdash; When serializing a Category, skip the <code>parent</code> field on each subCategory to break the circular reference.</li>
+</ul>
+
+<h3>Prefer DTOs Over Serializing Entities</h3>
+<p>The cleanest approach is to <strong>not serialize entities at all</strong>. Instead, map entities to DTOs (Data Transfer Objects) before serialization:</p>
+<ul>
+    <li><strong>Security</strong> &mdash; Avoid accidentally exposing sensitive fields (e.g., <code>password</code>, <code>razorpayOrderId</code>). Even with <code>@JsonIgnore</code>, a single missing annotation leaks data.</li>
+    <li><strong>Control</strong> &mdash; Shape the JSON exactly to the API contract, with no extra fields.</li>
+    <li><strong>Decoupling</strong> &mdash; Changes to the entity model (field renames, new relationships) don't automatically change API responses.</li>
+    <li><strong>Lazy loading safety</strong> &mdash; DTOs are plain POJOs, not Hibernate proxies. No risk of <code>LazyInitializationException</code>.</li>
+</ul>
+
+<div class="info-box ok">
+    <strong>Recommendation:</strong> Use MapStruct or manual DTO mappers in the service layer. Reserve entity serialization for internal/debug endpoints only.
+</div>
+
+<h3>@JsonIgnore Use Cases</h3>
+<p><code>@JsonIgnore</code> is appropriate for specific fields that must never be serialized:</p>
+<ul>
+    <li><code>User.password</code></li>
+    <li>Internal <code>@Version</code> fields (optimistic locking)</li>
+    <li>Internal IDs that shouldn't be exposed</li>
+</ul>
+
+<!-- ======================================================================== -->
+<h2>6. Interview Q&amp;A</h2>
+
+<div class="qa-box">
+    <div class="q">Q1: What are the differences between IDENTITY, SEQUENCE, TABLE, and AUTO generation strategies? Which one do you use and why?</div>
+    <div class="a">
+        <strong>IDENTITY</strong> relies on the database's auto-increment column (e.g., PostgreSQL's <code>BIGSERIAL</code> or <code>GENERATED BY DEFAULT AS IDENTITY</code>). Hibernate inserts the row first, then retrieves the generated ID. This prevents JDBC batch insert optimization because Hibernate must execute the INSERT immediately to get the ID.<br><br>
+        <strong>SEQUENCE</strong> uses a database sequence (e.g., <code>CREATE SEQUENCE</code> in PostgreSQL). Hibernate calls <code>NEXTVAL</code> before inserting, which allows batch inserts (IDs are pre-allocated via <code>allocationSize</code>). This is the most performant strategy for high-volume writes.<br><br>
+        <strong>TABLE</strong> emulates a sequence using a database table with pessimistic locking. Portable but slow &mdash; never use in production.<br><br>
+        <strong>AUTO</strong> delegates the choice to Hibernate's dialect. For PostgreSQL, it typically uses SEQUENCE.<br><br>
+        We chose <strong>IDENTITY</strong> in this project. It's the simplest, maps directly to PostgreSQL's identity columns, and for our e-commerce write volume the batch insert limitation is acceptable. For high-throughput systems, prefer SEQUENCE.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q2: Why do we use <code>FetchType.LAZY</code> instead of <code>FetchType.EAGER</code>? What problem does LAZY loading solve?</div>
+    <div class="a">
+        LAZY loading defers fetching an association until the code actually accesses it. EAGER forces Hibernate to always fetch the association (via JOIN or separate SELECT) regardless of whether it's needed.<br><br>
+        <strong>Problems with EAGER:</strong><br>
+        (1) <strong>Unnecessary queries</strong> &mdash; Loading a list of products for a catalog page also fetches every category and seller, even if you only display names.<br>
+        (2) <strong>N+1 select problem</strong> &mdash; If Hibernate uses a separate SELECT per entity for an EAGER association, querying 100 products produces 1+100 queries.<br>
+        (3) <strong>Cartesian product</strong> &mdash; Multiple EAGER collections on the same entity produce cross-joins that multiply result sets.<br><br>
+        LAZY loading uses <strong>proxy objects</strong> &mdash; dynamically generated subclasses that contain only the ID. When you access a property on the proxy, Hibernate initializes it with a SELECT. This only works within an active Hibernate session (<code>@Transactional</code>).<br><br>
+        The rule: always use LAZY for all associations. If you need data eagerly, use <code>JOIN FETCH</code> in JPQL or <code>@EntityGraph</code> for explicit, query-scoped eager loading.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q3: What is the N+1 query problem? How do you detect and fix it?</div>
+    <div class="a">
+        The N+1 problem occurs when a query fetches N entities and then executes N additional queries to load lazy associations for each entity.<br><br>
+        <strong>Example:</strong> <code>List&lt;Product&gt; products = productRepository.findAll();</code> followed by iterating <code>product.getCategory().getName()</code>. If <code>category</code> is LAZY, Hibernate executes 1 query for the products + N queries for each product's category.<br><br>
+        <strong>Detection:</strong> Enable Hibernate SQL logging (<code>spring.jpa.show-sql=true</code> or <code>logging.level.org.hibernate.SQL=DEBUG</code>). Use a tool like <code>datasource-proxy</code> or <code>p6spy</code> to capture query counts.<br><br>
+        <strong>Fixes:</strong><br>
+        (1) <strong>JOIN FETCH</strong> in JPQL: <code>SELECT p FROM Product p JOIN FETCH p.category</code><br>
+        (2) <strong>@EntityGraph</strong>: <code>@EntityGraph(attributePaths = "category")</code> on the repository method<br>
+        (3) <strong>Criteria API</strong> with <code>fetch()</code><br>
+        (4) <strong>DTO projection</strong>: <code>SELECT new ProductDTO(p.id, p.name, c.name) FROM Product p JOIN p.category c</code><br><br>
+        The key insight: LAZY loading is the default (good), but you must explicitly plan for eager fetching when you know the access pattern.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q4: Why should you use <code>EnumType.STRING</code> instead of <code>EnumType.ORDINAL</code>? What happens if you don't?</div>
+    <div class="a">
+        <code>EnumType.ORDINAL</code> stores the enum's ordinal value (0, 1, 2, ...) as an integer in the database. This is <strong>extremely fragile</strong>. If you add, remove, or reorder enum constants, the numeric values shift, and existing database rows silently become corrupted &mdash; they reference the wrong enum constant with no error.<br><br>
+        <strong>Example:</strong> A row with ordinal <code>2</code> might mean <code>SHIPPED</code> today, but if you insert a new status <code>PROCESSING</code> between <code>CONFIRMED</code> and <code>SHIPPED</code>, that same <code>2</code> now incorrectly points to <code>PROCESSING</code>.<br><br>
+        <code>EnumType.STRING</code> stores the constant name (<code>"SHIPPED"</code>) as a VARCHAR. Renaming a constant is a compile-time change that requires a data migration. Adding/removing constants doesn't affect existing data. The storage difference (int vs varchar) is negligible. <strong>Always use STRING.</strong>
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q5: How does <code>@Transactional</code> relate to lazy loading? What is a <code>LazyInitializationException</code> and how do you avoid it?</div>
+    <div class="a">
+        <code>@Transactional</code> demarcates the boundaries of a Hibernate session (persistence context). LAZY proxies can only initialize while the session is open &mdash; inside the transaction.<br><br>
+        A <code>LazyInitializationException</code> occurs when you access a LAZY association outside the transaction boundary. For example:<br>
+        - A service method returns an entity without eagerly loading an association<br>
+        - The controller (outside the transaction) calls <code>entity.getLazyField()</code><br>
+        - Hibernate has no open session, so the proxy cannot initialize &rarr; exception<br><br>
+        <strong>Solutions:</strong><br>
+        (1) <strong>Keep the transaction open</strong> &mdash; Use <code>@Transactional</code> on the controller or use Spring's <code>OpenSessionInViewFilter</code> (anti-pattern, don't use in production &mdash; it holds DB connections too long).<br>
+        (2) <strong>Eagerly fetch within the transaction</strong> &mdash; Use <code>JOIN FETCH</code> or <code>@EntityGraph</code> in the repository/ service method.<br>
+        (3) <strong>Use DTOs</strong> &mdash; Map to DTOs inside the transaction, then work with plain POJOs outside (best practice).<br>
+        (4) <strong>Spring's <code>@Transactional(readOnly = true)</code></strong> on service methods for read queries ensures the session stays open for lazy loading and DB uses read-optimized connections.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q6: What is the difference between <code>CascadeType</code> and <code>orphanRemoval</code>? Can you give a scenario where you'd use one without the other?</div>
+    <div class="a">
+        <strong>CascadeType</strong> controls which operations on the parent entity propagate to child entities. The types are: <code>PERSIST</code> (save parent = save children), <code>MERGE</code>, <code>REMOVE</code>, <code>REFRESH</code>, <code>DETACH</code>, and <code>ALL</code> (all of the above).<br><br>
+        <strong>orphanRemoval = true</strong> means that when a child entity is removed from the parent's collection, Hibernate automatically deletes that child from the database. Without it, the child's FK is set to NULL (if nullable) or the child row stays orphaned.<br><br>
+        <strong>Key difference:</strong> CascadeType.REMOVE deletes children when the parent is deleted. orphanRemoval deletes children when they are removed from the collection (even if the parent still exists).<br><br>
+        <strong>Scenario: Use CascadeType.ALL without orphanRemoval</strong> &mdash; An <code>Author</code> has many <code>Book</code>s, but books can exist independently. When you delete an Author, you want to delete their books too (CascadeType.REMOVE). But if you remove a Book from the Author's list, you don't want to delete the Book (orphanRemoval = false).<br><br>
+        In our project, we use both together for Cart-CartItem and Order-OrderItem because items are <strong>compositional</strong> &mdash; they have no independent existence. Removing an item from the cart should delete the cart_item row.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q7: Why is <code>unitPrice</code> stored in the <code>OrderItem</code> table? Why not just join to <code>Product.price</code> when displaying order history?</div>
+    <div class="a">
+        <strong>Because prices change.</strong> If a product's price changes after an order is placed, joining to <code>Product.price</code> would show the <em>current</em> price, not the price at the time of the order. This would produce incorrect financial records and break audit compliance.<br><br>
+        By storing <code>unitPrice</code> as a snapshot in <code>OrderItem</code>, we freeze the price at order time. The same applies to <code>subtotal</code> (quantity * unitPrice). This creates an immutable financial record that never changes, even if product prices are updated later.<br><br>
+        This is the same reason <code>CartItem</code> uses a transient <code>getSubtotal()</code> (runtime calculation from current price) while <code>OrderItem</code> persists the values &mdash; the cart is transient state, the order is historical fact.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q8: How does a self-referencing entity like <code>Category</code> work? What are the alternatives for tree structures in JPA?</div>
+    <div class="a">
+        <strong>How it works:</strong> The <code>Category</code> table has a <code>parent_id</code> column that references the same table's <code>id</code>. Each category has at most one parent (null = root category). The <code>@ManyToOne</code> on <code>parent</code> and <code>@OneToMany(mappedBy = "parent")</code> on <code>subCategories</code> model this as a bi-directional self-referencing relationship. Hibernate handles this as a regular FK constraint &mdash; it just happens to reference the same table.<br><br>
+        <strong>Alternatives:</strong><br>
+        (1) <strong>Nested Sets</strong> &mdash; Uses <code>left</code> and <code>right</code> columns. Efficient for reads (find all descendants in one query), expensive for writes (must renumber siblings). Hard to model in JPA.<br>
+        (2) <strong>Closure Table</strong> &mdash; Stores ancestor-descendant pairs in a separate table. Flexible, supports multiple hierarchies, but requires extra table and more complex queries.<br>
+        (3) <strong>Materialized Path</strong> &mdash; Stores full path as a string (<code>"/electronics/computers/laptops"</code>). Simple to query with LIKE but limited depth, no referential integrity.<br><br>
+        For a typical e-commerce category tree (shallow depth, moderate size), the adjacency list is the simplest and most JPA-aligned choice.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q9: What issues can arise when using Lombok's <code>@Builder</code> with JPA entities? How do you prevent them?</div>
+    <div class="a">
+        <strong>Issue 1: No-arg constructor missing.</strong> <code>@Builder</code> generates an all-args constructor. JPA/Hibernate requires a no-arg constructor (for proxy creation). <strong>Fix:</strong> Add <code>@NoArgsConstructor</code>.<br><br>
+        <strong>Issue 2: Default field values are lost.</strong> <code>@Builder</code> initializes all fields to default JVM values (null, 0, false), ignoring field initializers like <code>new ArrayList&lt;&gt;()</code> or <code>OrderStatus.PENDING</code>. <strong>Fix:</strong> Add <code>@Builder.Default</code> on each field with a non-default initializer.<br><br>
+        <strong>Issue 3: Circular references with <code>toString()</code> / <code>equals()</code> / <code>hashCode()</code>.</strong> Lombok's <code>@EqualsAndHashCode</code> or <code>@ToString</code> on bi-directional relationships causes <code>StackOverflowError</code>. <strong>Fix:</strong> Exclude relationship fields: <code>@ToString.Exclude</code>, <code>@EqualsAndHashCode.Exclude</code>. Better yet, avoid <code>@EqualsAndHashCode</code> on entities entirely &mdash; use business keys or <code>@Data</code> is considered harmful for JPA entities.<br><br>
+        <strong>Issue 4: <code>@AllArgsConstructor</code> + <code>@Builder</code> can produce entities with null IDs.</strong> Calling <code>new User(1L, ...)</code> is fine, but <code>User.builder().id(1L).build()</code> can produce a managed entity with a manually set ID, which Hibernate treats as detached (it will try to UPDATE, not INSERT). <strong>Fix:</strong> Don't expose <code>id</code> in the builder, or use <code>@Builder(builderMethodName = "createBuilder")</code> with limited fields.
+    </div>
+</div>
+
+<div class="qa-box">
+    <div class="q">Q10: What is the difference between uni-directional and bi-directional relationships? When would you choose one over the other?</div>
+    <div class="a">
+        <strong>Uni-directional:</strong> Only one entity knows about the relationship. Example: <code>Product</code> knows its <code>Category</code> and <code>Seller</code>, but Category doesn't have a <code>List&lt;Product&gt;</code>. The FK is in the source entity's table.<br><br>
+        <strong>Bi-directional:</strong> Both entities know about each other. One side is the owning side (has <code>@JoinColumn</code>), the other is the inverse side (has <code>mappedBy</code>). Example: <code>Cart</code> has <code>List&lt;CartItem&gt; items</code> and <code>CartItem</code> has <code>Cart cart</code>.<br><br>
+        <strong>When to choose:</strong><br>
+        (1) <strong>Prefer uni-directional</strong> unless you need the inverse navigation. If you never query "all products in this category," don't add <code>@OneToMany</code>. Use a repository method instead (<code>productRepository.findByCategoryId(id)</code>).<br>
+        (2) <strong>Use bi-directional</strong> when both directions are used in the domain (e.g., Cart-CartItem: "get items in this cart" and "which cart does this item belong to?"). Also use it for compositional patterns where CascadeType.ALL and orphanRemoval are required on the parent side.<br>
+        (3) <strong>Avoid bi-directional for performance-sensitive paths</strong>. Each bi-directional association adds proxy overhead and maintenance complexity (keeping both sides consistent).<br><br>
+        In this project: Cart-CartItem, Order-OrderItem, and Category-subCategories are bi-directional (compositional). Product-Category and Product-Seller are uni-directional (simple lookup).
+    </div>
+</div>
+
+<div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.85rem; text-align: center;">
+    Phase 3: Entities &amp; JPA Models &mdash; E-Commerce Backend Interview Guide<br>
+    Jakarta Persistence (JPA 3.x) &middot; Hibernate 6.x &middot; PostgreSQL &middot; Spring Boot 3.x
+</div>
+
+</div>
+</body>
+</html>
