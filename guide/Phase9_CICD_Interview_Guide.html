@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 9: CI/CD Pipeline — E-Commerce Backend Interview Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+            border-bottom: 2px solid #6C63FF;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #6C63FF, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle { color: #888; font-size: 1rem; margin-top: 10px; }
+        .header .badge {
+            display: inline-block;
+            background: #6C63FF; color: #fff;
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 0.8rem; margin-top: 12px;
+        }
+        section {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6C63FF;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        section h2 {
+            font-size: 1.5rem;
+            color: #6C63FF;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        section h3 {
+            font-size: 1.15rem;
+            color: #e0e0e0;
+            margin: 20px 0 10px;
+        }
+        section p { margin-bottom: 14px; color: #ccc; }
+        ul, ol { padding-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; color: #ccc; }
+        code {
+            background: #2a2a3e;
+            color: #6C63FF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        pre {
+            background: #12122a;
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid #2a2a3e;
+        }
+        pre code { background: none; padding: 0; color: #f0f0f0; }
+        .qa { margin-bottom: 16px; }
+        .qa .q {
+            font-weight: 600;
+            color: #6C63FF;
+            margin-bottom: 4px;
+        }
+        .qa .a { color: #ccc; padding-left: 16px; border-left: 2px solid #6C63FF; }
+        .note {
+            background: #1e2a3e;
+            border-left: 4px solid #ffd700;
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin: 14px 0;
+        }
+        .note strong { color: #ffd700; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #2a2a3e;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th { background: #6C63FF; color: #fff; }
+        td { background: #12122a; color: #ccc; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>Phase 9: CI/CD Pipeline</h1>
+    <div class="subtitle">E-Commerce Backend — GitHub Actions CI/CD with Build, Test, Docker, and Deploy</div>
+    <div class="badge">Phase 9 of 10</div>
+</div>
+
+<section>
+    <h2>1. What is CI/CD?</h2>
+    <p><strong>CI (Continuous Integration):</strong> Every push to the repository triggers an automated build and test suite. If tests fail, the developer knows immediately.</p>
+    <p><strong>CD (Continuous Deployment):</strong> After CI passes, the application is automatically deployed to a server or cloud platform.</p>
+    <h3>Why it matters for a fresher</h3>
+    <ul>
+        <li>Shows you understand modern DevOps workflows</li>
+        <li>Automates the tedious parts of testing and deployment</li>
+        <li>Catches integration bugs early</li>
+        <li>Most companies ask about CI/CD in interviews</li>
+    </ul>
+</section>
+
+<section>
+    <h2>2. CI Pipeline (.github/workflows/ci.yml)</h2>
+    <p>Triggered on push/PR to <code>main</code>. Two jobs run in sequence:</p>
+
+    <h3>Job 1: Build &amp; Test</h3>
+    <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ecommerce
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - run: mvn test -B
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ecommerce
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'fallback-secret' }}
+          ...</code></pre>
+
+    <h3>What happens:</h3>
+    <ul>
+        <li>GitHub spins up a PostgreSQL 15 container as a service</li>
+        <li>JDK 17 is installed with Maven caching</li>
+        <li><code>mvn test -B</code> runs ALL 135+ tests</li>
+        <li>Failures upload test reports as artifacts for debugging</li>
+    </ul>
+
+    <h3>Job 2: Build Docker Image</h3>
+    <pre><code>  docker:
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ecommerce-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max</code></pre>
+
+    <p>The Docker image is built (but not pushed) to verify the Dockerfile works. Uses GitHub Actions cache for faster rebuilds.</p>
+</section>
+
+<section>
+    <h2>3. CD Pipeline (.github/workflows/cd.yml)</h2>
+    <pre><code>on:
+  workflow_run:
+    workflows: [ "CI — Build, Test & Docker" ]
+    branches: [ main ]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/ecommerce-backend:latest
+
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ~/ecommerce
+            docker compose pull app
+            docker compose up -d --force-recreate app</code></pre>
+
+    <h3>How it works:</h3>
+    <ul>
+        <li>Only triggers <em>after</em> the CI workflow succeeds on <code>main</code></li>
+        <li>Builds the Docker image and pushes it to GitHub Container Registry (ghcr.io)</li>
+        <li>SSHes into your server, pulls the new image, and restarts the app</li>
+        <li>Zero-downtime deployment via <code>--force-recreate</code></li>
+    </ul>
+
+    <div class="note">
+        <strong>Note:</strong> The CD workflow requires server secrets to be configured in your GitHub repository settings (<code>DEPLOY_HOST</code>, <code>DEPLOY_USER</code>, <code>DEPLOY_SSH_KEY</code>).
+    </div>
+</section>
+
+<section>
+    <h2>4. Setting Up Secrets in GitHub</h2>
+    <p>Go to <strong>Settings → Secrets and variables → Actions</strong> in your repository and add:</p>
+    <table>
+        <tr><th>Secret Name</th><th>Purpose</th></tr>
+        <tr><td><code>JWT_SECRET</code></td><td>JWT signing key (at least 32 chars)</td></tr>
+        <tr><td><code>RAZORPAY_KEY_ID</code></td><td>Razorpay test key</td></tr>
+        <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td>Razorpay test secret</td></tr>
+        <tr><td><code>DEPLOY_HOST</code></td><td>Server IP (e.g., 123.456.78.90)</td></tr>
+        <tr><td><code>DEPLOY_USER</code></td><td>SSH username (e.g., ubuntu)</td></tr>
+        <tr><td><code>DEPLOY_SSH_KEY</code></td><td>SSH private key for server access</td></tr>
+    </table>
+    <p>Secrets are encrypted and never exposed in logs.</p>
+</section>
+
+<section>
+    <h2>5. GitHub Actions Concepts</h2>
+    <table>
+        <tr><th>Concept</th><th>Description</th></tr>
+        <tr><td><strong>Workflow</strong></td><td>A YAML file defining an automated process</td></tr>
+        <tr><td><strong>Job</strong></td><td>A set of steps that run on the same runner</td></tr>
+        <tr><td><strong>Step</strong></td><td>A single command or action</td></tr>
+        <tr><td><strong>Action</strong></td><td>A reusable unit of logic (e.g., <code>actions/checkout</code>)</td></tr>
+        <tr><td><strong>Runner</strong></td><td>A virtual machine that executes workflows</td></tr>
+        <tr><td><strong>Event</strong></td><td>What triggers the workflow (push, PR, schedule)</td></tr>
+        <tr><td><strong>Needs</strong></td><td>Defines job dependencies</td></tr>
+        <tr><td><strong>Service container</strong></td><td>Ephemeral database/redis for tests</td></tr>
+        <tr><td><strong>Artifact</strong></td><td>Files uploaded from a workflow (e.g., test reports)</td></tr>
+        <tr><td><strong>Cache</strong></td><td>Reuse Maven dependencies across runs</td></tr>
+    </table>
+</section>
+
+<section>
+    <h2>6. Interview Questions &amp; Answers</h2>
+
+    <div class="qa">
+        <div class="q">Q: What is CI and why is it important?</div>
+        <div class="a">CI (Continuous Integration) means merging code changes frequently and automatically running builds and tests on each merge. It catches bugs early, prevents integration conflicts, and gives immediate feedback to developers. Without CI, bugs might only surface days later during manual testing.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: Why use a service container for PostgreSQL in CI instead of an in-memory database?</div>
+        <div class="a">Using the real PostgreSQL container ensures tests run against the same database dialect and features as production. In-memory databases like H2 have subtle differences that can hide SQL compatibility bugs. For a project using PostgreSQL-specific features, testing against real PostgreSQL is more reliable.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: How does <code>needs: [ test ]</code> work in the CI pipeline?</div>
+        <div class="a">The <code>needs</code> keyword creates a dependency. The Docker job only starts after the test job completes successfully. If tests fail, the Docker job is skipped entirely, preventing wasted time building an image from broken code.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What are GitHub secrets and why use them?</div>
+        <div class="a">Secrets are encrypted environment variables stored in the repository settings. They are never printed in logs or exposed to forks. We use them for sensitive values like JWT secrets, API keys, and SSH private keys instead of hardcoding them in the workflow file.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: How would you trigger a deployment only after CI passes?</div>
+        <div class="a">The CD workflow uses <code>workflow_run</code> trigger with a filter on <code>workflows: ["CI — Build, Test & Docker"]</code> and <code>types: [completed]</code>. It then checks <code>conclusion == 'success'</code> to ensure CI passed. This guarantees only tested code gets deployed.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What's the difference between GitHub Container Registry (ghcr.io) and Docker Hub?</div>
+        <div class="a">ghcr.io is GitHub's own registry integrated with GitHub Packages. It uses <code>GITHUB_TOKEN</code> for authentication (no separate credentials needed), supports fine-grained permissions per repository, and has no pull rate limits. Docker Hub is the public default registry but has pull rate limits on free tiers.</div>
+    </div>
+
+    <div class="qa">
+        <div class="q">Q: What would you add to improve this pipeline?</div>
+        <div class="a">Possible improvements: (a) parallelize test jobs across different JVM versions, (b) add SonarCloud for code quality checks, (c) add Snyk/Dependabot for vulnerability scanning, (d) add Slack/email notifications on failure, (e) trigger deployment to a staging environment for PR previews, (f) add end-to-end tests with a real browser.</div>
+    </div>
+</section>
+
+<section>
+    <h2>7. Visual Pipeline Flow</h2>
+    <pre><code>Push to main
+    │
+    ▼
+┌─────────────────────┐
+│  CI Workflow        │
+│  ┌───────────────┐  │
+│  │ 1. Build&Test │──│── If FAIL → report + stop
+│  └───────┬───────┘  │
+│          ▼          │
+│  ┌───────────────┐  │
+│  │ 2. Docker     │  │── Build image (no push)
+│  │    Build      │  │
+│  └───────┬───────┘  │
+└──────────┼──────────┘
+           ▼  (CI succeeded)
+┌─────────────────────┐
+│  CD Workflow        │
+│  ┌───────────────┐  │
+│  │ 1. Login to   │  │
+│  │    GHCR       │  │
+│  └───────┬───────┘  │
+│          ▼          │
+│  ┌───────────────┐  │
+│  │ 2. Build &    │  │
+│  │    Push Image │  │
+│  └───────┬───────┘  │
+│          ▼          │
+│  ┌───────────────┐  │
+│  │ 3. SSH Deploy │  │
+│  │    & Restart  │  │
+│  └───────┬───────┘  │
+└──────────┼──────────┘
+           ▼
+    App deployed ✓</code></pre>
+</section>
+
+</div>
+</body>
+</html>
